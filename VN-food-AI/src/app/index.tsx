@@ -18,7 +18,8 @@ import {
   Sparkles,
   User,
 } from 'lucide-react-native';
-import { ScrollView, Text, View, Pressable } from 'react-native';
+import { ScrollView, Text, View, Pressable, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PressScale } from '../components/PressScale';
 import { CalorieRing } from '../components/CalorieRing';
