@@ -9,26 +9,47 @@ const API_URL = `${process.env.EXPO_PUBLIC_API_URL}/api/v1/food/analyze`;
  * @param imageUri - Đường dẫn ảnh (VD: lấy từ expo-image-picker `result.assets[0].uri`)
  * @returns { visualBase64, nutrition, allDetected }
  */
-export async function analyzeFoodImage(imageUri: string) {
+export async function analyzeFoodImage(
+  imageUri: string,
+  options?: {
+    containerType?: string;
+    containerDiameterCm?: number;
+    containerLengthCm?: number;
+    containerWidthCm?: number;
+  }
+) {
   try {
-    // 1. Sử dụng expo-file-system để upload file trực tiếp, tối ưu bộ nhớ và tránh lỗi Blob
-    const uploadResult = await FileSystem.uploadAsync(API_URL, imageUri, {
-      httpMethod: 'POST',
-      uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-      fieldName: 'image',
-      mimeType: 'image/jpeg',
-    });
+    // Lấy Blob từ file ảnh local
+    const localRes = await fetch(imageUri);
+    const blob = await localRes.blob();
 
-    // 3. Xử lý kết quả trả về
-    let data;
-    try {
-      data = JSON.parse(uploadResult.body);
-    } catch (e) {
-      console.error("Lỗi parse JSON. Server trả về:", uploadResult.body);
-      throw new Error(`Server trả về lỗi không mong muốn (không phải JSON). Vui lòng check log.`);
+    const formData = new FormData();
+    formData.append('image', blob, 'scan.jpg');
+
+    if (options) {
+      if (options.containerType) formData.append('container_type', options.containerType);
+      if (options.containerDiameterCm !== undefined) formData.append('container_diameter_cm', options.containerDiameterCm.toString());
+      if (options.containerLengthCm !== undefined) formData.append('container_length_cm', options.containerLengthCm.toString());
+      if (options.containerWidthCm !== undefined) formData.append('container_width_cm', options.containerWidthCm.toString());
     }
 
-    if (uploadResult.status < 200 || uploadResult.status >= 300) {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      console.error("Lỗi parse JSON:", e);
+      throw new Error(`Server trả về lỗi không mong muốn (không phải JSON).`);
+    }
+
+    if (!response.ok) {
       throw new Error(data.detail || 'Lỗi server không xác định');
     }
 

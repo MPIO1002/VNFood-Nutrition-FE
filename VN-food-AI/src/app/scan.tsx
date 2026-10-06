@@ -5,17 +5,22 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
-  ArrowRight, BookmarkCheck, Camera, ChevronLeft, Plus, ImagePlus, SwitchCamera, X, Minus, Trash2
+  ArrowRight, BookmarkCheck, ChevronLeft, Plus, ImagePlus, SwitchCamera, X, Minus, Trash2
 } from 'lucide-react-native';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import {
-  ScrollView, Text, View, Pressable, Alert, ActivityIndicator, TouchableOpacity, StyleSheet, TextInput
+  ScrollView, Text, View, Pressable, Alert, ActivityIndicator, TouchableOpacity,
+  StyleSheet, TextInput, Animated, useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PressScale } from '../components/PressScale';
 import { analyzeFoodImage } from '../services/api';
 import { CameraView, useCameraPermissions, CameraType } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
+
+import { CONTAINERS, ContainerConfig, MAX_SIZE } from '../constants/containers';
+import { OverlayFrame } from '../components/OverlayFrame';
+import { SwipeSlider } from '../components/SwipeSlider';
 
 export default function ScanScreen() {
   const router = useRouter();
@@ -31,6 +36,17 @@ export default function ScanScreen() {
   // Input states
   const { imageUri: initialImageUri } = useLocalSearchParams<{ imageUri?: string }>();
   const [activeImageUri, setActiveImageUri] = useState<string | null>(initialImageUri || null);
+
+  // Container selection state
+  const [selectedContainer, setSelectedContainer] = useState<ContainerConfig>(CONTAINERS[0]);
+  const [containerWidth, setContainerWidth]   = useState<number>(CONTAINERS[0].defaultSize);
+  const [containerHeight, setContainerHeight] = useState<number>(CONTAINERS[0].defaultHeight ?? CONTAINERS[0].defaultSize);
+
+  const handleSelectContainer = (c: ContainerConfig) => {
+    setSelectedContainer(c);
+    setContainerWidth(c.defaultSize);
+    setContainerHeight(c.defaultHeight ?? c.defaultSize);
+  };
 
   // API states
   const [loading, setLoading] = useState(false);
@@ -48,7 +64,12 @@ export default function ScanScreen() {
     setResultImg(null); // Reset previous results
     setFoodData(null);
     try {
-      const result = await analyzeFoodImage(selectedImageUri);
+      const result = await analyzeFoodImage(selectedImageUri, {
+        containerType: selectedContainer.key,
+        ...(selectedContainer.shape === 'circle'
+          ? { containerDiameterCm: containerWidth }
+          : { containerLengthCm: containerWidth, containerWidthCm: containerHeight }),
+      });
       if (result.success) {
         if (result.visualBase64) setResultImg(result.visualBase64);
         if (result.nutrition) {
@@ -236,7 +257,30 @@ export default function ScanScreen() {
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
 
-        {/* CAMERA / IMAGE FRAME (Square) */}
+        {/* ── Container Selector ─────────────────────────────────────────── */}
+        {!activeImageUri && (
+          <View style={styles.containerRow}>
+            {CONTAINERS.map(c => {
+              const active = c.key === selectedContainer.key;
+              const IconComponent = c.icon;
+              return (
+                <TouchableOpacity
+                  key={c.key}
+                  onPress={() => handleSelectContainer(c)}
+                  activeOpacity={0.75}
+                  style={[styles.chip, active && styles.chipActive]}
+                >
+                  <IconComponent size={24} color={active ? '#FFFFFF' : '#52525B'} strokeWidth={1.5} />
+                  <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>
+                    {c.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
+        {/* ── CAMERA / IMAGE FRAME ──────────────────────────────────────── */}
         <View className="aspect-square mx-4 mt-2 rounded-[36px] overflow-hidden bg-zinc-900 shadow-sm border border-zinc-200/50 relative">
           {!activeImageUri ? (
             <CameraView style={StyleSheet.absoluteFill} facing={facing} ref={cameraRef} />
@@ -251,7 +295,16 @@ export default function ScanScreen() {
             </>
           )}
 
-          {/* Overlay loading/confidence inside the frame */}
+          {/* Overlay guide frame — only in live camera mode */}
+          {!activeImageUri && (
+            <OverlayFrame
+              shape={selectedContainer.shape}
+              widthRatio={selectedContainer.shape === 'circle' ? 0.72 : Math.min(0.92, containerWidth / MAX_SIZE * 0.9 + 0.4)}
+              heightRatio={selectedContainer.shape === 'circle' ? 0.72 : Math.min(0.85, containerHeight / MAX_SIZE * 0.9 + 0.3)}
+            />
+          )}
+
+          {/* Loading overlay */}
           {loading && (
             <View className="absolute inset-0 bg-black/40 items-center justify-center z-20">
               <ActivityIndicator size="large" color="#FFFFFF" />
@@ -259,6 +312,7 @@ export default function ScanScreen() {
             </View>
           )}
 
+          {/* Result badge */}
           {!loading && activeImageUri && (
             <View className="absolute bottom-4 left-4 right-4 flex-row items-center justify-between z-10">
               <View className="flex-row items-center gap-1.5 px-3 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/20">
@@ -276,8 +330,34 @@ export default function ScanScreen() {
           )}
         </View>
 
-        {/* 3 CAMERA CONTROLS */}
-        <View className="flex-row items-center justify-center gap-10 mt-8 mb-6">
+        {/* ── Size Slider(s) — only in live camera mode ─────────────────── */}
+        {!activeImageUri && (
+          <View className="mx-4 mt-3" style={{ gap: 8 }}>
+            {selectedContainer.shape === 'circle' ? (
+              <SwipeSlider
+                label="Đường kính"
+                value={containerWidth}
+                onChange={setContainerWidth}
+              />
+            ) : (
+              <>
+                <SwipeSlider
+                  label="Chiều dài (cm)"
+                  value={containerWidth}
+                  onChange={setContainerWidth}
+                />
+                <SwipeSlider
+                  label="Chiều rộng (cm)"
+                  value={containerHeight}
+                  onChange={setContainerHeight}
+                />
+              </>
+            )}
+          </View>
+        )}
+
+        {/* ── 3 Camera Controls ────────────────────────────────────────── */}
+        <View className="flex-row items-center justify-center gap-10 mt-5 mb-6">
           {/* Gallery Button */}
           <PressScale onPress={pickImage}>
             <View className="w-14 h-14 rounded-full bg-zinc-100 items-center justify-center border border-zinc-200">
@@ -479,3 +559,39 @@ export default function ScanScreen() {
     </View>
   );
 }
+
+// ─── StyleSheet ───────────────────────────────────────────────────────────────
+const styles = StyleSheet.create({
+  // Container chip selector
+  containerRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingTop: 6,
+    paddingBottom: 2,
+  },
+  chip: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: '#F4F4F5',
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    gap: 3,
+  },
+  chipActive: {
+    backgroundColor: '#18181B',
+    borderColor: '#18181B',
+  },
+  chipLabel: {
+    fontSize: 11,
+    color: '#52525B',
+    fontFamily: 'Montserrat-SemiBold',
+  },
+  chipLabelActive: {
+    color: '#FFFFFF',
+  },
+});
