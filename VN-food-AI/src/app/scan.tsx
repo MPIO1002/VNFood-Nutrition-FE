@@ -5,12 +5,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
-  ArrowRight, BookmarkCheck, ChevronLeft, Plus, ImagePlus, SwitchCamera, X, Minus, Trash2
+  ChevronLeft, Plus, ImagePlus, SwitchCamera, X
 } from 'lucide-react-native';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import {
   ScrollView, Text, View, Pressable, Alert, ActivityIndicator, TouchableOpacity,
-  StyleSheet, TextInput, Animated, useWindowDimensions,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PressScale } from '../components/PressScale';
@@ -18,9 +18,11 @@ import { analyzeFoodImage } from '../services/api';
 import { CameraView, useCameraPermissions, CameraType } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 
-import { CONTAINERS, ContainerConfig, MAX_SIZE } from '../constants/containers';
-import { OverlayFrame } from '../components/OverlayFrame';
+import { CONTAINERS, ContainerConfig } from '../constants/containers';
 import { SwipeSlider } from '../components/SwipeSlider';
+import { ContainerSelector } from '../components/ContainerSelector';
+import { NutritionResults } from '../components/NutritionResults';
+import { FoodMaskOverlay } from '../components/FoodMaskOverlay';
 
 export default function ScanScreen() {
   const router = useRouter();
@@ -39,19 +41,23 @@ export default function ScanScreen() {
 
   // Container selection state
   const [selectedContainer, setSelectedContainer] = useState<ContainerConfig>(CONTAINERS[0]);
-  const [containerWidth, setContainerWidth]   = useState<number>(CONTAINERS[0].defaultSize);
-  const [containerHeight, setContainerHeight] = useState<number>(CONTAINERS[0].defaultHeight ?? CONTAINERS[0].defaultSize);
+  const [containerWidth, setContainerWidth]   = useState<number>(CONTAINERS[0].defaultSize ?? 20);
+  const [containerHeight, setContainerHeight] = useState<number>(CONTAINERS[0].defaultHeight ?? CONTAINERS[0].defaultSize ?? 20);
 
   const handleSelectContainer = (c: ContainerConfig) => {
     setSelectedContainer(c);
-    setContainerWidth(c.defaultSize);
-    setContainerHeight(c.defaultHeight ?? c.defaultSize);
+    if (c.shape === 'rect') {
+      setContainerWidth(c.defaultSize ?? 20);
+      setContainerHeight(c.defaultHeight ?? c.defaultSize ?? 20);
+    }
   };
 
   // API states
   const [loading, setLoading] = useState(false);
   const [resultImg, setResultImg] = useState<string | null>(null);
   const [foodData, setFoodData] = useState<any>(null);
+  const [allDetected, setAllDetected] = useState<any[]>([]);
+  const [imageSize, setImageSize] = useState<{width: number, height: number} | null>(null);
 
   useEffect(() => {
     if (activeImageUri) {
@@ -66,12 +72,13 @@ export default function ScanScreen() {
     try {
       const result = await analyzeFoodImage(selectedImageUri, {
         containerType: selectedContainer.key,
-        ...(selectedContainer.shape === 'circle'
-          ? { containerDiameterCm: containerWidth }
-          : { containerLengthCm: containerWidth, containerWidthCm: containerHeight }),
+        ...(selectedContainer.shape === 'rect'
+          ? { containerLengthCm: containerWidth, containerWidthCm: containerHeight }
+          : {}),
       });
       if (result.success) {
         if (result.visualBase64) setResultImg(result.visualBase64);
+        setAllDetected(result.allDetected || []);
         if (result.nutrition) {
           setFoodData(result.nutrition);
         } else {
@@ -192,6 +199,8 @@ export default function ScanScreen() {
       setActiveImageUri(null);
       setResultImg(null);
       setFoodData(null);
+      setAllDetected([]);
+      setImageSize(null);
       return;
     }
 
@@ -199,6 +208,7 @@ export default function ScanScreen() {
       const photo = await cameraRef.current.takePictureAsync({ base64: false });
       if (photo?.uri) {
         setActiveImageUri(photo.uri);
+        setImageSize({ width: photo.width, height: photo.height });
       }
     }
   };
@@ -212,6 +222,7 @@ export default function ScanScreen() {
     });
     if (!result.canceled && result.assets && result.assets.length > 0) {
       setActiveImageUri(result.assets[0].uri);
+      setImageSize({ width: result.assets[0].width, height: result.assets[0].height });
     }
   };
 
@@ -257,28 +268,7 @@ export default function ScanScreen() {
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
 
-        {/* ── Container Selector ─────────────────────────────────────────── */}
-        {!activeImageUri && (
-          <View style={styles.containerRow}>
-            {CONTAINERS.map(c => {
-              const active = c.key === selectedContainer.key;
-              const IconComponent = c.icon;
-              return (
-                <TouchableOpacity
-                  key={c.key}
-                  onPress={() => handleSelectContainer(c)}
-                  activeOpacity={0.75}
-                  style={[styles.chip, active && styles.chipActive]}
-                >
-                  <IconComponent size={24} color={active ? '#FFFFFF' : '#52525B'} strokeWidth={1.5} />
-                  <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>
-                    {c.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
+        {/* (Container Selector was moved below) */}
 
         {/* ── CAMERA / IMAGE FRAME ──────────────────────────────────────── */}
         <View className="aspect-square mx-4 mt-2 rounded-[36px] overflow-hidden bg-zinc-900 shadow-sm border border-zinc-200/50 relative">
@@ -291,17 +281,20 @@ export default function ScanScreen() {
                 style={StyleSheet.absoluteFill}
                 contentFit="cover"
               />
+              <FoodMaskOverlay items={allDetected} imageSize={imageSize} />
               <LinearGradient colors={['transparent', 'rgba(0,0,0,0.6)']} locations={[0.5, 1]} className="absolute bottom-0 left-0 right-0 h-1/2" />
             </>
           )}
 
-          {/* Overlay guide frame — only in live camera mode */}
+          {/* Camera hint — only in live camera mode */}
           {!activeImageUri && (
-            <OverlayFrame
-              shape={selectedContainer.shape}
-              widthRatio={selectedContainer.shape === 'circle' ? 0.72 : Math.min(0.92, containerWidth / MAX_SIZE * 0.9 + 0.4)}
-              heightRatio={selectedContainer.shape === 'circle' ? 0.72 : Math.min(0.85, containerHeight / MAX_SIZE * 0.9 + 0.3)}
-            />
+            <View className="absolute top-4 left-4 right-4 items-center z-20">
+              <View className="bg-black/40 rounded-full px-4 py-2 border border-white/20 backdrop-blur-md">
+                <Text className="text-white font-montserrat-medium text-xs text-center">
+                  Hãy chụp toàn bộ đĩa từ hướng từ trên xuống
+                </Text>
+              </View>
+            </View>
           )}
 
           {/* Loading overlay */}
@@ -330,29 +323,27 @@ export default function ScanScreen() {
           )}
         </View>
 
-        {/* ── Size Slider(s) — only in live camera mode ─────────────────── */}
+        {/* ── Container Selector ─────────────────────────────────────────── */}
         {!activeImageUri && (
-          <View className="mx-4 mt-3" style={{ gap: 8 }}>
-            {selectedContainer.shape === 'circle' ? (
-              <SwipeSlider
-                label="Đường kính"
-                value={containerWidth}
-                onChange={setContainerWidth}
-              />
-            ) : (
-              <>
-                <SwipeSlider
-                  label="Chiều dài (cm)"
-                  value={containerWidth}
-                  onChange={setContainerWidth}
-                />
-                <SwipeSlider
-                  label="Chiều rộng (cm)"
-                  value={containerHeight}
-                  onChange={setContainerHeight}
-                />
-              </>
-            )}
+          <ContainerSelector
+            selectedContainer={selectedContainer}
+            onSelectContainer={handleSelectContainer}
+          />
+        )}
+
+        {/* ── Size Slider(s) — only in live camera mode (Hộp) ─────────────────── */}
+        {!activeImageUri && selectedContainer.shape === 'rect' && (
+          <View className="mx-4 mt-1" style={{ gap: 8 }}>
+            <SwipeSlider
+              label="Chiều dài (cm)"
+              value={containerWidth}
+              onChange={setContainerWidth}
+            />
+            <SwipeSlider
+              label="Chiều rộng (cm)"
+              value={containerHeight}
+              onChange={setContainerHeight}
+            />
           </View>
         )}
 
@@ -389,209 +380,21 @@ export default function ScanScreen() {
 
         {/* NUTRITION INFO (Appears below when scanned) */}
         {activeImageUri && foodData && !loading && (
-          <View className="px-4 mt-2">
-            <View className="bg-white rounded-3xl p-5 flex-row items-center justify-between gap-4 shadow-sm border border-zinc-100 mb-6">
-              {/* Total energy */}
-              <View className="flex-1 min-w-0">
-                <Text className="font-montserrat-semibold text-[10px] text-zinc-500 uppercase tracking-widest">TỔNG NĂNG LƯỢNG</Text>
-                <View className="flex-row items-baseline mt-1">
-                  <Text className="font-montserrat-bold text-[32px] text-charcoal-pure leading-10 tracking-tight">{totals.kcal}</Text>
-                  <Text className="font-montserrat-semibold text-xs text-zinc-500 ml-1"> kcal</Text>
-                </View>
-              </View>
-
-              {/* Macro trio */}
-              <View className="flex-row gap-2">
-                <View className="items-center px-3 py-2.5 rounded-2xl min-w-[64px] bg-charcoal-pure shadow-sm">
-                  <Text className="font-montserrat-bold text-xs text-white/80">Pro</Text>
-                  <Text className="font-montserrat-semibold text-sm text-white mt-0.5">{totals.protein}g</Text>
-                </View>
-                <View className="items-center px-3 py-2.5 rounded-2xl min-w-[64px] bg-zinc-50 border border-zinc-100">
-                  <Text className="font-montserrat-bold text-xs text-zinc-500">Carb</Text>
-                  <Text className="font-montserrat-semibold text-sm text-charcoal-pure mt-0.5">{totals.carbs}g</Text>
-                </View>
-                <View className="items-center px-3 py-2.5 rounded-2xl min-w-[64px] bg-zinc-50 border border-zinc-100">
-                  <Text className="font-montserrat-bold text-xs text-zinc-500">Fat</Text>
-                  <Text className="font-montserrat-semibold text-sm text-charcoal-pure mt-0.5">{totals.fat}g</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* COMPONENTS BREAKDOWN */}
-            {foodData?.components && (
-              <View className="mb-6">
-                <View className="mb-4">
-                  <View className="flex-row items-baseline justify-between">
-                    <Text className="font-montserrat-bold text-lg text-charcoal-pure">Thành phần chi tiết</Text>
-                    <Text className="font-montserrat-semibold text-sm text-charcoal-pure">
-                      {foodData.components.length} <Text className="font-montserrat-medium text-xs text-zinc-500">món nhận diện</Text>
-                    </Text>
-                  </View>
-                  <Text className="font-montserrat-medium text-xs text-zinc-500 mt-1">
-                    Chạm +/- để cân đối khẩu phần thực tế
-                  </Text>
-                </View>
-
-                <View className="gap-3">
-                  {foodData.components.map((comp: any, idx: number) => (
-                    <View
-                      key={idx}
-                      className="bg-white border border-zinc-100 rounded-[20px] p-3 flex-row items-center shadow-sm"
-                    >
-                      {/* Text info */}
-                      <View className="flex-1 min-w-0 mr-2 pl-2 justify-center">
-                        <TextInput
-                          value={comp.name}
-                          onChangeText={(text) => updateComponentName(idx, text)}
-                          placeholder="Tên nguyên liệu"
-                          className="font-montserrat-semibold text-charcoal-pure"
-                          style={{
-                            padding: 0,
-                            margin: 0,
-                            fontSize: 16,
-                            lineHeight: 22,
-                            height: 22,
-                            textAlignVertical: 'center',
-                            includeFontPadding: false,
-                          }}
-                        />
-                        <View className="flex-row items-center mt-1" style={{ height: 16 }}>
-                          <Text
-                            className="font-montserrat-bold text-charcoal-pure"
-                            style={{ fontSize: 11, lineHeight: 16, includeFontPadding: false }}
-                          >
-                            {comp.calories}
-                          </Text>
-                          <Text
-                            className="font-montserrat-medium text-zinc-500"
-                            style={{ fontSize: 11, lineHeight: 16, includeFontPadding: false }}
-                            numberOfLines={1}
-                          >
-                            {' '}kcal • {comp.protein}g P • {comp.carbs}g C
-                          </Text>
-                        </View>
-                      </View>
-
-                      {/* Controls (+/- Pill) */}
-                      <View className="flex-row items-center bg-zinc-100/80 rounded-full px-1" style={{ height: 36 }}>
-                        <TouchableOpacity
-                          onPress={() => adjustWeight(idx, -10)}
-                          className="w-8 h-8 items-center justify-center"
-                        >
-                          <Minus size={16} color="#18181B" />
-                        </TouchableOpacity>
-
-                        <View className="flex-row items-center justify-center" style={{ minWidth: 48, height: 32 }}>
-                          <TextInput
-                            value={comp.weight.toString()}
-                            onChangeText={(text) => updateComponentWeight(idx, text)}
-                            keyboardType="numeric"
-                            textAlign="center"
-                            className="font-montserrat-bold text-charcoal-pure"
-                            style={{
-                              padding: 0,
-                              margin: 0,
-                              fontSize: 14,
-                              lineHeight: 18,
-                              height: 32,
-                              minWidth: 28,
-                              textAlignVertical: 'center',
-                              includeFontPadding: false,
-                            }}
-                          />
-                          <Text
-                            className="font-montserrat-semibold text-charcoal-pure"
-                            style={{ fontSize: 12, lineHeight: 18, marginLeft: 2, includeFontPadding: false }}
-                          >
-                            g
-                          </Text>
-                        </View>
-
-                        <TouchableOpacity
-                          onPress={() => adjustWeight(idx, 10)}
-                          className="w-8 h-8 items-center justify-center"
-                        >
-                          <Plus size={16} color="#18181B" />
-                        </TouchableOpacity>
-                      </View>
-
-                      {/* Nút xoá */}
-                      <TouchableOpacity
-                        onPress={() => removeComponent(idx)}
-                        className="ml-2 w-9 h-9 bg-red-50 rounded-full items-center justify-center"
-                      >
-                        <Trash2 size={16} color="#ef4444" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
-
-            {/* Bottom Actions */}
-            <View className="gap-3">
-              <PressScale onPress={addComponent}>
-                <View className="h-14 flex-row items-center justify-center gap-2 px-4 rounded-2xl bg-zinc-50 border border-zinc-200">
-                  <Plus size={20} color="#18181B" />
-                  <Text className="font-montserrat-semibold text-sm text-charcoal-pure">Thêm thành phần</Text>
-                </View>
-              </PressScale>
-
-              <PressScale onPress={handleSave} toValue={0.99}>
-                <View className={`h-16 flex-row items-center justify-between px-6 rounded-2xl shadow-sm ${saveState === 'saved' ? 'bg-green-600' : 'bg-charcoal-pure'}`}>
-                  <View className="flex-row items-center gap-3">
-                    <BookmarkCheck size={24} color="#FFFFFF" />
-                    <Text className="font-montserrat-bold text-base text-white">
-                      {saveState === 'saved' ? 'Đã ghi vào bữa trưa!' : saveState === 'saving' ? 'Đang lưu...' : 'Lưu nhật ký'}
-                    </Text>
-                  </View>
-                  {saveState === 'idle' && (
-                    <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/20">
-                      <ArrowRight size={18} color="#FFFFFF" />
-                    </View>
-                  )}
-                </View>
-              </PressScale>
-            </View>
-          </View>
+          <NutritionResults
+            foodData={foodData}
+            totals={totals}
+            saveState={saveState}
+            onUpdateComponentName={updateComponentName}
+            onUpdateComponentWeight={updateComponentWeight}
+            onAdjustWeight={adjustWeight}
+            onRemoveComponent={removeComponent}
+            onAddComponent={addComponent}
+            onSave={handleSave}
+          />
         )}
       </ScrollView>
     </View>
   );
 }
 
-// ─── StyleSheet ───────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  // Container chip selector
-  containerRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingTop: 6,
-    paddingBottom: 2,
-  },
-  chip: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: '#F4F4F5',
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-    gap: 3,
-  },
-  chipActive: {
-    backgroundColor: '#18181B',
-    borderColor: '#18181B',
-  },
-  chipLabel: {
-    fontSize: 11,
-    color: '#52525B',
-    fontFamily: 'Montserrat-SemiBold',
-  },
-  chipLabelActive: {
-    color: '#FFFFFF',
-  },
-});
+// Styles for this screen can go here if needed in the future
