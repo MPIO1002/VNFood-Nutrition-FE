@@ -1,234 +1,276 @@
-/**
- * CaloViet AI — Home Screen
- * Converted from Stitch AI HTML/Tailwind → React Native + TypeScript + Expo
- */
-
+import React from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import {
-  ArrowRight,
-  BarChart3,
-  Bell,
-  Box,
-  Camera,
-  CheckCircle2,
-  ChevronRight,
-  Layers,
-  Sliders,
-  Sparkles,
-  User,
-} from 'lucide-react-native';
-import { ScrollView, Text, View, Pressable, Alert } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PressScale } from '../components/PressScale';
-import { CalorieRing } from '../components/CalorieRing';
+import { Mail, Lock, Eye, EyeOff, User, Globe, ChevronDown, CheckSquare, Square, ArrowRight, Compass, Sparkles, Coffee } from 'lucide-react-native';
+import Svg, { Path } from 'react-native-svg';
+import { useAuthScreen } from '../hooks/useAuthScreen';
 
-// ─── How-It-Works data ───────────────────────────────────────────────────────
-const HOW_STEPS = [
-  {
-    key: 'step1',
-    badge: 'BƯỚC 1',
-    Icon: Box,
-    title: 'Chụp góc 45°',
-    desc: 'Ước tính tự động độ sâu đĩa, kích cỡ tô phở và khẩu phần thực tế trên bàn ăn.',
-    footerLabel: 'Cảm biến Depth-AI',
-    FooterIcon: Sparkles,
-  },
-  {
-    key: 'step2',
-    badge: 'BƯỚC 2',
-    Icon: Layers,
-    title: 'Bóc tách món & topping',
-    desc: 'Phân tách riêng rẽ: cơm, thịt nướng, chả trứng, rau thơm và nước xốt đi kèm.',
-    footerLabel: 'Phân rã đa đối tượng',
-    FooterIcon: Sliders,
-  },
-  {
-    key: 'step3',
-    badge: 'BƯỚC 3',
-    Icon: BarChart3,
-    title: 'Tính Calo & Macro',
-    desc: 'Quy đổi thành khối lượng gram chuẩn viện dinh dưỡng và cộng dồn nhật ký trong ngày.',
-    footerLabel: 'Độ chính xác 94.8%',
-    FooterIcon: CheckCircle2,
-  },
-];
+const AppleIcon = ({ size = 20, color = "#000" }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+    <Path d="M12 2.04C12.05 2.04 12.09 2.04 12.14 2.04C13.25 2.07 14.39 2.65 15.11 3.48C15.75 4.21 16.22 5.25 16.09 6.26C15.01 6.33 13.92 5.76 13.18 4.93C12.48 4.15 11.96 3.09 12 2.04ZM17.15 7.1C16.14 7.03 15.04 7.72 14.5 7.72C13.9 7.72 13.06 7.14 12.14 7.16C10.97 7.17 9.87 7.84 9.27 8.9C8.03 11.05 8.94 14.24 10.15 15.98C10.74 16.82 11.43 17.78 12.35 17.74C13.23 17.71 13.58 17.18 14.65 17.18C15.7 17.18 16.01 17.74 16.94 17.71C17.89 17.68 18.49 16.82 19.07 15.98C19.74 15.01 20.02 14.07 20.03 14C19.99 13.98 18.23 13.3 18.21 11.36C18.19 9.7 19.57 8.87 19.64 8.83C18.88 7.72 17.72 7.14 17.15 7.1Z" />
+  </Svg>
+);
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
-export default function HomeScreen() {
-  const router = useRouter();
+const GoogleIcon = ({ size = 20 }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+    <Path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+    <Path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+    <Path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+  </Svg>
+);
+
+export default function AuthScreen() {
+  const {
+    isLogin,
+    setIsLogin,
+    agreeTerms,
+    setAgreeTerms,
+    rememberMe,
+    setRememberMe,
+    password,
+    setPassword,
+    showPassword,
+    setShowPassword,
+    strength,
+    handleAuth,
+  } = useAuthScreen();
 
   return (
-    <View className="flex-1 bg-surface">
-      <SafeAreaView edges={['top']} className="bg-surface/90 border-b border-border-hairline">
-        <View className="h-16 px-4 flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <Image
-              source={require('../../assets/images/logo.png')}
-              style={{ width: 32, height: 32 }}
-              contentFit="contain"
-            />
-            <View>
-              <Text className="font-montserrat-bold text-xl text-charcoal-pure tracking-tight leading-6">CaloViet</Text>
-              <Text className="font-montserrat-medium text-xs text-zinc-500 tracking-wide">Nhật Ký</Text>
-            </View>
-          </View>
-          <View className="flex-row items-center gap-2">
-            <Pressable className="w-10 h-10 rounded-full items-center justify-center" accessibilityLabel="Thông báo">
-              <Bell size={22} color="#52525B" />
-            </Pressable>
-            <View className="w-8 h-8 rounded-full bg-charcoal-pure overflow-hidden">
-              <Image
-                source={require('../../assets/images/avatartion.png')}
-                style={{ width: '100%', height: '100%' }}
-                contentFit="cover"
-              />
-            </View>
-          </View>
-        </View>
-      </SafeAreaView>
-
-      <ScrollView
-        className="flex-1 bg-surface"
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, gap: 16 }}
-        showsVerticalScrollIndicator={false}
+    <SafeAreaView className="flex-1 bg-[#FDFDFE]" edges={['top', 'bottom']}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* Greeting row */}
-        <View className="flex-row items-center justify-between pt-1">
-          <View className="flex-row items-center gap-2.5 flex-1">
-            <View className="flex-1 min-w-0">
-              <Text className="font-montserrat-semibold text-base text-charcoal-pure tracking-tight">Chào Phúc, sẵn sàng chưa?</Text>
-              <Text className="font-montserrat text-xs text-zinc-500 mt-0.5">
-                Mục tiêu hôm nay:{' '}
-                <Text className="font-montserrat-bold text-charcoal-pure">2,100 kcal</Text>
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Calorie Ring Hero Card */}
-        <CalorieRing goal={2100} consumed={650} burned={320} />
-
-        {/* Dark Banner */}
-        <View className="rounded-[24px] overflow-hidden bg-charcoal-pure border border-zinc-800 shadow-lg relative">
-          <Image
-            source="https://lh3.googleusercontent.com/aida-public/AB6AXuDyg3hVrZMCHY4qzuuPofJUqtIWaH5Rj9_saw83EvBM3EeiVLE1a_hioeco98LMeJqxw3UpnLSdzIzB4Y9Qcgxr0uFQ_w0PPsc2vOwAuHAIL6ftQnk2IBI8wZVkE2fgPsYFL81iPRl97T6V3At8hzK2qHdisX7ea8TDw8Hy17LcmSDc5FNOsC2ox4amdoOlPBfaDCkQj5ZBmMBehQ_5S-5YIv1bejGuh0dUsdD-hMEJr0SzGrPINkF8xw"
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-            contentFit="cover"
-          />
-          <View className="absolute top-0 left-0 right-0 bottom-0 bg-zinc-950/70" />
-          <View className="p-5 z-10">
-            <View className="flex-row items-center gap-1.5 self-start px-3 py-1.5 rounded-full bg-white/10 border border-white/15 mb-3">
-              <Sparkles size={12} color="#E4E4E7" />
-              <Text className="font-montserrat-bold text-[10px] text-white uppercase tracking-widest">AI Food Scanner</Text>
-            </View>
-            <Text className="font-montserrat-bold text-base text-white tracking-tight mb-1.5 leading-6">
-              Nhận diện tức thì các món ăn Việt
-            </Text>
-            <Text className="font-montserrat text-[13px] text-zinc-300 leading-5 mb-3">
-              Thuật toán chuyên sâu phân tách thành phần các món ăn tự động.
-            </Text>
-            <View className="self-start px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-              <Text className="font-montserrat-medium text-xs text-zinc-200">
-                Ước tính thể tích tô và độ sâu đĩa
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Snap CTA */}
-        <PressScale onPress={() => router.push('/scan')}>
-          <View className="rounded-2xl bg-charcoal-pure border border-zinc-700 shadow-xl h-14 flex-row items-center justify-center gap-2.5 px-6">
-            <Camera size={24} color="#FFFFFF" />
-            <Text className="font-montserrat-bold text-base text-white tracking-tight flex-1 text-center">Quét bữa ăn ngay</Text>
-            <ArrowRight size={20} color="#FFFFFF" />
-          </View>
-        </PressScale>
-
-        {/* How It Works */}
-        <View className="gap-3">
-          <View className="flex-row items-center justify-between px-0.5">
-            <View>
-              <Text className="font-montserrat-bold text-base text-charcoal-pure tracking-tight">Cách CaloViet AI hoạt động</Text>
-              <Text className="font-montserrat text-xs text-zinc-500 mt-0.5">Quy trình lượng hóa món ăn chỉ trong 2 giây</Text>
-            </View>
-            <Pressable>
-              <Text className="font-montserrat-semibold text-xs text-charcoal-pure">Xem thêm</Text>
-            </Pressable>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingLeft: 2, paddingRight: 16, gap: 14 }}
-          >
-            {HOW_STEPS.map(({ key, badge, Icon, title, desc, footerLabel, FooterIcon }) => (
-              <View key={key} className="w-[240px] p-4 rounded-2xl bg-canvas-white border border-border-hairline justify-between shadow-sm">
-                <View>
-                  <View className="w-10 h-10 rounded-xl bg-zinc-100 border border-zinc-200/80 items-center justify-center mb-3">
-                    <Icon size={22} color="#18181B" />
-                  </View>
-                  <View className="self-start px-2 py-0.5 rounded bg-zinc-100 mb-1.5">
-                    <Text className="font-montserrat-bold text-[10px] text-zinc-600">{badge}</Text>
-                  </View>
-                  <Text className="font-montserrat-bold text-[15px] text-charcoal-pure leading-snug mb-1.5">{title}</Text>
-                  <Text className="font-montserrat text-xs text-zinc-500 leading-relaxed">{desc}</Text>
-                </View>
-                <View className="mt-4 pt-3 border-t border-zinc-100 flex-row items-center justify-between">
-                  <Text className="font-montserrat-semibold text-[11px] text-charcoal-pure">{footerLabel}</Text>
-                  <FooterIcon size={14} color="#18181B" />
-                </View>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Recent log */}
-        <View className="gap-3">
-          <View className="flex-row items-center justify-between px-0.5">
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          {/* Header */}
+          <View className="px-5 py-4 flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
-              <Text className="font-montserrat-bold text-base text-charcoal-pure tracking-tight">Bữa sáng đã ghi nhận</Text>
-              <View className="px-2.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200">
-                <Text className="font-montserrat-bold text-[11px] text-charcoal-pure">650 kcal</Text>
-              </View>
-            </View>
-            <Pressable>
-              <Text className="font-montserrat-semibold text-xs text-charcoal-pure">Chỉnh sửa</Text>
-            </Pressable>
-          </View>
-          <View className="p-4 rounded-3xl bg-canvas-white border border-border-hairline flex-row items-center gap-3 shadow-sm">
-            <View className="w-16 h-16 rounded-2xl overflow-hidden shrink-0">
               <Image
-                source="https://lh3.googleusercontent.com/aida-public/AB6AXuBfkkjEakLFXs1rjrfu1h-DyUsiHkgnY1fy2sddlG_m_PRuSGCd6w8LfxN7v2KCQXX22BE5jHwp3YcHqptGe-StzVsUz1hS6Kj10nwYO_6pRzg9U42Q5NEiN_AOfqNvP6B06MPTmb-QKWPKEtywietai5HLV3wRScxqBrQ39pcH5Fre4MzQ7yB3AW2aK0ZImmdJBCjSVmJY0RtLX8aOwTgUz-_p2eTGuhi_pej84IqR"
-                style={{ width: '100%', height: '100%' }}
-                contentFit="cover"
+                source={require('../../assets/images/logo.png')}
+                style={{ width: 32, height: 32 }}
+                contentFit="contain"
               />
+              <Text className="font-montserrat-bold text-lg text-charcoal-pure">CaloViet AI</Text>
             </View>
-            <View className="flex-1 min-w-0">
-              <View className="flex-row items-center justify-between gap-1">
-                <Text className="font-montserrat-bold text-[15px] text-charcoal-pure flex-1" numberOfLines={1}>Phở bò tái nạm gầu</Text>
-                <Text className="font-montserrat-bold text-sm text-charcoal-pure shrink-0">520 kcal</Text>
+            <View className="flex-row items-center gap-3">
+              <View className="flex-row items-center gap-1.5 bg-zinc-100 px-3 py-1.5 rounded-full">
+                <Globe size={14} color="#52525B" />
+                <Text className="font-montserrat-medium text-xs text-zinc-700">VIE</Text>
+                <ChevronDown size={14} color="#52525B" />
               </View>
-              <Text className="font-montserrat text-xs text-zinc-500 mt-1" numberOfLines={1}>
-                1 tô vừa (580g) • Nước dùng trong, ít béo
-              </Text>
-              <View className="flex-row gap-1.5 mt-2">
-                <View className="px-2 py-0.5 rounded bg-slate-100 border border-slate-300">
-                  <Text className="font-montserrat-bold text-[10px] text-slate-700">P: 34g</Text>
-                </View>
-                <View className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200">
-                  <Text className="font-montserrat-bold text-[10px] text-amber-800">C: 62g</Text>
-                </View>
-                <View className="px-2 py-0.5 rounded bg-rose-50 border border-rose-200">
-                  <Text className="font-montserrat-bold text-[10px] text-rose-800">F: 14g</Text>
-                </View>
+              <View className="w-9 h-9 rounded-full bg-charcoal-pure items-center justify-center">
+                <User size={18} color="#FFF" />
               </View>
             </View>
           </View>
-        </View>
 
-        <View className="h-28" />
-      </ScrollView>
-    </View>
+          {/* Main Content */}
+          <View className="px-5 pt-6 pb-10">
+            {/* Logo & Title */}
+            <View className="items-center mb-8">
+              <View className="w-20 h-20 mb-4 relative shadow-lg">
+                <Image
+                  source={require('../../assets/images/logo.png')}
+                  style={{ width: '100%', height: '100%' }}
+                  contentFit="contain"
+                />
+                <View className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm border border-zinc-100">
+                  <Sparkles size={14} color="#27272A" />
+                </View>
+              </View>
+              <Text className="font-montserrat-bold text-[28px] text-charcoal-pure mb-2">CaloViet AI</Text>
+              <Text className="font-montserrat text-[13px] text-zinc-500 text-center px-4 leading-5">
+                Theo dõi calo & dinh dưỡng thông minh chuẩn món Việt
+              </Text>
+            </View>
+
+            {/* Tabs */}
+            <View className="flex-row bg-[#F2F1F3] p-1.5 rounded-2xl mb-6">
+              <TouchableOpacity
+                className={`flex-1 py-3 rounded-xl items-center justify-center ${isLogin ? 'bg-charcoal-pure shadow-sm' : 'shadow-none'}`}
+                onPress={() => setIsLogin(true)}
+              >
+                <Text className={`font-montserrat-medium text-sm ${isLogin ? 'text-white' : 'text-zinc-500'}`}>
+                  Đăng nhập
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className={`flex-1 py-3 rounded-xl items-center justify-center ${!isLogin ? 'bg-charcoal-pure shadow-sm' : 'shadow-none'}`}
+                onPress={() => setIsLogin(false)}
+              >
+                <Text className={`font-montserrat-medium text-sm ${!isLogin ? 'text-white' : 'text-zinc-500'}`}>
+                  Đăng ký
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Form Container */}
+            <View className="bg-white rounded-[24px] p-5 shadow-sm border border-zinc-100 mb-6">
+              {!isLogin && (
+                <View className="mb-4">
+                  <Text className="font-montserrat-bold text-[10px] text-zinc-700 tracking-wider mb-2 uppercase">Họ và tên</Text>
+                  <View className="flex-row items-center bg-[#F6F5F6] rounded-xl px-4 h-12">
+                    <User size={18} color="#A1A1AA" />
+                    <TextInput
+                      className="flex-1 ml-3 font-montserrat text-[14px] text-charcoal-pure"
+                      placeholder="Calo Việt"
+                      placeholderTextColor="#A1A1AA"
+                    />
+                  </View>
+                </View>
+              )}
+
+              <View className="mb-4">
+                <Text className="font-montserrat-bold text-[10px] text-zinc-700 tracking-wider mb-2 uppercase">
+                  {isLogin ? 'Email / Số điện thoại' : 'Email hoặc Số điện thoại'}
+                </Text>
+                <View className="flex-row items-center bg-[#F6F5F6] rounded-xl px-4 h-12">
+                  <Mail size={18} color="#A1A1AA" />
+                  <TextInput
+                    className="flex-1 ml-3 font-montserrat text-[14px] text-charcoal-pure"
+                    placeholder="caloviet@example.com"
+                    placeholderTextColor="#A1A1AA"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+              </View>
+
+              <View className="mb-4">
+                <Text className="font-montserrat-bold text-[10px] text-zinc-700 tracking-wider mb-2 uppercase">Mật khẩu</Text>
+                <View className="flex-row items-center bg-[#F6F5F6] rounded-xl px-4 h-12">
+                  <Lock size={18} color="#A1A1AA" />
+                  <TextInput
+                    className="flex-1 ml-3 font-montserrat text-[14px] text-charcoal-pure"
+                    placeholder={isLogin ? '••••••••' : 'Tối thiểu 8 ký tự'}
+                    placeholderTextColor="#A1A1AA"
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
+                  />
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <Eye size={18} color="#71717A" /> : <EyeOff size={18} color="#71717A" />}
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {!isLogin && (
+                <>
+                  <View className="flex-row items-center justify-between mb-2">
+                    <Text className="font-montserrat text-[11px] text-zinc-500">Độ mạnh mật khẩu:</Text>
+                    {password.length > 0 && (
+                      <Text className={`font-montserrat-medium text-[11px] ${strength.textColor}`}>{strength.label}</Text>
+                    )}
+                  </View>
+                  <View className="flex-row gap-1.5 mb-5">
+                    <View className={`flex-1 h-1 rounded-full ${strength.score >= 1 ? strength.color : 'bg-zinc-200'}`} />
+                    <View className={`flex-1 h-1 rounded-full ${strength.score >= 2 ? strength.color : 'bg-zinc-200'}`} />
+                    <View className={`flex-1 h-1 rounded-full ${strength.score >= 3 ? strength.color : 'bg-zinc-200'}`} />
+                  </View>
+
+                  <View className="mb-5">
+                    <Text className="font-montserrat-bold text-[10px] text-zinc-700 tracking-wider mb-2 uppercase">Xác nhận mật khẩu</Text>
+                    <View className="flex-row items-center bg-[#F6F5F6] rounded-xl px-4 h-12">
+                      <Lock size={18} color="#A1A1AA" />
+                      <TextInput
+                        className="flex-1 ml-3 font-montserrat text-[14px] text-charcoal-pure"
+                        placeholder="Nhập lại mật khẩu"
+                        placeholderTextColor="#A1A1AA"
+                        secureTextEntry
+                      />
+                    </View>
+                  </View>
+
+                  <TouchableOpacity
+                    className="flex-row items-start gap-2.5 mb-6"
+                    onPress={() => setAgreeTerms(!agreeTerms)}
+                  >
+                    <View className="mt-0.5">
+                      {agreeTerms ? <CheckSquare size={16} color="#27272A" /> : <Square size={16} color="#A1A1AA" />}
+                    </View>
+                    <Text className="flex-1 font-montserrat text-[12px] text-zinc-500 leading-4">
+                      Tôi đồng ý với <Text className="font-montserrat-semibold text-charcoal-pure">Điều khoản dịch vụ</Text> & <Text className="font-montserrat-semibold text-charcoal-pure">Chính sách bảo mật</Text> của CaloViet AI
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {isLogin && (
+                <View className="flex-row items-center justify-between mb-6 mt-1">
+                  <TouchableOpacity
+                    className="flex-row items-center gap-2"
+                    onPress={() => setRememberMe(!rememberMe)}
+                  >
+                    {rememberMe ? <CheckSquare size={16} color="#27272A" /> : <Square size={16} color="#A1A1AA" />}
+                    <Text className="font-montserrat text-[13px] text-zinc-500">Ghi nhớ đăng nhập</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity>
+                    <Text className="font-montserrat-semibold text-[13px] text-charcoal-pure">Quên mật khẩu?</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <TouchableOpacity
+                className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2"
+                onPress={handleAuth}
+              >
+                <Text className="font-montserrat-bold text-[15px] text-white">
+                  {isLogin ? 'Đăng nhập ngay' : 'Tạo tài khoản mới'}
+                </Text>
+                <ArrowRight size={18} color="#FFF" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Divider */}
+            <View className="flex-row items-center mb-6 px-4">
+              <View className="flex-1 h-[1px] bg-zinc-200" />
+              <Text className="font-montserrat-medium text-[11px] text-zinc-500 mx-3 uppercase tracking-wider">
+                {isLogin ? 'Hoặc tiếp tục với' : 'Hoặc đăng ký nhanh với'}
+              </Text>
+              <View className="flex-1 h-[1px] bg-zinc-200" />
+            </View>
+
+            {/* Social Buttons */}
+            <View className="flex-row gap-4 mb-8">
+              <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2.5 h-12 bg-white rounded-xl border border-zinc-100 shadow-sm">
+                <AppleIcon size={20} />
+                <Text className="font-montserrat-semibold text-[14px] text-charcoal-pure">Apple ID</Text>
+              </TouchableOpacity>
+              <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2.5 h-12 bg-white rounded-xl border border-zinc-100 shadow-sm">
+                <GoogleIcon size={20} />
+                <Text className="font-montserrat-semibold text-[14px] text-charcoal-pure">Google</Text>
+              </TouchableOpacity>
+            </View>
+
+            {isLogin ? (
+              <TouchableOpacity
+                className="flex-row items-center justify-center gap-2 mb-8"
+                onPress={handleAuth}
+              >
+                <Compass size={16} color="#71717A" />
+                <Text className="font-montserrat-medium text-[13px] text-zinc-500">
+                  Tiếp tục với tư cách Khách (Duyệt nhanh)
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                className="flex-row items-center justify-center mb-8"
+                onPress={() => setIsLogin(true)}
+              >
+                <Text className="font-montserrat text-[13px] text-zinc-500">
+                  Đã có tài khoản? <Text className="font-montserrat-bold text-charcoal-pure">Đăng nhập ngay</Text>
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <Text className="font-montserrat text-[11px] text-zinc-400 text-center leading-4 px-4">
+              Bằng việc tiếp tục, bạn đồng ý với <Text className="font-montserrat-medium text-zinc-600">Điều khoản</Text> & <Text className="font-montserrat-medium text-zinc-600">Chính sách bảo mật</Text> của CaloViet AI.
+            </Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
