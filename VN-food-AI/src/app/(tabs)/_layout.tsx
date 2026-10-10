@@ -2,13 +2,10 @@ import { Tabs } from 'expo-router';
 import { View, Text, Pressable, Platform } from 'react-native';
 import { Book, TrendingUp, ScanText, UtensilsCrossed, UserCircle } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { PressScale } from './PressScale';
+import { PressScale } from '../../components/PressScale';
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
-  
-  const currentRouteName = state.routes[state.index]?.name;
-  if (currentRouteName === 'index') return null;
 
   return (
     <View 
@@ -44,7 +41,6 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         // Configuration based on route name
         let Icon = Book;
         let label = 'Nhật ký';
-        if (route.name === 'index') return null;
         
         if (route.name === 'analytics') {
           Icon = TrendingUp;
@@ -116,14 +112,13 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   );
 }
 
-export default function AppTabs() {
+export default function TabsLayout() {
   return (
     <Tabs
       tabBar={props => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" />
-      <Tabs.Screen name="home" />
       <Tabs.Screen name="analytics" />
       <Tabs.Screen name="scan" />
       <Tabs.Screen name="menu" />

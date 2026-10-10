@@ -13,16 +13,16 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PressScale } from '../components/PressScale';
-import { analyzeFoodImage } from '../services/api';
+import { PressScale } from '@/components/PressScale';
+import { analyzeFoodImage } from '@/services/api';
 import { CameraView, useCameraPermissions, CameraType } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 
-import { CONTAINERS, ContainerConfig } from '../constants/containers';
-import { SwipeSlider } from '../components/SwipeSlider';
-import { ContainerSelector } from '../components/ContainerSelector';
-import { NutritionResults } from '../components/NutritionResults';
-import { FoodMaskOverlay } from '../components/FoodMaskOverlay';
+import { CONTAINERS, ContainerConfig } from '@/constants/containers';
+import { SwipeSlider } from '@/components/SwipeSlider';
+import { ContainerSelector } from '@/components/ContainerSelector';
+import { NutritionResults } from '@/components/NutritionResults';
+import { FoodMaskOverlay } from '@/components/FoodMaskOverlay';
 
 export default function ScanScreen() {
   const router = useRouter();
