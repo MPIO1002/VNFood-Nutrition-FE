@@ -1,0 +1,44 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit",
+    "source.sortMembers": "explicit"
+  },
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "todo-tree.general.tags": ["HACK", "BUG", "TODO", "KNOWN-ISSUE", "REMINDER"],
+  "todo-tree.highlights.customHighlight": {
+    "TODO": {
+      "icon": "checklist",
+      "iconColour": "#00ff1e",
+      "gutterIcon": true,
+      "foreground": "#ffffff",
+      "background": "#00ff1e",
+      "type": "whole-line"
+    },
+    "BUG": {
+      "icon": "bug",
+      "iconColour": "#ff0000",
+      "foreground": "#ffffff",
+      "background": "#ff0000",
+      "gutterIcon": true,
+      "type": "whole-line"
+    },
+    "KNOWN-ISSUE": {
+      "icon": "alert",
+      "iconColour": "#fff829",
+      "foreground": "#ffffff",
+      "background": "#fff829",
+      "gutterIcon": true,
+      "type": "whole-line"
+    },
+    "REMINDER": {
+      "icon": "eye",
+      "iconColour": "#42ddf5",
+      "foreground": "#ffffff",
+      "background": "#42ddf5",
+      "gutterIcon": true,
+      "type": "whole-line"
+    }
+  },
+}
