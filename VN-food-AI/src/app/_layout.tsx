@@ -1,4 +1,4 @@
-import '../global.css';
+import "../global.css";
 
 import {
   Montserrat_400Regular,
@@ -6,18 +6,27 @@ import {
   Montserrat_600SemiBold,
   Montserrat_700Bold,
   useFonts,
-} from '@expo-google-fonts/montserrat';
-import { DarkTheme, DefaultTheme, ThemeProvider, Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+} from "@expo-google-fonts/montserrat";
+import {
+  DarkTheme,
+  DefaultTheme,
+  Stack,
+  ThemeProvider
+} from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { Appearance, useColorScheme } from "react-native";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { AnimatedSplashOverlay } from "@/components/animated-icon";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  //REMINDER: Force light mode for testing, remember to remove in the fututre
+  Appearance.setColorScheme("light");
 
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular,
@@ -35,11 +44,13 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <StatusBar style="auto"></StatusBar>
       <AnimatedSplashOverlay />
-      <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
+      <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="register" />
       </Stack>
     </ThemeProvider>
   );
