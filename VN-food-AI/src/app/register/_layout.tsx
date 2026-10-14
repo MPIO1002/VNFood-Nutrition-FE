@@ -2,7 +2,7 @@ import { useProgressStep } from "@/components/progress/step/hooks/useProgressSte
 import ProgressStep from "@/components/progress/step/ProgressStep";
 import { Image } from "expo-image";
 import { router, Tabs, usePathname } from "expo-router";
-import { ArrowLeft } from "lucide-react-native";
+import { ArrowLeft, DotIcon } from "lucide-react-native";
 import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -61,15 +61,20 @@ function UserProgress() {
 
   return (
     <View className="w-full bg-gray-100 h-15 justify-center px-3 pt-5">
-      <Text className="font-montserrat">
-        Bước {currentStep + 1} trên {stepLength}
-      </Text>
+      <View className="w-full flex-row items-center">
+        <Text className="font-montserrat">
+          Bước {currentStep + 1} trên {stepLength}
+        </Text>
+        <DotIcon />
+        <Text className="font-montserrat">Thể trạng ban đầu</Text>
+      </View>
       <View className="w-full">
         <ProgressStep
           currentStep={currentStep}
           totalSteps={stepLength}
           color={"#E4E4E7"}
-          finishedColor={"#000000"}></ProgressStep>
+          currentColor={"#000000"}
+          finishedColor={"#03fc2c"}></ProgressStep>
       </View>
     </View>
   );
