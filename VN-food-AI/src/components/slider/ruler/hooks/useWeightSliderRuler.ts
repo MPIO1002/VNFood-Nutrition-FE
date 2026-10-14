@@ -12,7 +12,7 @@ import {
   withTiming,
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
-import { SliderRulerProps } from "../WeightSliderRuler";
+import { SliderRulerProps } from "../ruler";
 
 const decimalPlaces = (value: number) => {
   const text = String(value);
