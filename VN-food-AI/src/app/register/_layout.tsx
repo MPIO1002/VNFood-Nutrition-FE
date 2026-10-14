@@ -87,6 +87,7 @@ export default function InputUserInformationLayout() {
       <InputUserInformationTopPanel></InputUserInformationTopPanel>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Tabs
+          backBehavior="history"
           screenOptions={{
             headerShown: false,
             animation: "shift",

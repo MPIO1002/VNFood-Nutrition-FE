@@ -36,7 +36,7 @@ export default function InputHeightScreen() {
     externalScrollRef: screenScrollRef,
   };
 
-  const ftProps = {
+  const ftProps: SliderRulerProps = {
     min: 39,
     max: 98,
     initialValue: 1,
@@ -64,30 +64,34 @@ export default function InputHeightScreen() {
                 (BMR) và định lượng thâm hụt năng lượng chính xác.
               </Text>
             </View>
-            <View className="flex-row w-full h-fit justify-center p-1.5">
-              <TouchableOpacity
-                className={`w-fit h-fit py-3 px-5 rounded-full items-center justify-center ${isCmMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-                onPress={() => setIsCmMode(true)}>
-                <Text
-                  className={`font-montserrat-medium text-sm ${isCmMode ? "text-white" : "text-zinc-500"}`}>
-                  cm
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className={`w-fit h-fit py-3 px-5 rounded-full items-center justify-center ${!isCmMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-                onPress={() => setIsCmMode(false)}>
-                <View className="flex-row justify-center items-center w-fit">
+            <View className="w-full h-fit items-center p-1.5">
+              <View className="flex-row rounded-full bg-gray-200">
+                <TouchableOpacity
+                  className={`w-fit h-fit py-3 px-5 items-center rounded-full justify-center ${isCmMode ? "bg-charcoal-pure shadow-sm" : "bg-gray-200 shadow-none"}`}
+                  onPress={() => setIsCmMode(true)}>
                   <Text
-                    className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
-                    ft
+                    className={`font-montserrat-medium text-sm ${isCmMode ? "text-white" : "text-zinc-500"}`}>
+                    cm
                   </Text>
-                  <Dot width={10} color={!isCmMode ? "#fff" : "#71717A"}></Dot>
-                  <Text
-                    className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
-                    in
-                  </Text>
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className={`w-fit h-fit py-3 px-5 rounded-full items-center justify-center ${!isCmMode ? "bg-charcoal-pure shadow-sm" : "bg-gray-200 shadow-none"}`}
+                  onPress={() => setIsCmMode(false)}>
+                  <View className="flex-row justify-center items-center w-fit">
+                    <Text
+                      className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
+                      ft
+                    </Text>
+                    <Dot
+                      width={10}
+                      color={!isCmMode ? "#fff" : "#71717A"}></Dot>
+                    <Text
+                      className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
+                      in
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
             <View className="w-full">
               <View className="w-full h-[300px] relative">

@@ -43,23 +43,25 @@ export default function InputWeightScreen() {
           định lượng thâm hụt năng lượng chính xác.
         </Text>
       </View>
-      <View className="flex-row w-full h-fit justify-center p-1.5">
-        <TouchableOpacity
-          className={`w-fit h-fit py-3 px-5 rounded-full items-center justify-center ${isKgMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-          onPress={() => setIsKgMode(true)}>
-          <Text
-            className={`font-montserrat-medium text-sm ${isKgMode ? "text-white" : "text-zinc-500"}`}>
-            kg
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          className={`w-fit h-fit py-3 px-5 rounded-full items-center justify-center ${!isKgMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-          onPress={() => setIsKgMode(false)}>
-          <Text
-            className={`font-montserrat-medium text-sm ${!isKgMode ? "text-white" : "text-zinc-500"}`}>
-            lbs
-          </Text>
-        </TouchableOpacity>
+      <View className="w-full h-fit items-center p-1.5">
+        <View className="flex-row rounded-full bg-gray-200">
+          <TouchableOpacity
+            className={`w-fit h-fit py-3 px-5 rounded-full items-center justify-center ${isKgMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
+            onPress={() => setIsKgMode(true)}>
+            <Text
+              className={`font-montserrat-medium text-sm ${isKgMode ? "text-white" : "text-zinc-500"}`}>
+              kg
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className={`w-fit h-fit py-3 px-5 rounded-full items-center justify-center ${!isKgMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
+            onPress={() => setIsKgMode(false)}>
+            <Text
+              className={`font-montserrat-medium text-sm ${!isKgMode ? "text-white" : "text-zinc-500"}`}>
+              lbs
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <View className="w-full h-[270px] relative">
         <View
