@@ -23,7 +23,7 @@ export default function InputWeightScreen() {
     controlRef: kgRulerController,
   };
 
-  const lbsProps = {
+  const lbsProps: SliderRulerProps = {
     min: 2.2,
     max: 661,
     initialValue: 2.2,
@@ -61,49 +61,51 @@ export default function InputWeightScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-      {isKgMode ? (
-        <View className="w-full h-[270px] p-3 bg-white rounded">
+      <View className="w-full h-[270px] relative">
+        <View
+          className="absolute inset-0 p-3 bg-white rounded"
+          style={{ opacity: isKgMode ? 1 : 0 }}
+          pointerEvents={isKgMode ? "auto" : "none"}>
           <GestureHandlerRootView>
-            <WeightSliderRuler {...kgProps} />
+            <WeightSliderRuler key="kg-ruler" {...kgProps} />
           </GestureHandlerRootView>
-          <View className="w-full p-3 gap-2 flex-row justify-center items-center">
-            <Pressable
-              className="w-[50px] h-[50px] rounded-full bg-gray-300 items-center justify-center active:opacity-40"
-              onPress={() => kgRulerController.current?.stepBy?.(-1)}>
-              <Minus color={"black"}></Minus>
-            </Pressable>
-            <View className="flex-grow">
-              <Text className="font-montserrat">{`Chạm để tinh chỉnh ±${kgProps.step || 0}kg`}</Text>
-            </View>
-            <Pressable
-              className="w-[50px] h-[50px] rounded-full bg-gray-300 items-center justify-center active:opacity-40"
-              onPress={() => kgRulerController.current?.stepBy?.(1)}>
-              <Plus color={"black"}></Plus>
-            </Pressable>
-          </View>
         </View>
-      ) : (
-        <View className="w-full h-[270px] p-3 bg-white rounded">
+        <View
+          className="absolute inset-0 p-3 bg-white rounded"
+          style={{ opacity: isKgMode ? 0 : 1 }}
+          pointerEvents={isKgMode ? "none" : "auto"}>
           <GestureHandlerRootView>
-            <WeightSliderRuler {...lbsProps} tickGap={40} />
+            <WeightSliderRuler key="lbs-ruler" {...lbsProps} tickGap={40} />
           </GestureHandlerRootView>
-          <View className="w-full p-3 gap-2 flex-row justify-center items-center">
-            <Pressable
-              className="w-[50px] h-[50px] rounded-full bg-gray-300 items-center justify-center active:opacity-40"
-              onPress={() => lbsRulerController.current?.stepBy?.(-1)}>
-              <Minus color={"black"}></Minus>
-            </Pressable>
-            <View className="flex-grow">
-              <Text className="font-montserrat">{`Chạm để tinh chỉnh ±${lbsProps.step.toFixed(2) || 0}lbs`}</Text>
-            </View>
-            <Pressable
-              className="w-[50px] h-[50px] rounded-full bg-gray-300 items-center justify-center active:opacity-40"
-              onPress={() => lbsRulerController.current?.stepBy?.(1)}>
-              <Plus color={"black"}></Plus>
-            </Pressable>
-          </View>
         </View>
-      )}
+        <View className="absolute left-0 right-0 bottom-0 p-3 gap-2 flex-row justify-center items-center">
+          <Pressable
+            className="w-[50px] h-[50px] rounded-full bg-gray-300 items-center justify-center active:opacity-40"
+            onPress={() =>
+              (isKgMode
+                ? kgRulerController.current
+                : lbsRulerController.current
+              )?.stepBy?.(-1)
+            }>
+            <Minus color={"black"} />
+          </Pressable>
+          <View className="flex-grow">
+            <Text className="font-montserrat">
+              {`Chạm để tinh chỉnh ±${isKgMode ? kgProps.step : lbsProps.step?.toFixed(2)}${isKgMode ? kgProps.unitLabel : lbsProps.unitLabel}`}
+            </Text>
+          </View>
+          <Pressable
+            className="w-[50px] h-[50px] rounded-full bg-gray-300 items-center justify-center active:opacity-40"
+            onPress={() =>
+              (isKgMode
+                ? kgRulerController.current
+                : lbsRulerController.current
+              )?.stepBy?.(1)
+            }>
+            <Plus color={"black"} />
+          </Pressable>
+        </View>
+      </View>
       <Pressable
         className="w-full bg-charcoal-pure rounded-xl h-14 mt-10 flex-row items-center justify-center gap-2 active:opacity-40"
         onPress={() => router.push("/register/height")}>

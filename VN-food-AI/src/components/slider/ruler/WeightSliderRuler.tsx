@@ -109,7 +109,7 @@ export const WeightSliderRuler = memo(function SliderRuler(
 
       <GestureDetector gesture={pan}>
         <View
-          className="w-full h-full overflow-hidden justify-end relative"
+          className="w-full flex-1 overflow-hidden justify-end relative"
           onLayout={handleLayout}>
           {isRulerReady && (
             <Animated.View

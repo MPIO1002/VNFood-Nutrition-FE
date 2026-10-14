@@ -5,6 +5,7 @@ import { router, Tabs, usePathname } from "expo-router";
 import { ArrowLeft, DotIcon } from "lucide-react-native";
 import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const STEPS = ["weight", "height", "plan"];
@@ -84,16 +85,18 @@ export default function InputUserInformationLayout() {
   return (
     <View className="bg-white w-full h-full">
       <InputUserInformationTopPanel></InputUserInformationTopPanel>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          animation: "shift",
-          tabBarStyle: { display: "none" },
-        }}>
-        {STEPS.map((name, i) => (
-          <Tabs.Screen key={i} name={name}></Tabs.Screen>
-        ))}
-      </Tabs>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            animation: "shift",
+            tabBarStyle: { display: "none" },
+          }}>
+          {STEPS.map((name, i) => (
+            <Tabs.Screen key={i} name={name}></Tabs.Screen>
+          ))}
+        </Tabs>
+      </GestureHandlerRootView>
     </View>
   );
 }

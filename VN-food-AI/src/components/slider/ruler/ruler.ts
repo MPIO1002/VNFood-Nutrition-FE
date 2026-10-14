@@ -1,3 +1,5 @@
+import { ScrollView } from "react-native-gesture-handler";
+
 export interface SliderRulerController {
   stepBy: (count: number) => void;
 }
@@ -12,4 +14,5 @@ export interface SliderRulerProps {
   initialValue: number;
   onChange?: any;
   controlRef?: React.RefObject<SliderRulerController | null>;
+  externalScrollRef?: React.RefObject<ScrollView | null>;
 }

@@ -28,6 +28,7 @@ export const useWeightSliderRuler = ({
   tickGap = 20,
   onChange,
   controlRef,
+  externalScrollRef,
 }: SliderRulerProps) => {
   const tickCount = Math.floor((max - min) / step) + 1;
   const TICK_WIDTH = PixelRatio.roundToNearestPixel(tickWidth); // must match w-[2px]
@@ -78,33 +79,34 @@ export const useWeightSliderRuler = ({
       Math.round((min + index.value * step) * valuePrecision) / valuePrecision,
   );
 
-  const pan = useMemo(
-    () =>
-      Gesture.Pan()
-        .onStart(() => {
-          cancelAnimation(translateX);
-          startX.value = translateX.value;
-        })
-        .onUpdate((e) => {
-          translateX.value = clampX(startX.value + e.translationX);
-        })
-        .onEnd((e) => {
-          translateX.value = withDecay(
-            { velocity: e.velocityX, clamp: [-MAX_OFFSET, 0] },
-            (finished) => {
-              "worklet";
-              if (finished) {
-                const snapped = Math.max(
-                  -MAX_OFFSET,
-                  Math.min(0, -Math.round(-translateX.value / SNAP) * SNAP),
-                );
-                translateX.value = withTiming(snapped, { duration: 150 });
-              }
-            },
-          );
-        }),
-    [MAX_OFFSET, SNAP, clampX, startX, translateX],
-  );
+  const pan = useMemo(() => {
+    const p = Gesture.Pan()
+      .onStart(() => {
+        cancelAnimation(translateX);
+        startX.value = translateX.value;
+      })
+      .onUpdate((e) => {
+        translateX.value = clampX(startX.value + e.translationX);
+      })
+      .onEnd((e) => {
+        translateX.value = withDecay(
+          { velocity: e.velocityX, clamp: [-MAX_OFFSET, 0] },
+          (finished) => {
+            "worklet";
+            if (finished) {
+              const snapped = Math.max(
+                -MAX_OFFSET,
+                Math.min(0, -Math.round(-translateX.value / SNAP) * SNAP),
+              );
+              translateX.value = withTiming(snapped, { duration: 150 });
+            }
+          },
+        );
+      });
+
+    if (externalScrollRef) p.blocksExternalGesture(externalScrollRef);
+    return p;
+  }, [MAX_OFFSET, SNAP, clampX, startX, translateX]);
 
   useAnimatedReaction(
     () => value.value,
