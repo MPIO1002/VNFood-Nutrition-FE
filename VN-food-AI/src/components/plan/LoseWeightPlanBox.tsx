@@ -52,6 +52,7 @@ export function LoseWeightPlanBox(props: PlanBoxProps) {
               paddingBottom: 0,
               includeFontPadding: false,
               textAlignVertical: "center",
+              fontFamily: "Montserrat_700Bold",
             }}
             className="rounded-xl border-0 bg-transparent text-black text-2xl font-montserrat-bold"
           />

@@ -18,12 +18,14 @@ export function PlanBox({
   return (
     <Pressable onPress={onPress}>
       <View
-        className={`${className ?? ""} relative rounded-lg bg-white p-2 gap-2 shadow-xl`}>
-        <View className="absolute right-2 top-2">
+        className={`${className ?? ""} relative rounded-2xl bg-white p-3.5 gap-2 border ${
+          activated ? "border-charcoal-pure border-2" : "border-zinc-200"
+        }`}>
+        <View className="absolute right-3 top-3">
           {activated ? (
-            <CircleCheck size={30} fill={"black"} color={"white"}></CircleCheck>
+            <CircleCheck size={24} fill={"black"} color={"white"} />
           ) : (
-            <Circle size={30} fill={"#d1d5db"} strokeWidth={0}></Circle>
+            <Circle size={24} fill={"#e4e4e7"} strokeWidth={0} />
           )}
         </View>
         {children}

@@ -105,7 +105,6 @@ export const useHeightSliderRuler = ({
 
   const UIProps = {
     ticks: rulerProps.ticks,
-    majorTicks: rulerProps.majorTicks,
     pan,
     viewportPadding,
     SNAP,

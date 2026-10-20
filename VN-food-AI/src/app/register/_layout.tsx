@@ -12,6 +12,21 @@ import UserHealthInformationContextProvider from "../../context/register/UserHea
 
 function InputUserHealthInformationTopPanel() {
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
+  const currentStepName = pathname.split("/").pop() ?? "weight";
+
+  const getPageTitle = (step: string) => {
+    switch (step) {
+      case "weight":
+        return "Cân nặng";
+      case "height":
+        return "Chiều cao";
+      case "plan":
+        return "Mục tiêu vóc dáng";
+      default:
+        return "Thông tin cá nhân";
+    }
+  };
 
   return (
     <View
@@ -19,30 +34,28 @@ function InputUserHealthInformationTopPanel() {
       style={{
         paddingTop: insets.top,
       }}>
-      <View className="flex-row h-20 gap-1 px-3">
-        <View className="w-fit h-full justify-center">
-          <Pressable
-            onPress={() => {
-              if (router.canDismiss()) router.dismissAll();
+      <View className="flex-row items-center justify-between h-14 px-3 relative">
+        <Pressable
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
               router.replace("/");
-            }}
-            className="active:opacity-40">
-            <ArrowLeft size={18} color="black" />
-          </Pressable>
-        </View>
-        <View className="w-fit h-full justify-center ml-1">
-          <Image
-            source={require("@/../assets/images/logo.png")}
-            style={{ width: 32, height: 32 }}
-            contentFit="contain"
-          />
-        </View>
-        <View className="h-full justify-center gap-0">
-          <Text className="font-montserrat text-sm text-charcoal-pure leading-none">
-            CaloViet
+            }
+          }}
+          hitSlop={12}
+          className="z-10 p-2 -ml-1 active:opacity-40">
+          <ArrowLeft size={20} color="black" />
+        </Pressable>
+
+        <View className="absolute inset-0 items-center justify-center pointer-events-none">
+          <Text className="font-montserrat-bold text-base text-charcoal-pure">
+            {getPageTitle(currentStepName)}
           </Text>
-          <Text className="font-montserrat text-sm text-charcoal-pure">AI</Text>
         </View>
+
+        {/* Empty placeholder to balance the flex-row layout */}
+        <View className="w-8" />
       </View>
       <UserProgress></UserProgress>
     </View>
@@ -60,16 +73,21 @@ function UserProgress() {
     setStep(HEALTH_INFORMATION_STEPS.indexOf(name));
   }, [pathname]);
 
+  const stepCategory =
+    currentStep === 2 ? "Mục tiêu cá nhân" : "Thể trạng ban đầu";
+
   return (
-    <View className="w-full bg-gray-100 h-15 justify-center px-3 pt-5">
+    <View className="w-full bg-gray-100 h-15 justify-center px-3 pt-4 pb-2">
       <View className="w-full flex-row items-center">
-        <Text className="font-montserrat">
+        <Text className="font-montserrat text-xs text-zinc-500">
           Bước {currentStep + 1} trên {stepLength}
         </Text>
-        <DotIcon />
-        <Text className="font-montserrat">Thể trạng ban đầu</Text>
+        <DotIcon size={16} color="#71717a" />
+        <Text className="font-montserrat text-xs text-zinc-500">
+          {stepCategory}
+        </Text>
       </View>
-      <View className="w-full">
+      <View className="w-full mt-1.5">
         <ProgressStep
           currentStep={currentStep}
           totalSteps={stepLength}

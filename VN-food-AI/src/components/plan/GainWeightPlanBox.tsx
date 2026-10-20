@@ -52,6 +52,7 @@ export function GainWeightPlanBox(props: PlanBoxProps) {
               paddingBottom: 0,
               includeFontPadding: false,
               textAlignVertical: "center",
+              fontFamily: "Montserrat_700Bold",
             }}
             className="border-0 rounded-xl bg-transparent text-black text-2xl font-montserrat-bold"
           />
