@@ -1,9 +1,10 @@
 import { BalancedPlanBox } from "@/components/plan/BalancedPlanBox";
 import { GainWeightPlanBox } from "@/components/plan/GainWeightPlanBox";
 import { LoseWeightPlanBox } from "@/components/plan/LoseWeightPlanBox";
+import { useUserHealthInformationContextController } from "@/context/register/hooks/useUserHealthInformationContext";
 import { router } from "expo-router";
-import { ArrowLeft, ArrowRight } from "lucide-react-native";
-import { useState } from "react";
+import { ArrowLeft, ArrowRight, LockIcon } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -15,7 +16,12 @@ import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function PlanChoiceScreen() {
-  const [choice, setChoice] = useState(0);
+  const { markReady } = useUserHealthInformationContextController();
+  const [choice, setChoice] = useState(2);
+
+  useEffect(() => {
+    markReady("plan");
+  }, []);
 
   return (
     <SafeAreaView className="flex-1" edges={["top", "bottom"]}>
@@ -70,6 +76,12 @@ export default function PlanChoiceScreen() {
                 </Text>
               </Pressable>
             </View>
+          </View>
+          <View className="w-full flex-row items-center justify-center gap-2">
+            <LockIcon size={10} color={"#9ca3af"}></LockIcon>
+            <Text className="text-xs font-montserrat text-center text-gray-400">
+              Dữ liệu được bảo mật an toàn cho lộ trình cá nhân
+            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

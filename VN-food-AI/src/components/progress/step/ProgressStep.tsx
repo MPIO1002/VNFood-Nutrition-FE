@@ -1,5 +1,12 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { ColorValue, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from "react-native-reanimated";
 
 export interface ProgressStepProps {
   currentStep: number;
@@ -22,20 +29,42 @@ const StepBar = memo(function StepBar({
   currentColor?: ColorValue;
   finishedColor?: ColorValue;
 }) {
-  let bgColor: ColorValue | undefined;
-  if (isCurrent) {
-    bgColor = currentColor;
-  } else {
-    bgColor = done ? finishedColor : color;
-  }
+  const fill = useSharedValue(0);
+  useEffect(() => {
+    if (isCurrent) {
+      if (fill.value == 1) return;
+      fill.value = withDelay(
+        100,
+        withTiming(1, {
+          duration: 500,
+          easing: Easing.out(Easing.ease),
+        }),
+      );
+    } else if (done) {
+      fill.value = 1;
+    } else {
+      fill.value = withTiming(0, {
+        duration: 500,
+        easing: Easing.out(Easing.ease),
+      });
+    }
+  }, [isCurrent, done]);
+
+  const fillStyle = useAnimatedStyle(() => ({
+    width: `${fill.value * 100}%`,
+    backgroundColor: currentColor,
+  }));
 
   return (
     <View
       className={`flex-1 h-1 rounded-full`}
       style={{
-        backgroundColor: bgColor,
-      }}
-    />
+        backgroundColor: color,
+      }}>
+      <Animated.View
+        className={"h-full rounded-full"}
+        style={fillStyle}></Animated.View>
+    </View>
   );
 });
 

@@ -1,16 +1,16 @@
 import { useProgressStep } from "@/components/progress/step/hooks/useProgressStep";
 import ProgressStep from "@/components/progress/step/ProgressStep";
+import { HEALTH_INFORMATION_STEPS } from "@/constants/register";
 import { Image } from "expo-image";
 import { router, Tabs, usePathname } from "expo-router";
 import { ArrowLeft, DotIcon } from "lucide-react-native";
-import { useEffect } from "react";
-import { Pressable, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import UserHealthInformationContextProvider from "../../context/register/UserHealthInformationContextProvider";
 
-const STEPS = ["weight", "height", "plan"];
-
-function InputUserInformationTopPanel() {
+function InputUserHealthInformationTopPanel() {
   const insets = useSafeAreaInsets();
 
   return (
@@ -50,14 +50,14 @@ function InputUserInformationTopPanel() {
 }
 
 function UserProgress() {
-  const stepLength = STEPS.length;
+  const stepLength = HEALTH_INFORMATION_STEPS.length;
   const { currentStep, setStep } = useProgressStep({
     steps: stepLength,
   });
   const pathname = usePathname();
   useEffect(() => {
     const name = pathname.split("/").pop() ?? "";
-    setStep(STEPS.indexOf(name));
+    setStep(HEALTH_INFORMATION_STEPS.indexOf(name));
   }, [pathname]);
 
   return (
@@ -81,23 +81,36 @@ function UserProgress() {
   );
 }
 
-export default function InputUserInformationLayout() {
+export default function InputUserHealthInformationLayout() {
+  const [isLoading, setIsLoading] = useState(true);
+
   return (
-    <View className="bg-white w-full h-full">
-      <InputUserInformationTopPanel></InputUserInformationTopPanel>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Tabs
-          backBehavior="history"
-          screenOptions={{
-            headerShown: false,
-            animation: "shift",
-            tabBarStyle: { display: "none" },
-          }}>
-          {STEPS.map((name, i) => (
-            <Tabs.Screen key={i} name={name}></Tabs.Screen>
-          ))}
-        </Tabs>
-      </GestureHandlerRootView>
-    </View>
+    <UserHealthInformationContextProvider
+      totalSteps={HEALTH_INFORMATION_STEPS.length}
+      onAllReady={() => setIsLoading(false)}>
+      <View className="bg-white w-full h-full">
+        <InputUserHealthInformationTopPanel></InputUserHealthInformationTopPanel>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Tabs
+            backBehavior="history"
+            screenOptions={{
+              lazy: false,
+              freezeOnBlur: true,
+              headerShown: false,
+              animation: "shift",
+              tabBarStyle: { display: "none" },
+            }}>
+            {HEALTH_INFORMATION_STEPS.map((name, i) => (
+              <Tabs.Screen key={i} name={name}></Tabs.Screen>
+            ))}
+          </Tabs>
+        </GestureHandlerRootView>
+      </View>
+      {isLoading && (
+        <View className="bg-white w-full h-full z-50 absolute justify-center items-center">
+          <ActivityIndicator size={"large"} color={"black"}></ActivityIndicator>
+        </View>
+      )}
+    </UserHealthInformationContextProvider>
   );
 }

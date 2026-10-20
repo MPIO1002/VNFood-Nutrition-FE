@@ -1,12 +1,20 @@
 import { AnimatedTextInput } from "@/components/animated-components";
-import { HeightSliderRuler } from "@/components/slider/ruler/HeightSliderRuler";
 import {
-  SliderRulerController,
-  SliderRulerProps,
-} from "@/components/slider/ruler/ruler";
+  HeightSliderRuler,
+  HeightSliderRulerProps,
+} from "@/components/slider/ruler/HeightSliderRuler";
+import { SliderRulerController } from "@/components/slider/ruler/ruler";
+import { useUserHealthInformationContextController } from "@/context/register/hooks/useUserHealthInformationContext";
 import { router } from "expo-router";
-import { ArrowLeft, ArrowRight, Dot, Minus, Plus } from "lucide-react-native";
-import { useRef, useState } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Dot,
+  LockIcon,
+  Minus,
+  Plus,
+} from "lucide-react-native";
+import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -23,36 +31,42 @@ import { useAnimatedProps, useSharedValue } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function InputHeightScreen() {
+  const { markReady } = useUserHealthInformationContextController();
+
   const [isCmMode, setIsCmMode] = useState(true);
+  const [isCmRulerReady, setIsCmRulerReady] = useState(false);
   const cmRulerController = useRef<SliderRulerController | null>(null);
   const cmScreenValue = useSharedValue<number>(0);
 
+  const [isFtRulerReady, setIsFtRulerReady] = useState(false);
   const ftScreenValue = useSharedValue<number>(0);
   const ftRulerController = useRef<SliderRulerController | null>(null);
 
   const screenScrollRef = useRef<ScrollView | null>(null);
 
-  const cmProps: SliderRulerProps = {
+  const cmProps: HeightSliderRulerProps = {
     min: 50,
     max: 250,
-    initialValue: 1,
+    initialValue: 160,
     minorPerMediumSegment: 0,
     mediumPerMajorSegment: 4,
     step: 1,
     unitLabel: "cm",
     screenValue: cmScreenValue,
+    onFinishLoading: () => setIsCmRulerReady(true),
     controlRef: cmRulerController,
     externalScrollRef: screenScrollRef,
   };
 
-  const ftProps: SliderRulerProps = {
+  const ftProps: HeightSliderRulerProps = {
     min: 50,
     max: 250,
-    initialValue: 1,
+    initialValue: 160,
     minorPerMediumSegment: 0,
     mediumPerMajorSegment: 4,
     step: 1,
     unitLabel: "in",
+    onFinishLoading: () => setIsFtRulerReady(true),
     screenValue: ftScreenValue,
     controlRef: ftRulerController,
     externalScrollRef: screenScrollRef,
@@ -73,6 +87,10 @@ export default function InputHeightScreen() {
       defaultValue: String(v),
     };
   });
+
+  useEffect(() => {
+    if (isCmRulerReady && isFtRulerReady) markReady("height");
+  }, [isCmRulerReady, isFtRulerReady]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#FDFDFE]" edges={["top", "bottom"]}>
@@ -220,6 +238,12 @@ export default function InputHeightScreen() {
                   {"Quay lại bước 1 (Cân nặng)"}
                 </Text>
               </Pressable>
+            </View>
+            <View className="w-full flex-row items-center justify-center gap-2">
+              <LockIcon size={10} color={"#9ca3af"}></LockIcon>
+              <Text className="text-xs font-montserrat text-center text-gray-400">
+                Dữ liệu được bảo mật an toàn cho lộ trình cá nhân
+              </Text>
             </View>
           </View>
         </ScrollView>

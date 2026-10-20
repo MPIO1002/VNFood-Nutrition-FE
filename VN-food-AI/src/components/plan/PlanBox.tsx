@@ -18,7 +18,7 @@ export function PlanBox({
   return (
     <Pressable onPress={onPress}>
       <View
-        className={`${className ?? ""} relative rounded-lg bg-white p-2 gap-2 shadow-sm`}>
+        className={`${className ?? ""} relative rounded-lg bg-white p-2 gap-2 shadow-xl`}>
         <View className="absolute right-2 top-2">
           {activated ? (
             <CircleCheck size={30} fill={"black"} color={"white"}></CircleCheck>

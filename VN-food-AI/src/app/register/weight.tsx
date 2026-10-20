@@ -4,14 +4,16 @@ import {
   WeightSliderRuler,
   WeightSliderRulerProps,
 } from "@/components/slider/ruler/WeightSliderRuler";
+import { useUserHealthInformationContextController } from "@/context/register/hooks/useUserHealthInformationContext";
 import { router } from "expo-router";
-import { ArrowRight, Minus, Plus } from "lucide-react-native";
-import { useRef, useState } from "react";
+import { ArrowRight, LockIcon, Minus, Plus } from "lucide-react-native";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, Text, TouchableOpacity, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useAnimatedProps, useSharedValue } from "react-native-reanimated";
 
 export default function InputWeightScreen() {
+  const { markReady } = useUserHealthInformationContextController();
   const [isKgMode, setIsKgMode] = useState(true);
 
   const [isKgRulerReady, setIsKgRulerReady] = useState(false);
@@ -25,7 +27,7 @@ export default function InputWeightScreen() {
   const kgProps: WeightSliderRulerProps = {
     min: 10,
     max: 300,
-    initialValue: 1,
+    initialValue: 50,
     step: 0.5,
     minorPerMediumSegment: 1,
     mediumPerMajorSegment: 4,
@@ -38,7 +40,7 @@ export default function InputWeightScreen() {
   const lbsProps: WeightSliderRulerProps = {
     min: 10,
     max: 300,
-    initialValue: 2.2,
+    initialValue: 50,
     step: 0.5,
     minorPerMediumSegment: 1,
     mediumPerMajorSegment: 4,
@@ -63,6 +65,10 @@ export default function InputWeightScreen() {
       defaultValue: v.toFixed(1),
     };
   });
+
+  useEffect(() => {
+    if (isKgRulerReady && isLbsRulerReady) markReady("weight");
+  }, [isKgRulerReady, isLbsRulerReady]);
 
   return (
     <View className="bg-gray-100 w-screen h-screen px-3 gap-5">
@@ -182,6 +188,12 @@ export default function InputWeightScreen() {
         </Text>
         <ArrowRight size={18} color="#FFF" />
       </Pressable>
+      <View className="w-full flex-row items-center justify-center gap-2">
+        <LockIcon size={10} color={"#9ca3af"}></LockIcon>
+        <Text className="text-xs font-montserrat text-center text-gray-400">
+          Dữ liệu được bảo mật an toàn cho lộ trình cá nhân
+        </Text>
+      </View>
     </View>
   );
 }

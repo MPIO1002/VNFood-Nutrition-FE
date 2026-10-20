@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import {
   cancelAnimation,
   SharedValue,
@@ -42,6 +42,10 @@ export const useSliderRuler = ({
     () => Array.from({ length: tickCount }, (_, i) => i),
     [tickCount],
   );
+
+  useEffect(() => {
+    if (screenValue) screenValue.value = initialValue;
+  }, []);
 
   const formatTickValue = useCallback(
     (index: number) => {
