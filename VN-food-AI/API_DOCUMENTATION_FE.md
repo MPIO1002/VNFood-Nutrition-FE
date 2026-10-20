@@ -193,12 +193,7 @@ Hệ thống hiện tại cung cấp **10 endpoints chính thức** được chi
 | Tên trường | Kiểu dữ liệu | Bắt buộc | Mặc định | Mô tả & Hướng dẫn sử dụng |
 |---|---|:---:|:---:|---|
 | `image` | `File` (Binary) | **Có** | - | File ảnh định dạng JPEG/PNG, dung lượng tối đa **15MB**. |
-| `container_type` | `string` | Không | `null` | Loại vật đựng: `"dia"` (đĩa), `"to"` (tô/bát), `"hop"` (hộp), `"ly"` (ly/cốc). Giúp AI tối ưu thuật toán ước lượng thể tích. |
-| `container_diameter_cm` | `float` | Không | `null` | Đường kính đĩa hoặc miệng tô theo cm (ví dụ: `22.0`). Dùng để đo đạc chính xác tỉ lệ cm/pixel. |
-| `plate_diameter_cm` | `float` | Không | `null` | Tham số cũ (tương thích ngược), tương đương `container_diameter_cm`. |
-| `container_length_cm` | `float` | Không | `null` | Chiều dài hộp cơm / đĩa chữ nhật (cm). |
-| `container_width_cm` | `float` | Không | `null` | Chiều rộng hộp cơm / đĩa chữ nhật (cm). |
-| `cm_per_pixel` | `float` | Không | `null` | Tỉ lệ cm/pixel thủ công (chỉ truyền nếu không dùng đường kính). |
+| `container_type` | `string` | Không | `null` | Loại vật đựng: `"chen"` (chén), `"to"` (tô/bát), `"to_lon"` (tô lớn), `"dia"` (đĩa), `"dia_nho"` (đĩa nhỏ), `"dia_lon"` (đĩa lớn), `"hop"` (hộp). Giúp AI tối ưu thuật toán ước lượng khẩu phần. |
 | `response_format` | `string` | Không | `"full"` | `"full"`: Trả về đầy đủ bounding box, mask polygon, ảnh vẽ overlay base64 và dinh dưỡng.<br>`"nutrition"`: Chỉ trả về mảng danh sách calo/dinh dưỡng rút gọn. |
 
 - **Phản hồi thành công (200 OK) - Định dạng `full`:**
@@ -407,12 +402,11 @@ export default api;
 
 #### Trong JavaScript / Web (Fetch API):
 ```javascript
-async function analyzeFoodImage(file, containerType = 'dia', diameterCm = 22.0) {
+async function analyzeFoodImage(file, containerType = 'to') {
   const formData = new FormData();
   formData.append('image', file);
-  formData.append('container_type', containerType);
-  if (diameterCm) {
-    formData.append('container_diameter_cm', diameterCm.toString());
+  if (containerType) {
+    formData.append('container_type', containerType);
   }
 
   const response = await fetch('http://127.0.0.1:8000/api/v1/food/analyze', {

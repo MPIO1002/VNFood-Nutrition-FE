@@ -50,7 +50,7 @@ export default function ScanScreen() {
   const [resultImg, setResultImg] = useState<string | null>(null);
   const [foodData, setFoodData] = useState<any>(null);
   const [allDetected, setAllDetected] = useState<any[]>([]);
-  const [imageSize, setImageSize] = useState<{width: number, height: number} | null>(null);
+  const [imageSize, setImageSize] = useState<{ width: number, height: number } | null>(null);
 
   useEffect(() => {
     if (activeImageUri) {

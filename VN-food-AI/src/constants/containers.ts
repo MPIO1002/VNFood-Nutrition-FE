@@ -13,13 +13,13 @@ export interface ContainerConfig {
 }
 
 export const CONTAINERS: ContainerConfig[] = [
-  { key: 'chen',    label: 'Chén',     subtitle: '~200g',       icon: Salad,   shape: 'circle' },
-  { key: 'to',      label: 'Tô vừa',   subtitle: '~550g',       icon: Soup,    shape: 'circle' },
-  { key: 'to_lon',  label: 'Tô lớn',   subtitle: '~750g',       icon: Soup,    shape: 'circle' },
-  { key: 'dia_nho', label: 'Đĩa nhỏ',  subtitle: '~110g',       icon: Disc,    shape: 'circle' },
-  { key: 'dia',     label: 'Đĩa vừa',  subtitle: '~180g',       icon: Disc,    shape: 'circle' },
-  { key: 'dia_lon', label: 'Đĩa lớn',  subtitle: '~250g',       icon: Disc,    shape: 'circle' },
-  { key: 'hop',     label: 'Hộp mang đi', subtitle: 'Hộp chuẩn',  icon: Can,     shape: 'rect' },
+  { key: 'chen', label: 'Chén', subtitle: '~200g', icon: Salad, shape: 'circle' },
+  { key: 'to', label: 'Tô vừa', subtitle: '~550g', icon: Soup, shape: 'circle' },
+  { key: 'to_lon', label: 'Tô lớn', subtitle: '~750g', icon: Soup, shape: 'circle' },
+  { key: 'dia_nho', label: 'Đĩa nhỏ', subtitle: '~110g', icon: Disc, shape: 'circle' },
+  { key: 'dia', label: 'Đĩa vừa', subtitle: '~180g', icon: Disc, shape: 'circle' },
+  { key: 'dia_lon', label: 'Đĩa lớn', subtitle: '~250g', icon: Disc, shape: 'circle' },
+  { key: 'hop', label: 'Hộp mang đi', subtitle: 'Hộp chuẩn', icon: Can, shape: 'rect' },
 ];
 
 export const MIN_SIZE = 10;

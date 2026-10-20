@@ -4,21 +4,8 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 const API_URL = `${BASE_URL}/api/v1/food/analyze`;
 
 /**
- * Chuẩn hóa mã container theo danh sách hợp lệ của backend: 'dia' | 'to' | 'hop' | 'ly'
- */
-function normalizeContainerType(key?: string): string | undefined {
-  if (!key) return undefined;
-  const lower = key.toLowerCase();
-  if (lower === 'hop') return 'hop';
-  if (lower === 'ly' || lower === 'coc') return 'ly';
-  if (lower.includes('dia')) return 'dia';
-  if (lower === 'chen' || lower.includes('to')) return 'to';
-  return key;
-}
-
-/**
  * Hàm gọi API Phân tích món ăn
- * Lưu ý: vật đựng hộp ('hop') không còn cần truyền chiều dài / chiều rộng.
+ * Chỉ truyền container_type (chen, to, to_lon, dia_nho, dia, dia_lon, hop)
  * @param imageUri - Đường dẫn ảnh (VD: lấy từ expo-image-picker result.assets[0].uri)
  * @param options - Tùy chọn vật đựng
  * @returns { success, visualBase64, nutrition, allDetected, error }
@@ -27,9 +14,6 @@ export async function analyzeFoodImage(
   imageUri: string,
   options?: {
     containerType?: string;
-    containerDiameterCm?: number;
-    containerLengthCm?: number;
-    containerWidthCm?: number;
   }
 ) {
   try {
@@ -41,16 +25,7 @@ export async function analyzeFoodImage(
     formData.append('image', blob, 'scan.jpg');
 
     if (options?.containerType) {
-      const normalizedType = normalizeContainerType(options.containerType);
-      if (normalizedType) {
-        formData.append('container_type', normalizedType);
-      }
-
-      // Vật đựng hộp không còn cần truyền chiều dài, chiều rộng!
-      // Chỉ truyền đường kính cho các vật tròn (đĩa, tô) nếu có
-      if (normalizedType !== 'hop' && options.containerDiameterCm !== undefined) {
-        formData.append('container_diameter_cm', options.containerDiameterCm.toString());
-      }
+      formData.append('container_type', options.containerType);
     }
 
     const headers: Record<string, string> = {
