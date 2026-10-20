@@ -33,7 +33,7 @@ export default function PlanChoiceScreen() {
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: "space-between",
-          paddingHorizontal: 16,
+          paddingHorizontal: 20,
           paddingTop: 8,
           paddingBottom: Math.max(insets.bottom, 16),
         }}

@@ -85,7 +85,7 @@ export default function InputHeightScreen() {
 
   return (
     <View
-      className="bg-gray-100 flex-1 px-4"
+      className="bg-gray-100 flex-1 px-5"
       style={{
         paddingTop: 8,
         paddingBottom: Math.max(insets.bottom, 16),
@@ -101,7 +101,7 @@ export default function InputHeightScreen() {
       </View>
 
       {/* Main Card expanding to fit between top content and bottom button */}
-      <View className="w-full flex-1 my-3 p-4 bg-white rounded-2xl shadow-sm justify-between">
+      <View className="w-full flex-1 my-3 p-5 bg-white rounded-[24px] shadow-sm justify-between">
         {/* Header row: Unit toggle and big display */}
         <View className="w-full flex-row items-center justify-between h-[52px]">
           <View className="flex-row rounded-full bg-gray-200 p-0.5">

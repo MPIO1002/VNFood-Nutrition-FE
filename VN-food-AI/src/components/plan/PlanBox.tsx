@@ -18,7 +18,7 @@ export function PlanBox({
   return (
     <Pressable onPress={onPress}>
       <View
-        className={`${className ?? ""} relative rounded-2xl bg-white p-3.5 gap-2 border ${
+        className={`${className ?? ""} relative rounded-[20px] bg-white p-4 gap-2 border ${
           activated ? "border-charcoal-pure border-2" : "border-zinc-200"
         }`}>
         <View className="absolute right-3 top-3">

@@ -34,7 +34,7 @@ function InputUserHealthInformationTopPanel() {
       style={{
         paddingTop: insets.top,
       }}>
-      <View className="flex-row items-center justify-between h-14 px-3 relative">
+      <View className="flex-row items-center justify-between h-14 px-5 relative">
         <Pressable
           onPress={() => {
             if (router.canGoBack()) {
@@ -44,7 +44,7 @@ function InputUserHealthInformationTopPanel() {
             }
           }}
           hitSlop={12}
-          className="z-10 p-2 -ml-1 active:opacity-40">
+          className="z-10 p-2 -ml-2 active:opacity-40">
           <ArrowLeft size={20} color="black" />
         </Pressable>
 
@@ -77,7 +77,7 @@ function UserProgress() {
     currentStep === 2 ? "Mục tiêu cá nhân" : "Thể trạng ban đầu";
 
   return (
-    <View className="w-full bg-gray-100 h-15 justify-center px-3 pt-4 pb-2">
+    <View className="w-full bg-gray-100 h-15 justify-center px-5 pt-4 pb-2">
       <View className="w-full flex-row items-center">
         <Text className="font-montserrat text-xs text-zinc-500">
           Bước {currentStep + 1} trên {stepLength}
