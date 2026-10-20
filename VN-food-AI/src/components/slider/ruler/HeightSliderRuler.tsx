@@ -1,204 +1,243 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { cssInterop } from "nativewind";
-import { memo, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Text, TextInput, View } from "react-native";
+import { memo, useCallback, useMemo, useState } from "react";
+import { LayoutChangeEvent, Text, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
-import Animated from "react-native-reanimated";
+import Animated, { useAnimatedProps } from "react-native-reanimated";
 import Svg, { G, Path, Text as SvgText } from "react-native-svg";
 
-import { Circle, MoveVertical } from "lucide-react-native";
+import { AnimatedTextInput } from "@/components/animated-components";
+import { Circle } from "lucide-react-native";
 import { useHeightSliderRuler } from "./hooks/useHeightSliderRuler";
 import { SliderRulerProps } from "./ruler";
 
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
-cssInterop(AnimatedTextInput, { className: "style" });
-
-const LINE_START_X = 16;
-const MAJOR_LINE_START_X = 0;
+const LINE_START_X_DIFF = 32;
 const RULER_OFFSET_LEFT = 20;
-const LABEL_WIDTH = 32;
+const LABEL_WIDTH = 56;
+const LABEL_GAP = 4;
 
-export const HeightSliderRuler = memo(function HeightSliderRuler(
-  props: SliderRulerProps,
-) {
+export interface HeightSliderRulerProps extends SliderRulerProps {
+  rulerWidth?: number;
+  lineStartX?: number;
+  onFinishLoading?: () => void;
+}
+
+export const HeightSliderRuler = memo(function HeightSliderRuler({
+  rulerWidth = 80,
+  lineStartX = 48,
+  minorPerMediumSegment = 1,
+  mediumPerMajorSegment = 1,
+  onFinishLoading,
+  ...props
+}: HeightSliderRulerProps) {
+  const majorLineStartX = lineStartX - LINE_START_X_DIFF;
+  const minorLineStartX = lineStartX + LINE_START_X_DIFF;
+
   const [isRulerReady, setIsRulerReady] = useState(false);
+  const { screenValue } = props;
+
   const {
     formatTickValue,
-    handleLayout,
-    props: sliderProps,
-    style: sliderStyle,
+    UIProps: sliderProps,
+    UIstyle: sliderStyle,
   } = useHeightSliderRuler(props);
 
-  const {
-    TICKS,
-    MAJOR_TICKS,
-    SNAP,
-    majorTickInterval,
-    pan,
-    textProps,
-    tickCount,
-    viewportPadding,
-  } = sliderProps;
-  const { TICK_WIDTH, centerTop, rulerTop, rulerStyle, rulerWidth } =
+  const { ticks, SNAP, pan, tickCount, viewportPadding } = sliderProps;
+
+  const { TICK_HEIGHT, centerTop, rulerTop, rulerStyle, setContainerHeight } =
     sliderStyle;
 
-  useEffect(() => {
-    const idleCallback =
-      typeof requestIdleCallback === "function"
-        ? requestIdleCallback
-        : (callback: () => void) => setTimeout(callback, 0);
-    const cancelIdleCallback =
-      typeof window !== "undefined" && window.cancelIdleCallback
-        ? window.cancelIdleCallback
-        : clearTimeout;
-    const callbackId = idleCallback(() => setIsRulerReady(true));
+  const handleLayout = useCallback(
+    ({ nativeEvent }: LayoutChangeEvent) => {
+      sliderStyle.setContainerHeight(nativeEvent.layout.height);
 
-    return () => cancelIdleCallback(callbackId);
-  }, []);
+      if (nativeEvent.layout.height > 0) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setIsRulerReady(true);
+            onFinishLoading?.();
+          });
+        });
+      }
+    },
+    [onFinishLoading, sliderStyle],
+  );
 
-  const { majorPath, minorPath, spinePath } = useMemo(() => {
+  const getPath = (index: number, x: number, endX: number) => {
+    const y = viewportPadding + TICK_HEIGHT / 2 + index * SNAP;
+    const startX = LABEL_WIDTH + x;
+    return `M ${startX} ${y} H ${endX}`;
+  };
+
+  const { majorTicks, majorPath, mediumPath, minorPath } = useMemo(() => {
     if (!isRulerReady) {
-      return { majorPath: "", minorPath: "", spinePath: "" };
+      return { majorPath: "", minorPath: "" };
     }
 
+    const rulerEndX = LABEL_WIDTH + rulerWidth - TICK_HEIGHT / 2;
+    const majorTicks: number[] = [];
+
     let majorPath = "";
+    let mediumPath = "";
     let minorPath = "";
-    const spineX = LABEL_WIDTH + rulerWidth - TICK_WIDTH / 2;
-    const spinePath = `M ${spineX} 0 V ${tickCount * SNAP + viewportPadding * 2}`;
 
-    TICKS.forEach((index) => {
-      const major = index % majorTickInterval === 0;
-      const y = viewportPadding + TICK_WIDTH / 2 + index * SNAP;
-      const startX = LABEL_WIDTH + (major ? MAJOR_LINE_START_X : LINE_START_X);
-      const path = `M ${startX} ${y} H ${spineX}`;
+    let minorTickRemain = minorPerMediumSegment;
+    let mediumTickRemain = mediumPerMajorSegment;
+    let isDrawMajor = false;
 
-      if (major) {
+    for (const tick of ticks) {
+      if (!isDrawMajor) {
+        const path = getPath(tick, majorLineStartX, rulerEndX);
         majorPath += path;
-      } else {
-        minorPath += path;
-      }
-    });
+        majorTicks.push(tick);
 
-    return { majorPath, minorPath, spinePath };
+        isDrawMajor = true;
+        minorTickRemain = minorPerMediumSegment;
+        mediumTickRemain = mediumPerMajorSegment;
+        continue;
+      }
+
+      if (minorTickRemain > 0) {
+        minorTickRemain--;
+        const path = getPath(tick, minorLineStartX, rulerEndX);
+        minorPath += path;
+      } else {
+        mediumTickRemain--;
+        const path = getPath(tick, lineStartX, rulerEndX);
+        mediumPath += path;
+        minorTickRemain = minorPerMediumSegment;
+      }
+
+      if (mediumTickRemain == 0 && minorTickRemain == 0) isDrawMajor = false;
+    }
+
+    return { majorTicks, majorPath, mediumPath, minorPath };
   }, [
-    TICKS,
+    ticks,
     isRulerReady,
     SNAP,
-    TICK_WIDTH,
-    majorTickInterval,
-    rulerWidth,
-    tickCount,
+    TICK_HEIGHT,
     viewportPadding,
+    rulerWidth,
+    props.step,
+    mediumPerMajorSegment,
+    minorPerMediumSegment,
   ]);
 
-  return !isRulerReady ? (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <ActivityIndicator size="large" color="black" />
-    </View>
-  ) : (
-    <View className="items-center h-full">
-      <View className="flex-row items-center">
-        <AnimatedTextInput
-          editable={false}
-          animatedProps={textProps}
-          className="text-[42px] font-mono text-black"
-        />
-        {props.unitLabel && (
-          <Text className="text-[20px] font-montserrat mt-5">
-            {props.unitLabel}
-          </Text>
-        )}
-      </View>
+  const textProps = useAnimatedProps(() => {
+    const v = screenValue?.value ?? 0;
+    return {
+      text: String(v),
+      defaultValue: String(v),
+    };
+  });
 
+  return (
+    <View className="items-center h-full">
       <GestureDetector gesture={pan}>
         <View
-          className="w-full flex-1 bg-gray-200 overflow-hidden relative rounded-xl"
+          className="w-full flex-1 bg-gray-100 overflow-hidden relative rounded-xl"
           onLayout={handleLayout}>
-          <Animated.View
-            className="absolute h-full"
-            style={[
-              rulerTop,
-              { right: RULER_OFFSET_LEFT, width: rulerWidth + LABEL_WIDTH },
-              rulerStyle,
-            ]}>
-            <Svg
-              width={rulerWidth + LABEL_WIDTH}
-              height={tickCount * SNAP + viewportPadding * 2}>
-              <G>
-                <Path d={minorPath} stroke="#a3a3a3" strokeWidth={TICK_WIDTH} />
-                <Path d={majorPath} stroke="#a3a3a3" strokeWidth={TICK_WIDTH} />
-                <Path d={spinePath} stroke="#a3a3a3" strokeWidth={TICK_WIDTH} />
-                {MAJOR_TICKS.map((index) => {
-                  const y = viewportPadding + TICK_WIDTH / 2 + index * SNAP;
+          {isRulerReady && (
+            <>
+              <Animated.View
+                className="absolute h-full"
+                style={[
+                  rulerTop,
+                  { right: RULER_OFFSET_LEFT, width: rulerWidth + LABEL_WIDTH },
+                  rulerStyle,
+                ]}>
+                <Svg
+                  width={rulerWidth + LABEL_WIDTH}
+                  height={tickCount * SNAP + viewportPadding * 2}>
+                  <G>
+                    <Path
+                      d={minorPath}
+                      stroke="#a3a3a3"
+                      strokeWidth={TICK_HEIGHT}
+                    />
+                    <Path
+                      d={mediumPath}
+                      stroke="#a3a3a3"
+                      strokeWidth={TICK_HEIGHT}
+                    />
+                    <Path
+                      d={majorPath}
+                      stroke="black"
+                      strokeWidth={TICK_HEIGHT}
+                    />
+                    {majorTicks?.map((index) => {
+                      const y =
+                        viewportPadding + TICK_HEIGHT / 2 + index * SNAP;
 
-                  return (
-                    <SvgText
-                      key={index}
-                      x={LABEL_WIDTH - 4}
-                      y={y + 4}
-                      fill="#404040"
-                      fontSize={10}
-                      textAnchor="end">
-                      {formatTickValue(index)}
-                    </SvgText>
-                  );
-                })}
-              </G>
-            </Svg>
-          </Animated.View>
+                      return (
+                        <SvgText
+                          key={index}
+                          x={LABEL_WIDTH + majorLineStartX - LABEL_GAP}
+                          y={y + 4}
+                          fill="#404040"
+                          fontSize={10}
+                          textAnchor="end">
+                          {formatTickValue(index)}
+                        </SvgText>
+                      );
+                    })}
+                  </G>
+                </Svg>
+              </Animated.View>
 
-          <LinearGradient
-            pointerEvents="none"
-            colors={["#e5e7eb", "rgba(255,255,255,0)"]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              top: 0,
-              height: 48,
-              zIndex: 2,
-            }}
-          />
-          <LinearGradient
-            pointerEvents="none"
-            colors={["rgba(255,255,255,0)", "#e5e7eb"]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 48,
-              zIndex: 2,
-            }}
-          />
+              <LinearGradient
+                pointerEvents="none"
+                colors={["#e5e7eb", "rgba(255,255,255,0)"]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  height: 48,
+                  zIndex: 2,
+                }}
+              />
+              <LinearGradient
+                pointerEvents="none"
+                colors={["rgba(255,255,255,0)", "#e5e7eb"]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 48,
+                  zIndex: 2,
+                }}
+              />
 
-          <View
-            pointerEvents="none"
-            className="absolute w-full left-0 right-0 top-0 bottom-0 overflow-visible">
-            <View
-              className="absolute flex-row items-center overflow-visible"
-              style={{
-                top: centerTop.top + 2,
-                right: RULER_OFFSET_LEFT - 3,
-                width: "85%",
-                transform: [{ translateY: "-50%" }],
-              }}>
-              <View className="rounded bg-black gap-2 flex-row px-3 py-0.5 justify-center items-center">
-                <MoveVertical size={10} color="white" />
-                <AnimatedTextInput
-                  editable={false}
-                  animatedProps={textProps}
-                  className="font-montserrat text-white text-sm w-[55px] text-center"
-                />
+              <View
+                pointerEvents="none"
+                className="absolute flex-row items-center overflow-visible self-end"
+                style={{
+                  top: centerTop.top + 2,
+                  right: RULER_OFFSET_LEFT - 3,
+                  width: "85%",
+                  transform: [{ translateY: "-50%" }],
+                }}>
+                <View className="rounded-xl bg-black flex-row px-3 mr-2 h-[30px] justify-center items-center">
+                  <AnimatedTextInput
+                    editable={false}
+                    animatedProps={textProps}
+                    className="font-montserrat py-0 text-white w-[30px] text-sm text-center"
+                  />
+                  <Text className="font-montserrat text-sm text-white opacity-80">
+                    {props.unitLabel}
+                  </Text>
+                </View>
+                <View className="h-[3px] flex-1 bg-green-300" />
+                <Circle size={10} color="#86efac" fill="#86efac" />
               </View>
-              <View className="h-[3px] flex-1 bg-black" />
-              <Circle size={10} fill="black" color="black" />
-            </View>
-          </View>
+            </>
+          )}
         </View>
       </GestureDetector>
     </View>

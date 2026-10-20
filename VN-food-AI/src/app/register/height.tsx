@@ -1,3 +1,4 @@
+import { AnimatedTextInput } from "@/components/animated-components";
 import { HeightSliderRuler } from "@/components/slider/ruler/HeightSliderRuler";
 import {
   SliderRulerController,
@@ -18,32 +19,60 @@ import {
   GestureHandlerRootView,
   ScrollView,
 } from "react-native-gesture-handler";
+import { useAnimatedProps, useSharedValue } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function InputHeightScreen() {
   const [isCmMode, setIsCmMode] = useState(true);
   const cmRulerController = useRef<SliderRulerController | null>(null);
+  const cmScreenValue = useSharedValue<number>(0);
+
+  const ftScreenValue = useSharedValue<number>(0);
   const ftRulerController = useRef<SliderRulerController | null>(null);
+
   const screenScrollRef = useRef<ScrollView | null>(null);
 
   const cmProps: SliderRulerProps = {
-    min: 100,
+    min: 50,
     max: 250,
     initialValue: 1,
+    minorPerMediumSegment: 0,
+    mediumPerMajorSegment: 4,
     step: 1,
     unitLabel: "cm",
+    screenValue: cmScreenValue,
     controlRef: cmRulerController,
     externalScrollRef: screenScrollRef,
   };
 
   const ftProps: SliderRulerProps = {
-    min: 39,
-    max: 98,
+    min: 50,
+    max: 250,
     initialValue: 1,
+    minorPerMediumSegment: 0,
+    mediumPerMajorSegment: 4,
     step: 1,
     unitLabel: "in",
+    screenValue: ftScreenValue,
     controlRef: ftRulerController,
+    externalScrollRef: screenScrollRef,
   };
+
+  const cmTextProps = useAnimatedProps(() => {
+    const v = cmScreenValue.value;
+    return {
+      text: String(v),
+      defaultValue: String(v),
+    };
+  });
+
+  const ftTextProps = useAnimatedProps(() => {
+    const v = ftScreenValue.value;
+    return {
+      text: String(v),
+      defaultValue: String(v),
+    };
+  });
 
   return (
     <SafeAreaView className="flex-1 bg-[#FDFDFE]" edges={["top", "bottom"]}>
@@ -64,39 +93,71 @@ export default function InputHeightScreen() {
                 (BMR) và định lượng thâm hụt năng lượng chính xác.
               </Text>
             </View>
-            <View className="w-full h-fit items-center p-1.5">
-              <View className="flex-row rounded-full bg-gray-200">
-                <TouchableOpacity
-                  className={`w-fit h-fit py-3 px-5 items-center rounded-full justify-center ${isCmMode ? "bg-charcoal-pure shadow-sm" : "bg-gray-200 shadow-none"}`}
-                  onPress={() => setIsCmMode(true)}>
-                  <Text
-                    className={`font-montserrat-medium text-sm ${isCmMode ? "text-white" : "text-zinc-500"}`}>
-                    cm
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className={`w-fit h-fit py-3 px-5 rounded-full items-center justify-center ${!isCmMode ? "bg-charcoal-pure shadow-sm" : "bg-gray-200 shadow-none"}`}
-                  onPress={() => setIsCmMode(false)}>
-                  <View className="flex-row justify-center items-center w-fit">
-                    <Text
-                      className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
-                      ft
-                    </Text>
-                    <Dot
-                      width={10}
-                      color={!isCmMode ? "#fff" : "#71717A"}></Dot>
-                    <Text
-                      className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
-                      in
-                    </Text>
+            <View className="w-full bg-white rounded-2xl p-3 gap-5 mt-5">
+              <View className="w-full flex-row justify-center">
+                <View className="w-1/2 flex-row p-1.5">
+                  <View className="flex-row rounded-full bg-gray-200">
+                    <TouchableOpacity
+                      className={`w-fit h-fit py-2 px-5 items-center rounded-full justify-center ${isCmMode ? "bg-charcoal-pure shadow-sm" : "bg-gray-200 shadow-none"}`}
+                      onPress={() => setIsCmMode(true)}>
+                      <Text
+                        className={`font-montserrat-medium text-sm ${isCmMode ? "text-white" : "text-zinc-500"}`}>
+                        cm
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className={`w-fit h-fit py-2 px-4 rounded-full items-center justify-center ${!isCmMode ? "bg-charcoal-pure shadow-sm" : "bg-gray-200 shadow-none"}`}
+                      onPress={() => setIsCmMode(false)}>
+                      <View className="flex-row justify-center items-center w-fit">
+                        <Text
+                          className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
+                          ft
+                        </Text>
+                        <Dot
+                          width={10}
+                          color={!isCmMode ? "#fff" : "#71717A"}></Dot>
+                        <Text
+                          className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
+                          in
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
                   </View>
-                </TouchableOpacity>
+                </View>
+                <View className="w-1/2 justify-center">
+                  <View
+                    className="w-full flex-row absolute justify-end items-center"
+                    style={{ opacity: isCmMode ? 1 : 0 }}>
+                    <AnimatedTextInput
+                      editable={false}
+                      animatedProps={cmTextProps}
+                      className="text-[42px] font-mono text-black"
+                    />
+                    {cmProps.unitLabel && (
+                      <Text className="text-[20px] font-montserrat mt-5 opacity-50">
+                        {cmProps.unitLabel}
+                      </Text>
+                    )}
+                  </View>
+                  <View
+                    className="w-full flex-row absolute justify-end items-center"
+                    style={{ opacity: !isCmMode ? 1 : 0 }}>
+                    <AnimatedTextInput
+                      editable={false}
+                      animatedProps={ftTextProps}
+                      className="text-[42px] font-mono text-black"
+                    />
+                    {ftProps.unitLabel && (
+                      <Text className="text-[20px] font-montserrat mt-5 opacity-50">
+                        {ftProps.unitLabel}
+                      </Text>
+                    )}
+                  </View>
+                </View>
               </View>
-            </View>
-            <View className="w-full">
-              <View className="w-full h-[300px] relative">
+              <View className="w-full h-[350px] relative">
                 <View
-                  className="absolute inset-0 p-3 bg-white rounded"
+                  className="absolute inset-0"
                   style={{ opacity: isCmMode ? 1 : 0 }}
                   pointerEvents={isCmMode ? "auto" : "none"}>
                   <GestureHandlerRootView>
@@ -104,7 +165,7 @@ export default function InputHeightScreen() {
                   </GestureHandlerRootView>
                 </View>
                 <View
-                  className="absolute inset-0 p-3 bg-white rounded"
+                  className="absolute inset-0"
                   style={{ opacity: isCmMode ? 0 : 1 }}
                   pointerEvents={isCmMode ? "none" : "auto"}>
                   <GestureHandlerRootView>

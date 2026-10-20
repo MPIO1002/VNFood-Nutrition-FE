@@ -75,7 +75,7 @@ function UserProgress() {
           totalSteps={stepLength}
           color={"#E4E4E7"}
           currentColor={"#000000"}
-          finishedColor={"#03fc2c"}></ProgressStep>
+          finishedColor={"#000000"}></ProgressStep>
       </View>
     </View>
   );
