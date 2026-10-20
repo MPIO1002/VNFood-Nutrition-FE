@@ -20,6 +20,8 @@ import { Appearance, useColorScheme } from "react-native";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 
+import { AuthProvider } from "@/context/AuthContext";
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -44,14 +46,16 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <StatusBar style="auto"></StatusBar>
-      <AnimatedSplashOverlay />
-      <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="register" />
-      </Stack>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <StatusBar style="auto"></StatusBar>
+        <AnimatedSplashOverlay />
+        <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="register" />
+        </Stack>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }

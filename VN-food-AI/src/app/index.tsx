@@ -15,6 +15,7 @@ import {
   User,
 } from "lucide-react-native";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -58,16 +59,25 @@ export default function AuthScreen() {
   const {
     isLogin,
     setIsLogin,
+    fullName,
+    setFullName,
+    email,
+    setEmail,
     agreeTerms,
     setAgreeTerms,
     rememberMe,
     setRememberMe,
     password,
     setPassword,
+    confirmPassword,
+    setConfirmPassword,
     showPassword,
     setShowPassword,
     strength,
+    isSubmitting,
+    errorMessage,
     handleAuth,
+    handleGuest,
   } = useAuthScreen();
 
   return (
@@ -157,6 +167,8 @@ export default function AuthScreen() {
                       className="flex-1 ml-3 font-montserrat text-[14px] text-charcoal-pure"
                       placeholder="Calo Việt"
                       placeholderTextColor="#A1A1AA"
+                      value={fullName}
+                      onChangeText={setFullName}
                     />
                   </View>
                 </View>
@@ -165,8 +177,8 @@ export default function AuthScreen() {
               <View className="mb-4">
                 <Text className="font-montserrat-bold text-[10px] text-zinc-700 tracking-wider mb-2 uppercase">
                   {isLogin
-                    ? "Email / Số điện thoại"
-                    : "Email hoặc Số điện thoại"}
+                    ? "Email"
+                    : "Địa chỉ Email"}
                 </Text>
                 <View className="flex-row items-center bg-[#F6F5F6] rounded-xl px-4 h-12">
                   <Mail size={18} color="#A1A1AA" />
@@ -176,6 +188,8 @@ export default function AuthScreen() {
                     placeholderTextColor="#A1A1AA"
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    value={email}
+                    onChangeText={setEmail}
                   />
                 </View>
               </View>
@@ -241,6 +255,8 @@ export default function AuthScreen() {
                         placeholder="Nhập lại mật khẩu"
                         placeholderTextColor="#A1A1AA"
                         secureTextEntry
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
                       />
                     </View>
                   </View>
@@ -292,16 +308,29 @@ export default function AuthScreen() {
                 </View>
               )}
 
-              {/* REMINDER: remove the router.push after finish testing */}
+              {errorMessage && (
+                <View className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl">
+                  <Text className="font-montserrat-medium text-xs text-rose-600 leading-4">
+                    {errorMessage}
+                  </Text>
+                </View>
+              )}
+
               <TouchableOpacity
                 className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2"
-                onPress={
-                  isLogin ? handleAuth : () => router.push("/register/weight")
-                }>
-                <Text className="font-montserrat-bold text-[15px] text-white">
-                  {isLogin ? "Đăng nhập ngay" : "Tạo tài khoản mới"}
-                </Text>
-                <ArrowRight size={18} color="#FFF" />
+                disabled={isSubmitting}
+                activeOpacity={0.8}
+                onPress={handleAuth}>
+                {isSubmitting ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <>
+                    <Text className="font-montserrat-bold text-[15px] text-white">
+                      {isLogin ? "Đăng nhập ngay" : "Tạo tài khoản mới"}
+                    </Text>
+                    <ArrowRight size={18} color="#FFF" />
+                  </>
+                )}
               </TouchableOpacity>
             </View>
 
@@ -333,7 +362,7 @@ export default function AuthScreen() {
             {isLogin ? (
               <TouchableOpacity
                 className="flex-row items-center justify-center gap-2 mb-8"
-                onPress={handleAuth}>
+                onPress={handleGuest}>
                 <Compass size={16} color="#71717A" />
                 <Text className="font-montserrat-medium text-[13px] text-zinc-500">
                   Tiếp tục với tư cách Khách (Duyệt nhanh)

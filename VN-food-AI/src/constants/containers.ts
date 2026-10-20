@@ -19,7 +19,7 @@ export const CONTAINERS: ContainerConfig[] = [
   { key: 'dia_nho', label: 'Đĩa nhỏ',  subtitle: '~110g',       icon: Disc,    shape: 'circle' },
   { key: 'dia',     label: 'Đĩa vừa',  subtitle: '~180g',       icon: Disc,    shape: 'circle' },
   { key: 'dia_lon', label: 'Đĩa lớn',  subtitle: '~250g',       icon: Disc,    shape: 'circle' },
-  { key: 'hop',     label: 'Hộp mang đi', subtitle: 'Tùy chỉnh', icon: Can,     defaultSize: 20, defaultHeight: 15, shape: 'rect' },
+  { key: 'hop',     label: 'Hộp mang đi', subtitle: 'Hộp chuẩn',  icon: Can,     shape: 'rect' },
 ];
 
 export const MIN_SIZE = 10;

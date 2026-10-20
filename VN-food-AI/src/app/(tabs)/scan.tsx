@@ -19,7 +19,6 @@ import { CameraView, useCameraPermissions, CameraType } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 
 import { CONTAINERS, ContainerConfig } from '@/constants/containers';
-import { SwipeSlider } from '@/components/SwipeSlider';
 import { ContainerSelector } from '@/components/ContainerSelector';
 import { NutritionResults } from '@/components/NutritionResults';
 import { FoodMaskOverlay } from '@/components/FoodMaskOverlay';
@@ -41,15 +40,9 @@ export default function ScanScreen() {
 
   // Container selection state
   const [selectedContainer, setSelectedContainer] = useState<ContainerConfig>(CONTAINERS[0]);
-  const [containerWidth, setContainerWidth]   = useState<number>(CONTAINERS[0].defaultSize ?? 20);
-  const [containerHeight, setContainerHeight] = useState<number>(CONTAINERS[0].defaultHeight ?? CONTAINERS[0].defaultSize ?? 20);
 
   const handleSelectContainer = (c: ContainerConfig) => {
     setSelectedContainer(c);
-    if (c.shape === 'rect') {
-      setContainerWidth(c.defaultSize ?? 20);
-      setContainerHeight(c.defaultHeight ?? c.defaultSize ?? 20);
-    }
   };
 
   // API states
@@ -72,9 +65,6 @@ export default function ScanScreen() {
     try {
       const result = await analyzeFoodImage(selectedImageUri, {
         containerType: selectedContainer.key,
-        ...(selectedContainer.shape === 'rect'
-          ? { containerLengthCm: containerWidth, containerWidthCm: containerHeight }
-          : {}),
       });
       if (result.success) {
         if (result.visualBase64) setResultImg(result.visualBase64);
@@ -329,22 +319,6 @@ export default function ScanScreen() {
             selectedContainer={selectedContainer}
             onSelectContainer={handleSelectContainer}
           />
-        )}
-
-        {/* ── Size Slider(s) — only in live camera mode (Hộp) ─────────────────── */}
-        {!activeImageUri && selectedContainer.shape === 'rect' && (
-          <View className="mx-4 mt-1" style={{ gap: 8 }}>
-            <SwipeSlider
-              label="Chiều dài (cm)"
-              value={containerWidth}
-              onChange={setContainerWidth}
-            />
-            <SwipeSlider
-              label="Chiều rộng (cm)"
-              value={containerHeight}
-              onChange={setContainerHeight}
-            />
-          </View>
         )}
 
         {/* ── 3 Camera Controls ────────────────────────────────────────── */}

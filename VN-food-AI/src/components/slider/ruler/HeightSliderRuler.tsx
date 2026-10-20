@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { memo, useCallback, useMemo, useState } from "react";
-import { LayoutChangeEvent, Text, View } from "react-native";
+import { LayoutChangeEvent, Platform, Text, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated, { useAnimatedProps } from "react-native-reanimated";
 import Svg, { G, Path, Text as SvgText } from "react-native-svg";
@@ -123,13 +123,15 @@ export const HeightSliderRuler = memo(function HeightSliderRuler({
     minorPerMediumSegment,
   ]);
 
+  const unitLabel = props.unitLabel || "";
   const textProps = useAnimatedProps(() => {
     const v = screenValue?.value ?? 0;
+    const str = unitLabel ? `${v} ${unitLabel}` : `${v}`;
     return {
-      text: String(v),
-      defaultValue: String(v),
+      text: str,
+      defaultValue: str,
     };
-  });
+  }, [unitLabel]);
 
   return (
     <View className="items-center h-full">
@@ -218,20 +220,31 @@ export const HeightSliderRuler = memo(function HeightSliderRuler({
                 pointerEvents="none"
                 className="absolute flex-row items-center overflow-visible self-end"
                 style={{
-                  top: centerTop.top + 2,
+                  top: centerTop.top + TICK_HEIGHT / 2,
                   right: RULER_OFFSET_LEFT - 3,
                   width: "85%",
                   transform: [{ translateY: "-50%" }],
                 }}>
-                <View className="rounded-xl bg-black flex-row px-3 mr-2 h-[30px] justify-center items-center">
+                <View className="rounded-xl bg-black px-3 mr-2 h-[30px] justify-center items-center">
                   <AnimatedTextInput
                     editable={false}
+                    scrollEnabled={false}
+                    multiline={false}
                     animatedProps={textProps}
-                    className="font-montserrat py-0 text-white w-[30px] text-sm text-center"
+                    className="font-montserrat-medium text-white text-sm text-center"
+                    style={{
+                      includeFontPadding: false,
+                      padding: 0,
+                      paddingTop: 0,
+                      paddingBottom: 0,
+                      margin: 0,
+                      minWidth: 58,
+                      height: 24,
+                      textAlign: "center",
+                      textAlignVertical: "center",
+                      transform: [{ translateY: Platform.OS === "ios" ? -1 : 0 }],
+                    }}
                   />
-                  <Text className="font-montserrat text-sm text-white opacity-80">
-                    {props.unitLabel}
-                  </Text>
                 </View>
                 <View className="h-[3px] flex-1 bg-green-300" />
                 <Circle size={10} color="#86efac" fill="#86efac" />
