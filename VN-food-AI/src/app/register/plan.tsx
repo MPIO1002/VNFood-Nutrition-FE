@@ -17,8 +17,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PlanChoiceScreen() {
   const insets = useSafeAreaInsets();
-  const { markReady } = useUserHealthInformationContextController();
-  const [choice, setChoice] = useState(2);
+  const { markReady, data, updateData } =
+    useUserHealthInformationContextController();
+  const [choice, setChoice] = useState(data?.plan || 2);
 
   useEffect(() => {
     markReady("plan");
@@ -51,15 +52,24 @@ export default function PlanChoiceScreen() {
           <View className="w-full gap-3">
             <LoseWeightPlanBox
               activated={choice === 1}
-              onPress={() => setChoice(1)}
+              onPress={() => {
+                setChoice(1);
+                updateData({ plan: 1 });
+              }}
             />
             <BalancedPlanBox
               activated={choice === 2}
-              onPress={() => setChoice(2)}
+              onPress={() => {
+                setChoice(2);
+                updateData({ plan: 2 });
+              }}
             />
             <GainWeightPlanBox
               activated={choice === 3}
-              onPress={() => setChoice(3)}
+              onPress={() => {
+                setChoice(3);
+                updateData({ plan: 3 });
+              }}
             />
           </View>
         </View>
@@ -77,6 +87,7 @@ export default function PlanChoiceScreen() {
             </Text>
             <ArrowRight size={18} color="#FFF" />
           </Pressable>
+
           <View className="w-full flex-row items-center justify-center gap-1.5 pb-1">
             <LockIcon size={12} color={"#9ca3af"} />
             <Text className="text-xs font-montserrat text-center text-gray-400">

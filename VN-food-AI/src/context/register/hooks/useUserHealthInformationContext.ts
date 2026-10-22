@@ -1,5 +1,9 @@
-import { useCallback, useContext, useRef } from "react";
-import { UserHealthInformationContext } from "./context";
+import { useCallback, useContext, useRef, useState } from "react";
+import {
+  defaultUserHealthData,
+  UserHealthData,
+  UserHealthInformationContext,
+} from "./context";
 
 export interface UseUserHealthInformationContextOptions {
   totalSteps: number;
@@ -11,22 +15,28 @@ export const useUserHealthInformationContext = ({
   onAllReady,
 }: UseUserHealthInformationContextOptions) => {
   const readySteps = useRef<Set<string>>(new Set<string>());
+  const [data, setData] = useState<UserHealthData>(defaultUserHealthData);
+
   const markReady = useCallback(
     (name: string) => {
       readySteps.current.add(name);
       if (readySteps.current.size === totalSteps) onAllReady?.();
     },
-    [totalSteps],
+    [totalSteps, onAllReady],
   );
+
+  const updateData = useCallback((partial: Partial<UserHealthData>) => {
+    setData((prev) => ({ ...prev, ...partial }));
+  }, []);
 
   return {
     markReady,
+    data,
+    updateData,
   };
 };
 
 export const useUserHealthInformationContextController = () => {
   const ctx = useContext(UserHealthInformationContext);
-
-  const { markReady } = ctx;
-  return { markReady };
+  return ctx;
 };

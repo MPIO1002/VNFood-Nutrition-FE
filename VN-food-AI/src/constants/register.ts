@@ -1,1 +1,8 @@
-export const HEALTH_INFORMATION_STEPS = ["weight", "height", "plan"];
+export const HEALTH_INFORMATION_STEPS = [
+  "gender",
+  "age",
+  "weight",
+  "height",
+  "activity",
+  "plan",
+];

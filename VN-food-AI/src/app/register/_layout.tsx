@@ -13,14 +13,20 @@ import UserHealthInformationContextProvider from "../../context/register/UserHea
 function InputUserHealthInformationTopPanel() {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
-  const currentStepName = pathname.split("/").pop() ?? "weight";
+  const currentStepName = pathname.split("/").pop() ?? "gender";
 
   const getPageTitle = (step: string) => {
     switch (step) {
+      case "gender":
+        return "Giới tính";
+      case "age":
+        return "Độ tuổi";
       case "weight":
         return "Cân nặng";
       case "height":
         return "Chiều cao";
+      case "activity":
+        return "Mức độ vận động";
       case "plan":
         return "Mục tiêu vóc dáng";
       default:
@@ -70,24 +76,41 @@ function UserProgress() {
   const pathname = usePathname();
   useEffect(() => {
     const name = pathname.split("/").pop() ?? "";
-    setStep(HEALTH_INFORMATION_STEPS.indexOf(name));
+    const index = HEALTH_INFORMATION_STEPS.indexOf(name);
+    if (index !== -1) {
+      setStep(index);
+    }
   }, [pathname]);
 
-  const stepCategory =
-    currentStep === 2 ? "Mục tiêu cá nhân" : "Thể trạng ban đầu";
+  const getStepCategory = (step: number) => {
+    switch (step) {
+      case 0:
+      case 1:
+        return "THÔNG TIN BAN ĐẦU";
+      case 2:
+      case 3:
+        return "THỂ TRẠNG BAN ĐẦU";
+      case 4:
+        return "THÓI QUEN SINH HOẠT";
+      case 5:
+        return "MỤC TIÊU CÁ NHÂN";
+      default:
+        return "THÔNG TIN BAN ĐẦU";
+    }
+  };
 
   return (
-    <View className="w-full bg-gray-100 h-15 justify-center px-5 pt-4 pb-2">
+    <View className="w-full bg-gray-100 justify-center px-5 pt-3 pb-2">
       <View className="w-full flex-row items-center">
-        <Text className="font-montserrat text-xs text-zinc-500">
-          Bước {currentStep + 1} trên {stepLength}
+        <Text className="font-montserrat-bold text-xs text-zinc-500 uppercase">
+          BƯỚC {currentStep + 1} TRÊN {stepLength}
         </Text>
         <DotIcon size={16} color="#71717a" />
-        <Text className="font-montserrat text-xs text-zinc-500">
-          {stepCategory}
+        <Text className="font-montserrat-bold text-xs text-zinc-500 uppercase">
+          {getStepCategory(currentStep)}
         </Text>
       </View>
-      <View className="w-full mt-1.5">
+      <View className="w-full mt-2">
         <ProgressStep
           currentStep={currentStep}
           totalSteps={stepLength}

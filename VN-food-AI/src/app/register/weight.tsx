@@ -15,7 +15,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function InputWeightScreen() {
   const insets = useSafeAreaInsets();
-  const { markReady } = useUserHealthInformationContextController();
+  const { markReady, updateData } =
+    useUserHealthInformationContextController();
   const [isKgMode, setIsKgMode] = useState(true);
 
   const [isKgRulerReady, setIsKgRulerReady] = useState(false);
@@ -223,12 +224,21 @@ export default function InputWeightScreen() {
       <View className="w-full gap-2.5">
         <Pressable
           className="w-full bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2 active:opacity-40"
-          onPress={() => router.push("/register/height")}>
+          onPress={() => {
+            const currentWeight = isKgMode
+              ? kgScreenValue.value
+              : lbsScreenValue.value * 0.453592;
+            if (currentWeight > 0) {
+              updateData({ weight: Math.round(currentWeight * 10) / 10 });
+            }
+            router.push("/register/height");
+          }}>
           <Text className="font-montserrat-bold text-[15px] text-white">
             {"Tiếp tục (Chọn chiều cao)"}
           </Text>
           <ArrowRight size={18} color="#FFF" />
         </Pressable>
+
         <View className="w-full flex-row items-center justify-center gap-1.5 pb-1">
           <LockIcon size={12} color={"#9ca3af"} />
           <Text className="text-xs font-montserrat text-center text-gray-400">

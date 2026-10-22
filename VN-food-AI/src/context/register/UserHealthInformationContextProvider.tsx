@@ -13,13 +13,14 @@ export default function UserHealthInformationContextProvider({
   totalSteps,
   onAllReady,
 }: UserHealthInformationContextProviderProps) {
-  const { markReady } = useUserHealthInformationContext({
+  const { markReady, data, updateData } = useUserHealthInformationContext({
     totalSteps,
     onAllReady,
   });
 
   return (
-    <UserHealthInformationContext.Provider value={{ markReady }}>
+    <UserHealthInformationContext.Provider
+      value={{ markReady, data, updateData }}>
       {children}
     </UserHealthInformationContext.Provider>
   );

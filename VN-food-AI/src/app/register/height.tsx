@@ -26,7 +26,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function InputHeightScreen() {
   const insets = useSafeAreaInsets();
-  const { markReady } = useUserHealthInformationContextController();
+  const { markReady, updateData } =
+    useUserHealthInformationContextController();
 
   const [isCmMode, setIsCmMode] = useState(true);
   const [isCmRulerReady, setIsCmRulerReady] = useState(false);
@@ -241,12 +242,21 @@ export default function InputHeightScreen() {
       <View className="w-full gap-2.5">
         <Pressable
           className="w-full bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2 active:opacity-40"
-          onPress={() => router.push("/register/plan")}>
+          onPress={() => {
+            const currentHeight = isCmMode
+              ? cmScreenValue.value
+              : ftScreenValue.value * 2.54;
+            if (currentHeight > 0) {
+              updateData({ height: Math.round(currentHeight) });
+            }
+            router.push("/register/activity");
+          }}>
           <Text className="font-montserrat-bold text-[15px] text-white">
-            {"Tiếp tục (Chọn mục tiêu)"}
+            {"Tiếp tục (Chọn mức độ vận động)"}
           </Text>
           <ArrowRight size={18} color="#FFF" />
         </Pressable>
+
         <View className="w-full flex-row items-center justify-center gap-1.5 pb-1">
           <LockIcon size={12} color={"#9ca3af"} />
           <Text className="text-xs font-montserrat text-center text-gray-400">

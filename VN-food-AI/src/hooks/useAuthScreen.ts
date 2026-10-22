@@ -87,8 +87,8 @@ export function useAuthScreen() {
           password,
           full_name: fullName.trim() || undefined,
         });
-        // Sau khi đăng ký thành công, chuyển tiếp sang bước thiết lập thể trạng
-        router.push('/register/weight');
+        // Sau khi đăng ký thành công, chuyển tiếp sang bước thiết lập thể trạng (bước 1: Giới tính)
+        router.push('/register/gender');
       }
     } catch (error: any) {
       const msg = error?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
