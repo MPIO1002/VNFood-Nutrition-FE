@@ -4,20 +4,41 @@ import Svg, { Circle } from 'react-native-svg';
 import { Sparkles, ChevronRight, Utensils, Flame } from 'lucide-react-native';
 import { PressScale } from './PressScale';
 
+interface MacroData {
+  consumed: number;
+  target: number | null;
+}
+
 interface CalorieRingProps {
   goal: number;
   consumed: number;
   burned?: number;
+  protein?: MacroData;
+  carbs?: MacroData;
+  fat?: MacroData;
   className?: string;
 }
 
-export function CalorieRing({ goal, consumed, burned = 320, className }: CalorieRingProps) {
+export function CalorieRing({
+  goal,
+  consumed,
+  burned = 0,
+  protein,
+  carbs,
+  fat,
+  className,
+}: CalorieRingProps) {
   const remaining = goal - consumed;
   const RING_R = 82;
   const RING_STROKE = 15;
   const CIRCUMFERENCE = 2 * Math.PI * RING_R;
-  const PROGRESS_RATIO = consumed / goal;
+  const PROGRESS_RATIO = Math.min(consumed / goal, 1);
   const STROKE_DASHOFFSET = CIRCUMFERENCE * (1 - PROGRESS_RATIO);
+
+  // Calculate macro percentages
+  const proteinPercent = protein?.target ? Math.min(Math.round((protein.consumed / protein.target) * 100), 100) : 0;
+  const carbsPercent = carbs?.target ? Math.min(Math.round((carbs.consumed / carbs.target) * 100), 100) : 0;
+  const fatPercent = fat?.target ? Math.min(Math.round((fat.consumed / fat.target) * 100), 100) : 0;
 
   return (
     <View className={`bg-canvas-white rounded-[24px] p-5 shadow-sm border border-border-subtle mb-6 ${className || ''}`}>
@@ -28,7 +49,7 @@ export function CalorieRing({ goal, consumed, burned = 320, className }: Calorie
         </View>
         <PressScale>
           <View className="flex-row items-center gap-1">
-            <Text 
+            <Text
               className="font-montserrat-semibold text-[13px] text-zinc-500"
               numberOfLines={1}
             >
@@ -91,40 +112,60 @@ export function CalorieRing({ goal, consumed, burned = 320, className }: Calorie
         </View>
       </View>
 
-      {/* Macro Row placeholder */}
+      {/* Macro Row — displays real data from daily API */}
       <View className="flex-row gap-2 mt-4">
-        {/* We can extract Macro Pill later, keeping simple here */}
         <View className="flex-1 bg-slate-50 p-3 rounded-2xl border border-slate-100">
           <View className="flex-row justify-between items-center mb-2">
             <Text className="font-montserrat-semibold text-[11px] text-slate-700">Protein</Text>
-            <Text className="font-montserrat-bold text-[11px] text-slate-700">61%</Text>
+            <Text className="font-montserrat-bold text-[11px] text-slate-700">
+              {protein?.target ? `${proteinPercent}%` : '--'}
+            </Text>
           </View>
           <View className="h-[5px] bg-slate-200 rounded-full overflow-hidden mb-2">
-            <View className="h-full bg-macro-protein w-[61%]" />
+            <View className="h-full bg-macro-protein" style={{ width: `${proteinPercent}%` }} />
           </View>
-          <Text className="font-montserrat-bold text-[13px] text-charcoal-pure">85<Text className="font-montserrat-medium text-[11px] text-zinc-400">/140g</Text></Text>
+          <Text className="font-montserrat-bold text-[13px] text-charcoal-pure">
+            {Math.round(protein?.consumed ?? 0)}
+            <Text className="font-montserrat-medium text-[11px] text-zinc-400">
+              /{protein?.target ? Math.round(protein.target) : '--'}g
+            </Text>
+          </Text>
         </View>
 
         <View className="flex-1 bg-amber-50 p-3 rounded-2xl border border-amber-100">
           <View className="flex-row justify-between items-center mb-2">
             <Text className="font-montserrat-semibold text-[11px] text-amber-800">Carbs</Text>
-            <Text className="font-montserrat-bold text-[11px] text-amber-800">73%</Text>
+            <Text className="font-montserrat-bold text-[11px] text-amber-800">
+              {carbs?.target ? `${carbsPercent}%` : '--'}
+            </Text>
           </View>
           <View className="h-[5px] bg-amber-200 rounded-full overflow-hidden mb-2">
-            <View className="h-full bg-macro-carbs w-[73%]" />
+            <View className="h-full bg-macro-carbs" style={{ width: `${carbsPercent}%` }} />
           </View>
-          <Text className="font-montserrat-bold text-[13px] text-charcoal-pure">160<Text className="font-montserrat-medium text-[11px] text-zinc-400">/220g</Text></Text>
+          <Text className="font-montserrat-bold text-[13px] text-charcoal-pure">
+            {Math.round(carbs?.consumed ?? 0)}
+            <Text className="font-montserrat-medium text-[11px] text-zinc-400">
+              /{carbs?.target ? Math.round(carbs.target) : '--'}g
+            </Text>
+          </Text>
         </View>
 
         <View className="flex-1 bg-rose-50 p-3 rounded-2xl border border-rose-100">
           <View className="flex-row justify-between items-center mb-2">
             <Text className="font-montserrat-semibold text-[11px] text-rose-800">Chất béo</Text>
-            <Text className="font-montserrat-bold text-[11px] text-rose-800">69%</Text>
+            <Text className="font-montserrat-bold text-[11px] text-rose-800">
+              {fat?.target ? `${fatPercent}%` : '--'}
+            </Text>
           </View>
           <View className="h-[5px] bg-rose-200 rounded-full overflow-hidden mb-2">
-            <View className="h-full bg-macro-fat w-[69%]" />
+            <View className="h-full bg-macro-fat" style={{ width: `${fatPercent}%` }} />
           </View>
-          <Text className="font-montserrat-bold text-[13px] text-charcoal-pure">45<Text className="font-montserrat-medium text-[11px] text-zinc-400">/65g</Text></Text>
+          <Text className="font-montserrat-bold text-[13px] text-charcoal-pure">
+            {Math.round(fat?.consumed ?? 0)}
+            <Text className="font-montserrat-medium text-[11px] text-zinc-400">
+              /{fat?.target ? Math.round(fat.target) : '--'}g
+            </Text>
+          </Text>
         </View>
       </View>
     </View>

@@ -125,6 +125,14 @@ function UserProgress() {
 export default function InputUserHealthInformationLayout() {
   const [isLoading, setIsLoading] = useState(true);
 
+  // Safety fallback so loading overlay never gets stuck
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <UserHealthInformationContextProvider
       totalSteps={HEALTH_INFORMATION_STEPS.length}
@@ -136,7 +144,7 @@ export default function InputUserHealthInformationLayout() {
             backBehavior="history"
             screenOptions={{
               lazy: false,
-              freezeOnBlur: true,
+              freezeOnBlur: false,
               headerShown: false,
               animation: "shift",
               tabBarStyle: { display: "none" },

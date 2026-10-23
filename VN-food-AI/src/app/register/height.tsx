@@ -84,6 +84,13 @@ export default function InputHeightScreen() {
     if (isCmRulerReady && isFtRulerReady) markReady("height");
   }, [isCmRulerReady, isFtRulerReady]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      markReady("height");
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <View
       className="bg-gray-100 flex-1 px-5"

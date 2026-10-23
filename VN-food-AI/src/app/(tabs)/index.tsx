@@ -23,6 +23,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PressScale } from '@/components/PressScale';
 import { CalorieRing } from '@/components/CalorieRing';
+import { useAuth } from '@/context/AuthContext';
+import { useDailyNutrition } from '@/hooks/useDailyNutrition';
 
 // ─── How-It-Works data ───────────────────────────────────────────────────────
 const HOW_STEPS = [
@@ -58,6 +60,20 @@ const HOW_STEPS = [
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useAuth();
+  const {
+    targetKcal,
+    consumedKcal,
+    remainingKcal,
+    protein,
+    carbs,
+    fat,
+    meals,
+    hasMeals,
+  } = useDailyNutrition();
+
+  // Lấy tên hiển thị từ user profile
+  const displayName = user?.full_name?.split(' ').pop() || 'bạn';
 
   return (
     <View className="flex-1 bg-surface">
@@ -98,17 +114,24 @@ export default function HomeScreen() {
         <View className="flex-row items-center justify-between pt-1">
           <View className="flex-row items-center gap-2.5 flex-1">
             <View className="flex-1 min-w-0">
-              <Text className="font-montserrat-semibold text-base text-charcoal-pure tracking-tight">Chào Phúc, sẵn sàng chưa?</Text>
+              <Text className="font-montserrat-semibold text-base text-charcoal-pure tracking-tight">Chào {displayName}, sẵn sàng chưa?</Text>
               <Text className="font-montserrat text-xs text-zinc-500 mt-0.5">
                 Mục tiêu hôm nay:{' '}
-                <Text className="font-montserrat-bold text-charcoal-pure">2,100 kcal</Text>
+                <Text className="font-montserrat-bold text-charcoal-pure">{targetKcal.toLocaleString()} kcal</Text>
               </Text>
             </View>
           </View>
         </View>
 
         {/* Calorie Ring Hero Card */}
-        <CalorieRing goal={2100} consumed={650} burned={320} />
+        <CalorieRing
+          goal={targetKcal}
+          consumed={consumedKcal}
+          burned={0}
+          protein={protein}
+          carbs={carbs}
+          fat={fat}
+        />
 
         {/* Dark Banner */}
         <View className="rounded-[24px] overflow-hidden bg-charcoal-pure border border-zinc-800 shadow-lg relative">
@@ -183,49 +206,96 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* Recent log */}
-        <View className="gap-3">
-          <View className="flex-row items-center justify-between px-0.5">
-            <View className="flex-row items-center gap-2">
-              <Text className="font-montserrat-bold text-base text-charcoal-pure tracking-tight">Bữa sáng đã ghi nhận</Text>
-              <View className="px-2.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200">
-                <Text className="font-montserrat-bold text-[11px] text-charcoal-pure">650 kcal</Text>
+        {/* Recent log — show recent meals from API if available */}
+        {hasMeals ? (
+          <View className="gap-3">
+            <View className="flex-row items-center justify-between px-0.5">
+              <View className="flex-row items-center gap-2">
+                <Text className="font-montserrat-bold text-base text-charcoal-pure tracking-tight">Bữa ăn đã ghi nhận</Text>
+                <View className="px-2.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200">
+                  <Text className="font-montserrat-bold text-[11px] text-charcoal-pure">{Math.round(consumedKcal)} kcal</Text>
+                </View>
               </View>
+              <Pressable>
+                <Text className="font-montserrat-semibold text-xs text-charcoal-pure">Chỉnh sửa</Text>
+              </Pressable>
             </View>
-            <Pressable>
-              <Text className="font-montserrat-semibold text-xs text-charcoal-pure">Chỉnh sửa</Text>
-            </Pressable>
+            {meals.slice(0, 3).map((meal) => (
+              <View key={meal.id} className="p-4 rounded-3xl bg-canvas-white border border-border-hairline flex-row items-center gap-3 shadow-sm">
+                <View className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 bg-zinc-100 items-center justify-center">
+                  {meal.image_url ? (
+                    <Image
+                      source={meal.image_url}
+                      style={{ width: '100%', height: '100%' }}
+                      contentFit="cover"
+                    />
+                  ) : (
+                    <Text className="text-2xl">🍽️</Text>
+                  )}
+                </View>
+                <View className="flex-1 min-w-0">
+                  <View className="flex-row items-center justify-between gap-1">
+                    <Text className="font-montserrat-bold text-[15px] text-charcoal-pure flex-1" numberOfLines={1}>
+                      {meal.dish_name || 'Bữa ăn'}
+                    </Text>
+                    <Text className="font-montserrat-bold text-sm text-charcoal-pure shrink-0">
+                      {Math.round(meal.total_calories)} kcal
+                    </Text>
+                  </View>
+                  <Text className="font-montserrat text-xs text-zinc-500 mt-1" numberOfLines={1}>
+                    {meal.meal_type === 'breakfast' ? 'Bữa sáng' :
+                      meal.meal_type === 'lunch' ? 'Bữa trưa' :
+                        meal.meal_type === 'dinner' ? 'Bữa tối' :
+                          meal.meal_type === 'snack' ? 'Bữa phụ' : meal.meal_type}
+                    {' • '}
+                    {new Date(meal.consumed_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                  {/* Macros per meal */}
+                  {(meal.protein_g != null || meal.fat_g != null || meal.carb_g != null) && (
+                    <View className="flex-row items-center gap-2 mt-1.5">
+                      {meal.protein_g != null && (
+                        <View className="flex-row items-center gap-0.5 px-1.5 py-0.5 rounded bg-slate-100">
+                          <Text className="font-montserrat-bold text-[10px] text-slate-600">P</Text>
+                          <Text className="font-montserrat-medium text-[10px] text-slate-500">{Math.round(meal.protein_g)}g</Text>
+                        </View>
+                      )}
+                      {meal.carb_g != null && (
+                        <View className="flex-row items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-50">
+                          <Text className="font-montserrat-bold text-[10px] text-amber-700">C</Text>
+                          <Text className="font-montserrat-medium text-[10px] text-amber-600">{Math.round(meal.carb_g)}g</Text>
+                        </View>
+                      )}
+                      {meal.fat_g != null && (
+                        <View className="flex-row items-center gap-0.5 px-1.5 py-0.5 rounded bg-rose-50">
+                          <Text className="font-montserrat-bold text-[10px] text-rose-700">F</Text>
+                          <Text className="font-montserrat-medium text-[10px] text-rose-600">{Math.round(meal.fat_g)}g</Text>
+                        </View>
+                      )}
+                    </View>
+                  )}
+                </View>
+              </View>
+            ))}
           </View>
-          <View className="p-4 rounded-3xl bg-canvas-white border border-border-hairline flex-row items-center gap-3 shadow-sm">
-            <View className="w-16 h-16 rounded-2xl overflow-hidden shrink-0">
-              <Image
-                source="https://lh3.googleusercontent.com/aida-public/AB6AXuBfkkjEakLFXs1rjrfu1h-DyUsiHkgnY1fy2sddlG_m_PRuSGCd6w8LfxN7v2KCQXX22BE5jHwp3YcHqptGe-StzVsUz1hS6Kj10nwYO_6pRzg9U42Q5NEiN_AOfqNvP6B06MPTmb-QKWPKEtywietai5HLV3wRScxqBrQ39pcH5Fre4MzQ7yB3AW2aK0ZImmdJBCjSVmJY0RtLX8aOwTgUz-_p2eTGuhi_pej84IqR"
-                style={{ width: '100%', height: '100%' }}
-                contentFit="cover"
-              />
-            </View>
-            <View className="flex-1 min-w-0">
-              <View className="flex-row items-center justify-between gap-1">
-                <Text className="font-montserrat-bold text-[15px] text-charcoal-pure flex-1" numberOfLines={1}>Phở bò tái nạm gầu</Text>
-                <Text className="font-montserrat-bold text-sm text-charcoal-pure shrink-0">520 kcal</Text>
+        ) : (
+          <View className="gap-3">
+            <View className="flex-row items-center justify-between px-0.5">
+              <View className="flex-row items-center gap-2">
+                <Text className="font-montserrat-bold text-base text-charcoal-pure tracking-tight">Bữa ăn hôm nay</Text>
+                <View className="px-2.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200">
+                  <Text className="font-montserrat-bold text-[11px] text-charcoal-pure">0 kcal</Text>
+                </View>
               </View>
-              <Text className="font-montserrat text-xs text-zinc-500 mt-1" numberOfLines={1}>
-                1 tô vừa (580g) • Nước dùng trong, ít béo
+            </View>
+            <View className="p-5 rounded-3xl bg-canvas-white border border-border-hairline items-center justify-center shadow-sm">
+              <Text className="text-3xl mb-2">📷</Text>
+              <Text className="font-montserrat-semibold text-sm text-charcoal-pure mb-1">Chưa có bữa ăn nào</Text>
+              <Text className="font-montserrat text-xs text-zinc-500 text-center">
+                Quét bữa ăn đầu tiên để bắt đầu theo dõi dinh dưỡng hôm nay
               </Text>
-              <View className="flex-row gap-1.5 mt-2">
-                <View className="px-2 py-0.5 rounded bg-slate-100 border border-slate-300">
-                  <Text className="font-montserrat-bold text-[10px] text-slate-700">P: 34g</Text>
-                </View>
-                <View className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200">
-                  <Text className="font-montserrat-bold text-[10px] text-amber-800">C: 62g</Text>
-                </View>
-                <View className="px-2 py-0.5 rounded bg-rose-50 border border-rose-200">
-                  <Text className="font-montserrat-bold text-[10px] text-rose-800">F: 14g</Text>
-                </View>
-              </View>
             </View>
           </View>
-        </View>
+        )}
 
         <View className="h-28" />
       </ScrollView>

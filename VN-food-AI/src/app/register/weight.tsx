@@ -73,6 +73,13 @@ export default function InputWeightScreen() {
     if (isKgRulerReady && isLbsRulerReady) markReady("weight");
   }, [isKgRulerReady, isLbsRulerReady]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      markReady("weight");
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <View
       className="bg-gray-100 flex-1 px-5"
