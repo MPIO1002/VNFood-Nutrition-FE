@@ -1,5 +1,5 @@
+import { useAuthScreen } from "@/features/auth";
 import { Image } from "expo-image";
-import { router } from "expo-router";
 import {
   ArrowRight,
   CheckSquare,
@@ -26,7 +26,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
-import { useAuthScreen } from "../hooks/useAuthScreen";
 
 const AppleIcon = ({ size = 20, color = "#000" }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -176,9 +175,7 @@ export default function AuthScreen() {
 
               <View className="mb-4">
                 <Text className="font-montserrat-bold text-[10px] text-zinc-700 tracking-wider mb-2 uppercase">
-                  {isLogin
-                    ? "Email"
-                    : "Địa chỉ Email"}
+                  {isLogin ? "Email" : "Địa chỉ Email"}
                 </Text>
                 <View className="flex-row items-center bg-[#F6F5F6] rounded-xl px-4 h-12">
                   <Mail size={18} color="#A1A1AA" />

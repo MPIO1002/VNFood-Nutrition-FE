@@ -1,7 +1,9 @@
-import { BalancedPlanBox } from "@/components/plan/BalancedPlanBox";
-import { GainWeightPlanBox } from "@/components/plan/GainWeightPlanBox";
-import { LoseWeightPlanBox } from "@/components/plan/LoseWeightPlanBox";
-import { useUserHealthInformationContextController } from "@/context/register/hooks/useUserHealthInformationContext";
+import {
+  BalancedPlanBox,
+  GainWeightPlanBox,
+  LoseWeightPlanBox,
+  useUserHealthInformationContext,
+} from "@/features/health-register";
 import { router } from "expo-router";
 import { ArrowRight, LockIcon } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -17,7 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PlanChoiceScreen() {
   const insets = useSafeAreaInsets();
-  const { markReady } = useUserHealthInformationContextController();
+  const { markReady } = useUserHealthInformationContext();
   const [choice, setChoice] = useState(2);
 
   useEffect(() => {
@@ -44,8 +46,8 @@ export default function PlanChoiceScreen() {
               Mục tiêu vóc dáng của bạn là gì?
             </Text>
             <Text className="font-montserrat text-sm text-gray-400 mt-1">
-              Thuật toán CaloViet AI sẽ tự động phân bổ ngân sách calo và tỷ
-              lệ đạm - đường - béo chuẩn cho cơ địa người Việt.
+              Thuật toán CaloViet AI sẽ tự động phân bổ ngân sách calo và tỷ lệ
+              đạm - đường - béo chuẩn cho cơ địa người Việt.
             </Text>
           </View>
           <View className="w-full gap-3">

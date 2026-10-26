@@ -4,7 +4,7 @@ import {
   WeightSliderRuler,
   WeightSliderRulerProps,
 } from "@/components/slider/ruler/WeightSliderRuler";
-import { useUserHealthInformationContextController } from "@/context/register/hooks/useUserHealthInformationContext";
+import { useUserHealthInformationContext } from "@/features/health-register";
 import { router } from "expo-router";
 import { ArrowRight, LockIcon, Minus, Plus } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function InputWeightScreen() {
   const insets = useSafeAreaInsets();
-  const { markReady } = useUserHealthInformationContextController();
+  const { markReady } = useUserHealthInformationContext();
   const [isKgMode, setIsKgMode] = useState(true);
 
   const [isKgRulerReady, setIsKgRulerReady] = useState(false);

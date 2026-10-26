@@ -1,7 +1,7 @@
+import { Badge } from "@/components/ui/badge";
+import { Icon } from "@/components/ui/icon";
 import { Circle, Scale } from "lucide-react-native";
 import { Text, View } from "react-native";
-import { Badge } from "../ui/badge";
-import { Icon } from "../ui/icon";
 import { PlanBox, PlanBoxProps } from "./PlanBox";
 
 export function BalancedPlanBox(props: PlanBoxProps) {
