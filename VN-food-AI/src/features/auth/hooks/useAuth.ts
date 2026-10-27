@@ -1,4 +1,5 @@
 import {
+  LoginRequest,
   RegisterRequest,
   TokenResponse,
   UserResponse,
@@ -9,6 +10,7 @@ import {
   saveAuthSession,
 } from "@/api/session/session";
 
+import { LogoutApiV1AuthLogoutPostMutationVariables } from "@/api/generated";
 import { APIMutatorOptions } from "@/api/types/api";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -58,7 +60,7 @@ export const useAuth = () => {
     options,
   }: {
     data: RegisterRequest;
-    options?: APIMutatorOptions<TokenResponse>;
+    options?: APIMutatorOptions<TokenResponse, RegisterRequest>;
   }) => {
     registerMutation.mutate(
       {
@@ -81,6 +83,9 @@ export const useAuth = () => {
           console.log(`Failed status: ${e.status}`);
           options?.onError?.(e);
         },
+        onSettled: (res, e, v) => {
+          options?.onSettled?.(res, e, { ...v.data });
+        },
       },
     );
   };
@@ -89,8 +94,8 @@ export const useAuth = () => {
     data,
     options,
   }: {
-    data: RegisterRequest;
-    options?: APIMutatorOptions<TokenResponse>;
+    data: LoginRequest;
+    options?: APIMutatorOptions<TokenResponse, LoginRequest>;
   }) => {
     loginMutation.mutate(
       {
@@ -112,6 +117,9 @@ export const useAuth = () => {
           console.log(`Failed status: ${e.status}`);
           options?.onError?.(e);
         },
+        onSettled: (res, e, v) => {
+          options?.onSettled?.(res, e, { ...v.data });
+        },
       },
     );
   };
@@ -119,7 +127,10 @@ export const useAuth = () => {
   const handleLogout = async ({
     options,
   }: {
-    options: APIMutatorOptions<void>;
+    options?: APIMutatorOptions<
+      void,
+      LogoutApiV1AuthLogoutPostMutationVariables
+    >;
   }) => {
     const { refreshToken } = await getStoredTokens();
     if (!refreshToken) return;
@@ -136,12 +147,15 @@ export const useAuth = () => {
           queryClient.invalidateQueries({
             queryKey: authQueryKeys.currentUser(),
           });
-          options.onSuccess?.();
+          options?.onSuccess?.();
         },
         onError: (e) => {
           console.log(`Failed to call api: ${e.cause?.message}`);
           console.log(`Failed status: ${e.status}`);
           options?.onError?.(e);
+        },
+        onSettled: (_, e, req) => {
+          options?.onSettled?.(undefined, e, req);
         },
       },
     );

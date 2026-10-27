@@ -20,11 +20,11 @@ interface AuthContextType {
   isLoading: boolean;
   logIn: (props: {
     data: LoginRequest;
-    options?: APIMutatorOptions<TokenResponse>;
+    options?: APIMutatorOptions<TokenResponse, LoginRequest>;
   }) => void;
   register: (props: {
     data: RegisterRequest;
-    options?: APIMutatorOptions<TokenResponse>;
+    options?: APIMutatorOptions<TokenResponse, RegisterRequest>;
   }) => void;
   logOut: () => Promise<void>;
 }
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     options,
   }: {
     data: LoginRequest;
-    options?: APIMutatorOptions<TokenResponse>;
+    options?: APIMutatorOptions<TokenResponse, LoginRequest>;
   }) => {
     handleLogin({
       data,
@@ -62,9 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setCurrentUser(res.user);
           options?.onSuccess?.(res);
         },
-        onError: (e) => {
-          options?.onError?.(e);
-        },
+        onError: options?.onError,
+        onSettled: options?.onSettled,
       },
     });
   };
@@ -74,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     options,
   }: {
     data: RegisterRequest;
-    options?: APIMutatorOptions<TokenResponse>;
+    options?: APIMutatorOptions<TokenResponse, RegisterRequest>;
   }) => {
     handleRegister({
       data,
@@ -83,9 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setCurrentUser(res.user);
           options?.onSuccess?.(res);
         },
-        onError: (e) => {
-          options?.onError?.(e);
-        },
+        onError: options?.onError,
+        onSettled: options?.onSettled,
       },
     });
   };
