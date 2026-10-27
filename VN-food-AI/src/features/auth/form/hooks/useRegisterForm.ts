@@ -1,10 +1,9 @@
-import { HTTPValidationError, RegisterRequest } from "@/api/generated/model";
-import { ErrorType } from "@/api/mutator/axios-instance";
+import { RegisterRequest, TokenResponse } from "@/api/generated/model";
+import { APIMutatorOptions } from "@/api/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Alert } from "react-native";
 import { useAuthContext } from "../../context/AuthContext";
 import {
   defaultRegisterValues,
@@ -72,24 +71,23 @@ export const useRegisterForm = () => {
     defaultValues: defaultRegisterValues,
   });
 
-  const showErrorMsg = (e: ErrorType<HTTPValidationError>) => {
-    const msg =
-      `${e?.response?.data.detail}` || "Đã có lỗi xảy ra. Vui lòng thử lại.";
-    Alert.alert("Đăng ký không thành công", msg);
-  };
-
   const onSubmit = useCallback(
-    (data: RegisterRequest) => {
+    (
+      data: RegisterRequest,
+      options?: APIMutatorOptions<TokenResponse, RegisterRequest>,
+    ) => {
       setIsSubmitting(true);
       register({
         data,
         options: {
-          onSuccess: (_) => {
+          onSuccess: (res) => {
+            options?.onSuccess?.(res);
             router.push("/register/weight");
           },
-          onError: (e) => showErrorMsg(e),
-          onSettled: () => {
+          onError: options?.onError,
+          onSettled: (res, e, req) => {
             setIsSubmitting(false);
+            options?.onSettled?.(res, e, req);
           },
         },
       });
@@ -97,5 +95,10 @@ export const useRegisterForm = () => {
     [form, register],
   );
 
-  return { form, getPasswordStrength, onSubmit, isSubmitting };
+  return {
+    form,
+    getPasswordStrength,
+    onSubmit,
+    isSubmitting,
+  };
 };

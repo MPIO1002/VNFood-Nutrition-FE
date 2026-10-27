@@ -1,10 +1,13 @@
-import { HTTPValidationError, LoginRequest } from "@/api/generated/model";
-import { ErrorType } from "@/api/mutator/axios-instance";
+import {
+  LoginRequest,
+  RegisterRequest,
+  TokenResponse
+} from "@/api/generated/model";
+import { APIMutatorOptions } from "@/api/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Alert } from "react-native";
 import { useAuthContext } from "../../context/AuthContext";
 import {
   defaultLoginValues,
@@ -21,23 +24,24 @@ export const useLoginForm = () => {
     defaultValues: defaultLoginValues,
   });
 
-  const showErrorMsg = (e: ErrorType<HTTPValidationError>) => {
-    const msg =
-      `${e?.response?.data.detail}` || "Đã có lỗi xảy ra. Vui lòng thử lại.";
-    Alert.alert("Đăng ký không thành công", msg);
-  };
-
   const onSubmit = useCallback(
-    (data: LoginRequest) => {
+    (
+      data: LoginRequest,
+      options?: APIMutatorOptions<TokenResponse, RegisterRequest>,
+    ) => {
       setIsSubmitting(true);
       logIn({
         data,
         options: {
-          onSuccess: (_) => {
+          onSuccess: (res) => {
+            options?.onSuccess?.(res);
             router.replace("/(tabs)");
           },
-          onError: (e) => showErrorMsg(e),
-          onSettled: () => setIsSubmitting(false),
+          onError: options?.onError,
+          onSettled: (res, e, req) => {
+            setIsSubmitting(false);
+            options?.onSettled?.(res, e, req);
+          },
         },
       });
     },
