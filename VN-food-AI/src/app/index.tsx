@@ -1,32 +1,25 @@
+import LoginForm from "@/features/auth/form/LoginForm";
+import RegisterForm from "@/features/auth/form/RegisterForm";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import {
-  ArrowRight,
-  CheckSquare,
   ChevronDown,
   Compass,
-  Eye,
-  EyeOff,
   Globe,
-  Lock,
-  Mail,
   Sparkles,
-  Square,
   User,
 } from "lucide-react-native";
+import { useState } from "react";
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
-import { useAuthScreen } from "../hooks/useAuthScreen";
 
 const AppleIcon = ({ size = 20, color = "#000" }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -56,29 +49,10 @@ const GoogleIcon = ({ size = 20 }) => (
 );
 
 export default function AuthScreen() {
-  const {
-    isLogin,
-    setIsLogin,
-    fullName,
-    setFullName,
-    email,
-    setEmail,
-    agreeTerms,
-    setAgreeTerms,
-    rememberMe,
-    setRememberMe,
-    password,
-    setPassword,
-    confirmPassword,
-    setConfirmPassword,
-    showPassword,
-    setShowPassword,
-    strength,
-    isSubmitting,
-    errorMessage,
-    handleAuth,
-    handleGuest,
-  } = useAuthScreen();
+  const [isLogin, setIsLogin] = useState(false);
+  const handleGuest = () => {
+    router.replace("/(tabs)");
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#FDFDFE]" edges={["top", "bottom"]}>
@@ -155,184 +129,7 @@ export default function AuthScreen() {
             </View>
 
             {/* Form Container */}
-            <View className="bg-white rounded-[24px] p-5 shadow-sm border border-zinc-100 mb-6">
-              {!isLogin && (
-                <View className="mb-4">
-                  <Text className="font-montserrat-bold text-[10px] text-zinc-700 tracking-wider mb-2 uppercase">
-                    Họ và tên
-                  </Text>
-                  <View className="flex-row items-center bg-[#F6F5F6] rounded-xl px-4 h-12">
-                    <User size={18} color="#A1A1AA" />
-                    <TextInput
-                      className="flex-1 ml-3 font-montserrat text-[14px] text-charcoal-pure"
-                      placeholder="Calo Việt"
-                      placeholderTextColor="#A1A1AA"
-                      value={fullName}
-                      onChangeText={setFullName}
-                    />
-                  </View>
-                </View>
-              )}
-
-              <View className="mb-4">
-                <Text className="font-montserrat-bold text-[10px] text-zinc-700 tracking-wider mb-2 uppercase">
-                  {isLogin
-                    ? "Email"
-                    : "Địa chỉ Email"}
-                </Text>
-                <View className="flex-row items-center bg-[#F6F5F6] rounded-xl px-4 h-12">
-                  <Mail size={18} color="#A1A1AA" />
-                  <TextInput
-                    className="flex-1 ml-3 font-montserrat text-[14px] text-charcoal-pure"
-                    placeholder="caloviet@example.com"
-                    placeholderTextColor="#A1A1AA"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    value={email}
-                    onChangeText={setEmail}
-                  />
-                </View>
-              </View>
-
-              <View className="mb-4">
-                <Text className="font-montserrat-bold text-[10px] text-zinc-700 tracking-wider mb-2 uppercase">
-                  Mật khẩu
-                </Text>
-                <View className="flex-row items-center bg-[#F6F5F6] rounded-xl px-4 h-12">
-                  <Lock size={18} color="#A1A1AA" />
-                  <TextInput
-                    className="flex-1 ml-3 font-montserrat text-[14px] text-charcoal-pure"
-                    placeholder={isLogin ? "••••••••" : "Tối thiểu 8 ký tự"}
-                    placeholderTextColor="#A1A1AA"
-                    secureTextEntry={!showPassword}
-                    value={password}
-                    onChangeText={setPassword}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}>
-                    {showPassword ? (
-                      <Eye size={18} color="#71717A" />
-                    ) : (
-                      <EyeOff size={18} color="#71717A" />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {!isLogin && (
-                <>
-                  <View className="flex-row items-center justify-between mb-2">
-                    <Text className="font-montserrat text-[11px] text-zinc-500">
-                      Độ mạnh mật khẩu:
-                    </Text>
-                    {password.length > 0 && (
-                      <Text
-                        className={`font-montserrat-medium text-[11px] ${strength.textColor}`}>
-                        {strength.label}
-                      </Text>
-                    )}
-                  </View>
-                  <View className="flex-row gap-1.5 mb-5">
-                    <View
-                      className={`flex-1 h-1 rounded-full ${strength.score >= 1 ? strength.color : "bg-zinc-200"}`}
-                    />
-                    <View
-                      className={`flex-1 h-1 rounded-full ${strength.score >= 2 ? strength.color : "bg-zinc-200"}`}
-                    />
-                    <View
-                      className={`flex-1 h-1 rounded-full ${strength.score >= 3 ? strength.color : "bg-zinc-200"}`}
-                    />
-                  </View>
-
-                  <View className="mb-5">
-                    <Text className="font-montserrat-bold text-[10px] text-zinc-700 tracking-wider mb-2 uppercase">
-                      Xác nhận mật khẩu
-                    </Text>
-                    <View className="flex-row items-center bg-[#F6F5F6] rounded-xl px-4 h-12">
-                      <Lock size={18} color="#A1A1AA" />
-                      <TextInput
-                        className="flex-1 ml-3 font-montserrat text-[14px] text-charcoal-pure"
-                        placeholder="Nhập lại mật khẩu"
-                        placeholderTextColor="#A1A1AA"
-                        secureTextEntry
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                      />
-                    </View>
-                  </View>
-
-                  <TouchableOpacity
-                    className="flex-row items-start gap-2.5 mb-6"
-                    onPress={() => setAgreeTerms(!agreeTerms)}>
-                    <View className="mt-0.5">
-                      {agreeTerms ? (
-                        <CheckSquare size={16} color="#27272A" />
-                      ) : (
-                        <Square size={16} color="#A1A1AA" />
-                      )}
-                    </View>
-                    <Text className="flex-1 font-montserrat text-[12px] text-zinc-500 leading-4">
-                      Tôi đồng ý với{" "}
-                      <Text className="font-montserrat-semibold text-charcoal-pure">
-                        Điều khoản dịch vụ
-                      </Text>{" "}
-                      &{" "}
-                      <Text className="font-montserrat-semibold text-charcoal-pure">
-                        Chính sách bảo mật
-                      </Text>{" "}
-                      của CaloViet AI
-                    </Text>
-                  </TouchableOpacity>
-                </>
-              )}
-
-              {isLogin && (
-                <View className="flex-row items-center justify-between mb-6 mt-1">
-                  <TouchableOpacity
-                    className="flex-row items-center gap-2"
-                    onPress={() => setRememberMe(!rememberMe)}>
-                    {rememberMe ? (
-                      <CheckSquare size={16} color="#27272A" />
-                    ) : (
-                      <Square size={16} color="#A1A1AA" />
-                    )}
-                    <Text className="font-montserrat text-[13px] text-zinc-500">
-                      Ghi nhớ đăng nhập
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity>
-                    <Text className="font-montserrat-semibold text-[13px] text-charcoal-pure">
-                      Quên mật khẩu?
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              {errorMessage && (
-                <View className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl">
-                  <Text className="font-montserrat-medium text-xs text-rose-600 leading-4">
-                    {errorMessage}
-                  </Text>
-                </View>
-              )}
-
-              <TouchableOpacity
-                className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2"
-                disabled={isSubmitting}
-                activeOpacity={0.8}
-                onPress={handleAuth}>
-                {isSubmitting ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <>
-                    <Text className="font-montserrat-bold text-[15px] text-white">
-                      {isLogin ? "Đăng nhập ngay" : "Tạo tài khoản mới"}
-                    </Text>
-                    <ArrowRight size={18} color="#FFF" />
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
+            {isLogin ? <LoginForm></LoginForm> : <RegisterForm></RegisterForm>}
 
             {/* Divider */}
             <View className="flex-row items-center mb-6 px-4">

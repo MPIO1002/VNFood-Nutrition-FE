@@ -1,14 +1,13 @@
 import { useProgressStep } from "@/components/progress/step/hooks/useProgressStep";
 import ProgressStep from "@/components/progress/step/ProgressStep";
 import { HEALTH_INFORMATION_STEPS } from "@/constants/register";
-import { Image } from "expo-image";
+import UserHealthInformationContextProvider from "@/features/health-register/context/UserHealthInformationContextProvider";
 import { router, Tabs, usePathname } from "expo-router";
 import { ArrowLeft, DotIcon } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import UserHealthInformationContextProvider from "../../context/register/UserHealthInformationContextProvider";
 
 function InputUserHealthInformationTopPanel() {
   const insets = useSafeAreaInsets();

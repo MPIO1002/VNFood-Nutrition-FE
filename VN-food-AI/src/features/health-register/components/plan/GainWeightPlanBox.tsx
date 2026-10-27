@@ -1,9 +1,9 @@
+import { Badge } from "@/components/ui/badge";
+import { Icon } from "@/components/ui/icon";
+import { Input } from "@/components/ui/input";
 import { Circle, TrendingDown } from "lucide-react-native";
 import { useState } from "react";
 import { Text, View } from "react-native";
-import { Badge } from "../ui/badge";
-import { Icon } from "../ui/icon";
-import { Input } from "../ui/input";
 import { PlanBox, PlanBoxProps } from "./PlanBox";
 
 export function GainWeightPlanBox(props: PlanBoxProps) {

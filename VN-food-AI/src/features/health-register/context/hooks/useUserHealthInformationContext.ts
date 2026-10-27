@@ -1,12 +1,11 @@
-import { useCallback, useContext, useRef } from "react";
-import { UserHealthInformationContext } from "./context";
+import { useCallback, useRef } from "react";
 
 export interface UseUserHealthInformationContextOptions {
   totalSteps: number;
   onAllReady?: () => void;
 }
 
-export const useUserHealthInformationContext = ({
+export const useUserHealthInformation = ({
   totalSteps,
   onAllReady,
 }: UseUserHealthInformationContextOptions) => {
@@ -22,11 +21,4 @@ export const useUserHealthInformationContext = ({
   return {
     markReady,
   };
-};
-
-export const useUserHealthInformationContextController = () => {
-  const ctx = useContext(UserHealthInformationContext);
-
-  const { markReady } = ctx;
-  return { markReady };
 };

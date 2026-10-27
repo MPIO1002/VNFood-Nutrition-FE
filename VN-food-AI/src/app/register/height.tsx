@@ -4,29 +4,18 @@ import {
   HeightSliderRulerProps,
 } from "@/components/slider/ruler/HeightSliderRuler";
 import { SliderRulerController } from "@/components/slider/ruler/ruler";
-import { useUserHealthInformationContextController } from "@/context/register/hooks/useUserHealthInformationContext";
+import { useUserHealthInformationContext } from "@/features/health-register";
 import { router } from "expo-router";
-import {
-  ArrowRight,
-  Dot,
-  LockIcon,
-  Minus,
-  Plus,
-} from "lucide-react-native";
+import { ArrowRight, Dot, LockIcon, Minus, Plus } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import {
-  Pressable,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Pressable, Text, TouchableOpacity, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useAnimatedProps, useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function InputHeightScreen() {
   const insets = useSafeAreaInsets();
-  const { markReady } = useUserHealthInformationContextController();
+  const { markReady } = useUserHealthInformationContext();
 
   const [isCmMode, setIsCmMode] = useState(true);
   const [isCmRulerReady, setIsCmRulerReady] = useState(false);
@@ -121,9 +110,7 @@ export default function InputHeightScreen() {
                   className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
                   ft
                 </Text>
-                <Dot
-                  width={10}
-                  color={!isCmMode ? "#fff" : "#71717A"}></Dot>
+                <Dot width={10} color={!isCmMode ? "#fff" : "#71717A"}></Dot>
                 <Text
                   className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
                   in
