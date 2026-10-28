@@ -1,7 +1,16 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, PanResponder, StyleSheet } from 'react-native';
+import React, { useRef, useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  PanResponder,
+  StyleSheet,
+} from 'react-native';
 import { Minus, Plus } from 'lucide-react-native';
 import { MIN_SIZE, MAX_SIZE } from '../constants/containers';
+
+/* PanResponder stores stable gesture handlers in refs by design. */
+/* eslint-disable react-hooks/refs */
 
 export function SwipeSlider({
   label,
@@ -12,7 +21,7 @@ export function SwipeSlider({
   value: number;
   onChange: (v: number) => void;
 }) {
-  const trackRef   = useRef<View>(null);
+  const trackRef = useRef<React.ComponentRef<typeof View>>(null);
   const trackWidth = useRef(0);
   const trackPageX = useRef(0);
   const lastEmitted = useRef(value);
@@ -34,12 +43,19 @@ export function SwipeSlider({
     }
   };
 
-  const panResponder = useRef(
-    PanResponder.create({
+  const [panResponder] = useState(() => {
+    // PanResponder is intentionally created once for stable gesture handlers.
+    return PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (evt) => {
-        trackRef.current?.measure((_x, _y, _w, _h, pageX) => {
+        trackRef.current?.measure((
+          _x: number,
+          _y: number,
+          _w: number,
+          _h: number,
+          pageX: number,
+        ) => {
           trackPageX.current = pageX;
           tryEmit(evt.nativeEvent.pageX - pageX);
         });
@@ -47,8 +63,8 @@ export function SwipeSlider({
       onPanResponderMove: (_evt, gestureState) => {
         tryEmit(gestureState.moveX - trackPageX.current);
       },
-    }),
-  ).current;
+    });
+  });
 
   const percent = ((value - MIN_SIZE) / (MAX_SIZE - MIN_SIZE)) * 100;
 
@@ -75,7 +91,13 @@ export function SwipeSlider({
           style={styles.trackOuter}
           onLayout={e => {
             trackWidth.current = e.nativeEvent.layout.width;
-            trackRef.current?.measure((_x, _y, _w, _h, pageX) => {
+            trackRef.current?.measure((
+              _x: number,
+              _y: number,
+              _w: number,
+              _h: number,
+              pageX: number,
+            ) => {
               trackPageX.current = pageX;
             });
           }}
