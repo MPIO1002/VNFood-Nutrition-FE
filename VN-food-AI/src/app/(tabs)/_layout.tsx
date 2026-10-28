@@ -1,10 +1,29 @@
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import { View, Text, Pressable, Platform } from 'react-native';
 import { Book, TrendingUp, ScanText, UtensilsCrossed, UserCircle } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PressScale } from '../../components/PressScale';
 
-function CustomTabBar({ state, descriptors, navigation }: any) {
+function navigateToTab(routeName: string) {
+  switch (routeName) {
+    case 'analytics':
+      router.navigate('/(tabs)/analytics');
+      break;
+    case 'scan':
+      router.navigate('/(tabs)/scan');
+      break;
+    case 'menu':
+      router.navigate('/(tabs)/menu');
+      break;
+    case 'profile':
+      router.navigate('/(tabs)/profile');
+      break;
+    default:
+      router.navigate('/(tabs)');
+  }
+}
+
+function CustomTabBar({ state, descriptors }: any) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -20,22 +39,9 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         const isFocused = state.index === index;
         
         const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
-
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
+          if (!isFocused) {
+            navigateToTab(route.name);
           }
-        };
-
-        const onLongPress = () => {
-          navigation.emit({
-            type: 'tabLongPress',
-            target: route.key,
-          });
         };
 
         // Configuration based on route name
@@ -96,7 +102,6 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             accessibilityState={isFocused ? { selected: true } : {}}
             accessibilityLabel={options.tabBarAccessibilityLabel}
             onPress={onPress}
-            onLongPress={onLongPress}
             className="flex-1 items-center justify-center gap-1.5 pt-1"
           >
             <Icon size={24} color={color} strokeWidth={isFocused ? 2.5 : 2} />
