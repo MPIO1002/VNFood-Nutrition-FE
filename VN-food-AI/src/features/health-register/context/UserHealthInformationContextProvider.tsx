@@ -7,6 +7,7 @@ type UserHealthInformationContextContent = {
   metabolismData: MetabolismRequest | null;
   markReady: (name: string) => void;
   assignMetabolismFieldData: (fieldData: MetabolismFieldData) => void;
+  assginMultipleMetabolismFieldData: (obj: Partial<MetabolismRequest>) => void;
 };
 
 export const UserHealthInformationContext =
@@ -14,6 +15,7 @@ export const UserHealthInformationContext =
     metabolismData: null,
     markReady: () => {},
     assignMetabolismFieldData: () => {},
+    assginMultipleMetabolismFieldData: () => {},
   });
 
 export interface UserHealthInformationContextProviderProps {
@@ -27,15 +29,24 @@ export default function UserHealthInformationContextProvider({
   totalSteps,
   onAllReady,
 }: UserHealthInformationContextProviderProps) {
-  const { metabolismData, markReady, assignMetabolismFieldData } =
-    useUserHealthInformation({
-      totalSteps,
-      onAllReady,
-    });
+  const {
+    metabolismData,
+    markReady,
+    assignMetabolismFieldData,
+    assginMultipleMetabolismFieldData,
+  } = useUserHealthInformation({
+    totalSteps,
+    onAllReady,
+  });
 
   return (
     <UserHealthInformationContext.Provider
-      value={{ metabolismData, markReady, assignMetabolismFieldData }}>
+      value={{
+        metabolismData,
+        markReady,
+        assignMetabolismFieldData,
+        assginMultipleMetabolismFieldData,
+      }}>
       {children}
     </UserHealthInformationContext.Provider>
   );
@@ -44,6 +55,16 @@ export default function UserHealthInformationContextProvider({
 export const useUserHealthInformationContext = () => {
   const ctx = useContext(UserHealthInformationContext);
 
-  const { markReady, assignMetabolismFieldData, metabolismData } = ctx;
-  return { markReady, assignMetabolismFieldData, metabolismData };
+  const {
+    markReady,
+    assignMetabolismFieldData,
+    metabolismData,
+    assginMultipleMetabolismFieldData,
+  } = ctx;
+  return {
+    markReady,
+    assignMetabolismFieldData,
+    metabolismData,
+    assginMultipleMetabolismFieldData,
+  };
 };

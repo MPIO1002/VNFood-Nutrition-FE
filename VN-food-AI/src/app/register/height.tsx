@@ -1,82 +1,41 @@
-import { AnimatedTextInput } from "@/components/animated-components";
-import {
-    VerticalSliderRuler,
-    VerticalSliderRulerProps,
-} from "@/components/slider/ruler/VerticalSliderRuler";
-import { SliderRulerController } from "@/components/slider/ruler/ruler";
 import { useUserHealthInformationContext } from "@/features/health-register";
+import CmSliderRuler from "@/features/health-register/height/CmSliderRuler";
+import FtSliderRuler from "@/features/health-register/height/FtSliderRuler";
 import { router } from "expo-router";
-import { ArrowRight, Dot, LockIcon, Minus, Plus } from "lucide-react-native";
+import { ArrowRight, Dot, LockIcon } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, Text, TouchableOpacity, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useAnimatedProps, useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function InputHeightScreen() {
   const insets = useSafeAreaInsets();
-  const { markReady } = useUserHealthInformationContext();
+  const { markReady, assignMetabolismFieldData } =
+    useUserHealthInformationContext();
 
   const [isCmMode, setIsCmMode] = useState(true);
   const [isCmRulerReady, setIsCmRulerReady] = useState(false);
-  const cmRulerController = useRef<SliderRulerController | null>(null);
-  const cmScreenValue = useSharedValue<number>(0);
+  const cmValue = useRef(0);
 
   const [isFtRulerReady, setIsFtRulerReady] = useState(false);
-  const ftScreenValue = useSharedValue<number>(0);
-  const ftRulerController = useRef<SliderRulerController | null>(null);
-
-  const cmProps: VerticalSliderRulerProps = {
-    min: 50,
-    max: 250,
-    initialValue: 160,
-    minorPerMediumSegment: 0,
-    mediumPerMajorSegment: 4,
-    step: 1,
-    unitLabel: "cm",
-    screenValue: cmScreenValue,
-    onFinishLoading: () => setIsCmRulerReady(true),
-    controlRef: cmRulerController,
-  };
-
-  const ftProps: VerticalSliderRulerProps = {
-    min: 50,
-    max: 250,
-    initialValue: 160,
-    minorPerMediumSegment: 0,
-    mediumPerMajorSegment: 4,
-    step: 1,
-    unitLabel: "in",
-    onFinishLoading: () => setIsFtRulerReady(true),
-    screenValue: ftScreenValue,
-    controlRef: ftRulerController,
-  };
-
-  const cmTextProps = useAnimatedProps(() => {
-    const v = cmScreenValue.value;
-    return {
-      text: String(v),
-      defaultValue: String(v),
-    };
-  });
-
-  const ftTextProps = useAnimatedProps(() => {
-    const v = ftScreenValue.value;
-    return {
-      text: String(v),
-      defaultValue: String(v),
-    };
-  });
+  const ftValue = useRef(0);
 
   useEffect(() => {
     if (isCmRulerReady && isFtRulerReady) markReady("height");
   }, [isCmRulerReady, isFtRulerReady]);
 
+  const onNext = () => {
+    assignMetabolismFieldData({
+      field: "height_cm",
+      value: isCmMode ? cmValue.current : ftValue.current,
+    });
+
+    router.push("/register/plan");
+  };
+
   return (
     <View
-      className="bg-gray-100 flex-1 px-5"
+      className="bg-gray-100 w-screen flex-1 px-5"
       style={{
-        paddingTop: 8,
         paddingBottom: Math.max(insets.bottom, 16),
       }}>
       <View className="w-full">
@@ -89,146 +48,63 @@ export default function InputHeightScreen() {
         </Text>
       </View>
 
-      {/* Main Card expanding to fit between top content and bottom button */}
-      <View className="w-full flex-1 my-3 p-5 bg-white rounded-[24px] shadow-sm justify-between">
-        {/* Header row: Unit toggle and big display */}
-        <View className="w-full flex-row items-center justify-between h-[52px]">
-          <View className="flex-row rounded-full bg-gray-200 p-0.5">
-            <TouchableOpacity
-              className={`py-1.5 px-4 rounded-full items-center justify-center ${isCmMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-              onPress={() => setIsCmMode(true)}>
+      <View className="w-full flex-1 my-3 p-5 bg-white rounded-[24px] shadow-sm justify-between relative">
+        <View className="flex-row rounded-full bg-gray-200 p-0.5 top-4 left-4 absolute">
+          <TouchableOpacity
+            className={`py-1.5 px-4 rounded-full items-center justify-center ${isCmMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
+            onPress={() => setIsCmMode(true)}>
+            <Text
+              className={`font-montserrat-medium text-sm ${isCmMode ? "text-white" : "text-zinc-500"}`}>
+              cm
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className={`py-1.5 px-3 rounded-full items-center justify-center ${!isCmMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
+            onPress={() => setIsCmMode(false)}>
+            <View className="flex-row items-center">
               <Text
-                className={`font-montserrat-medium text-sm ${isCmMode ? "text-white" : "text-zinc-500"}`}>
-                cm
+                className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
+                ft
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className={`py-1.5 px-3 rounded-full items-center justify-center ${!isCmMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-              onPress={() => setIsCmMode(false)}>
-              <View className="flex-row items-center">
-                <Text
-                  className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
-                  ft
-                </Text>
-                <Dot width={10} color={!isCmMode ? "#fff" : "#71717A"}></Dot>
-                <Text
-                  className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
-                  in
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          {/* Number display vertically centered in header row */}
-          <View className="flex-row items-center justify-end h-full">
-            <View
-              className="flex-row items-baseline justify-end absolute right-0"
-              style={{ opacity: isCmMode ? 1 : 0 }}
-              pointerEvents={isCmMode ? "auto" : "none"}>
-              <AnimatedTextInput
-                editable={false}
-                scrollEnabled={false}
-                multiline={false}
-                animatedProps={cmTextProps}
-                className="text-[38px] font-montserrat-bold text-black text-right"
-                style={{
-                  fontFamily: "Montserrat_700Bold",
-                  includeFontPadding: false,
-                  padding: 0,
-                  margin: 0,
-                  minWidth: 120,
-                  textAlign: "right",
-                }}
-              />
-              {cmProps.unitLabel && (
-                <Text className="text-[18px] font-montserrat-medium text-zinc-400 ml-1.5">
-                  {cmProps.unitLabel}
-                </Text>
-              )}
+              <Dot width={10} color={!isCmMode ? "#fff" : "#71717A"}></Dot>
+              <Text
+                className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
+                in
+              </Text>
             </View>
-            <View
-              className="flex-row items-baseline justify-end absolute right-0"
-              style={{ opacity: !isCmMode ? 1 : 0 }}
-              pointerEvents={!isCmMode ? "auto" : "none"}>
-              <AnimatedTextInput
-                editable={false}
-                scrollEnabled={false}
-                multiline={false}
-                animatedProps={ftTextProps}
-                className="text-[38px] font-montserrat-bold text-black text-right"
-                style={{
-                  fontFamily: "Montserrat_700Bold",
-                  includeFontPadding: false,
-                  padding: 0,
-                  margin: 0,
-                  minWidth: 120,
-                  textAlign: "right",
-                }}
-              />
-              {ftProps.unitLabel && (
-                <Text className="text-[18px] font-montserrat-medium text-zinc-400 ml-1.5">
-                  {ftProps.unitLabel}
-                </Text>
-              )}
-            </View>
-          </View>
+          </TouchableOpacity>
         </View>
-
-        {/* Ruler filling the middle area of the card */}
-        <View className="w-full flex-1 my-2 relative">
+        <View className="relative h-[300px]">
           <View
             className="absolute inset-0"
             style={{ opacity: isCmMode ? 1 : 0 }}
             pointerEvents={isCmMode ? "auto" : "none"}>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <VerticalSliderRuler key="cm-ruler" {...cmProps} />
-            </GestureHandlerRootView>
+            <CmSliderRuler
+              className="w-full"
+              onReady={() => setIsCmRulerReady(true)}
+              onValueChange={(v) => {
+                cmValue.current = v;
+              }}
+            />
           </View>
           <View
             className="absolute inset-0"
             style={{ opacity: isCmMode ? 0 : 1 }}
             pointerEvents={isCmMode ? "none" : "auto"}>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <VerticalSliderRuler key="ft-ruler" {...ftProps} />
-            </GestureHandlerRootView>
+            <FtSliderRuler
+              className="w-full h-[300px]"
+              onReady={() => setIsFtRulerReady(true)}
+              onValueChange={(v) => {
+                ftValue.current = v;
+              }}
+            />
           </View>
-        </View>
-
-        {/* Stepper buttons */}
-        <View className="w-full flex-row justify-center items-center gap-3">
-          <Pressable
-            className="w-[44px] h-[44px] rounded-full bg-gray-200 items-center justify-center active:opacity-40"
-            onPress={() =>
-              (isCmMode
-                ? cmRulerController.current
-                : ftRulerController.current
-              )?.stepBy?.(-1)
-            }>
-            <Minus color={"black"} size={20} />
-          </Pressable>
-          <View className="flex-1 items-center">
-            <Text className="font-montserrat text-xs text-zinc-500 text-center">
-              {`Chạm để tinh chỉnh ±${isCmMode ? cmProps.step : ftProps.step}${isCmMode ? cmProps.unitLabel : ftProps.unitLabel}`}
-            </Text>
-          </View>
-          <Pressable
-            className="w-[44px] h-[44px] rounded-full bg-gray-200 items-center justify-center active:opacity-40"
-            onPress={() =>
-              (isCmMode
-                ? cmRulerController.current
-                : ftRulerController.current
-              )?.stepBy?.(1)
-            }>
-            <Plus color={"black"} size={20} />
-          </Pressable>
         </View>
       </View>
-
-      {/* Bottom section */}
       <View className="w-full gap-2.5">
         <Pressable
           className="w-full bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2 active:opacity-40"
-          onPress={() => router.push("/register/plan")}>
+          onPress={onNext}>
           <Text className="font-montserrat-bold text-[15px] text-white">
             {"Tiếp tục (Chọn mục tiêu)"}
           </Text>

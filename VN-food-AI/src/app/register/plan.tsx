@@ -1,8 +1,9 @@
+import { NutritionGoal } from "@/api/generated/model";
 import { useUserHealthInformationContext } from "@/features/health-register";
 import { BalancedPlanBox } from "@/features/health-register/plan/components/BalancedPlanBox";
 import { GainWeightPlanBox } from "@/features/health-register/plan/components/GainWeightPlanBox";
 import { LoseWeightPlanBox } from "@/features/health-register/plan/components/LoseWeightPlanBox";
-import { router } from "expo-router";
+import { useHealthPlanRegister } from "@/features/health-register/plan/hooks/useHealthPlanRegister";
 import { ArrowRight, LockIcon } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -17,12 +18,28 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PlanChoiceScreen() {
   const insets = useSafeAreaInsets();
-  const { markReady } = useUserHealthInformationContext();
-  const [choice, setChoice] = useState(2);
+  const { markReady, metabolismData, assginMultipleMetabolismFieldData } =
+    useUserHealthInformationContext();
+  const [choice, setChoice] = useState<NutritionGoal>("maintain_weight");
+
+  const currentWeight = metabolismData?.weight_kg || 0;
+  const { getPlanValues, onGainPlanValueChange, onLosePlanValueChange } =
+    useHealthPlanRegister();
 
   useEffect(() => {
     markReady("plan");
   }, []);
+
+  const onNext = () => {
+    const values = getPlanValues(choice);
+    assginMultipleMetabolismFieldData({
+      goal: choice,
+      ...values,
+    });
+
+    // if (router.canDismiss()) router.dismissAll();
+    // router.push("/(tabs)/analytics");
+  };
 
   return (
     <KeyboardAvoidingView
@@ -50,16 +67,31 @@ export default function PlanChoiceScreen() {
           </View>
           <View className="w-full gap-3">
             <LoseWeightPlanBox
-              activated={choice === 1}
-              onPress={() => setChoice(1)}
+              activated={choice === "lose_weight"}
+              currentWeight={currentWeight}
+              onPress={() => setChoice("lose_weight")}
+              onWeightChange={(v) => {
+                onLosePlanValueChange({ field: "weight_change_kg", value: v });
+              }}
+              onModeChange={(mode) => {
+                console.log(mode);
+                onLosePlanValueChange({ field: "goal_pace", value: mode });
+              }}
             />
             <BalancedPlanBox
-              activated={choice === 2}
-              onPress={() => setChoice(2)}
+              activated={choice === "maintain_weight"}
+              onPress={() => setChoice("maintain_weight")}
             />
             <GainWeightPlanBox
-              activated={choice === 3}
-              onPress={() => setChoice(3)}
+              activated={choice === "gain_weight"}
+              currentWeight={currentWeight}
+              onPress={() => setChoice("gain_weight")}
+              onWeightChange={(v) => {
+                onGainPlanValueChange({ field: "weight_change_kg", value: v });
+              }}
+              onModeChange={(mode) => {
+                onGainPlanValueChange({ field: "goal_pace", value: mode });
+              }}
             />
           </View>
         </View>
@@ -68,10 +100,7 @@ export default function PlanChoiceScreen() {
         <View className="w-full gap-2.5 mt-6">
           <Pressable
             className="w-full bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2 active:opacity-40"
-            onPress={() => {
-              if (router.canDismiss()) router.dismissAll();
-              router.push("/(tabs)/analytics");
-            }}>
+            onPress={onNext}>
             <Text className="font-montserrat-bold text-[15px] text-white">
               {"Hoàn tất & Khám phá CaloViet AI"}
             </Text>

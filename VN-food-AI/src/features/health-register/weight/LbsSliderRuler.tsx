@@ -1,7 +1,7 @@
 import { AnimatedTextInput } from "@/components/animated-components";
 import { HorizontalSliderRuler } from "@/components/slider/ruler/HorizontalSliderRuler";
 import { Minus, Plus } from "lucide-react-native";
-import { Pressable, StyleProp, Text, View, ViewStyle } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useLbsSliderRuler } from "./hooks/useLbsSliderRuler";
 
@@ -9,14 +9,12 @@ export interface LbsSliderRulerProps {
   className?: string;
   onReady?: () => void;
   onValueChange?: (v: number) => void;
-  style?: StyleProp<ViewStyle>;
 }
 
 export default function LbsSliderRuler({
   className,
   onReady,
   onValueChange,
-  style,
 }: LbsSliderRulerProps) {
   const { lbsProps, lbsRulerController, lbsTextProps } = useLbsSliderRuler({
     onReady,
@@ -24,10 +22,8 @@ export default function LbsSliderRuler({
   });
 
   return (
-    <View
-      className={className ?? ""}
-      style={{ ...style, position: "relative" }}>
-      <View className="flex-row items-baseline justify-end absolute right-0">
+    <View className={className ?? ""} style={{ position: "relative" }}>
+      <View className="flex-row items-baseline justify-end">
         <AnimatedTextInput
           editable={false}
           scrollEnabled={false}

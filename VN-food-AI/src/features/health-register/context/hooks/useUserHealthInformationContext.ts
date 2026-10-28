@@ -1,5 +1,5 @@
 import { MetabolismRequest } from "@/api/generated/model";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MetabolismFieldData } from "../../types/metabolism";
 
 export interface UseUserHealthInformationContextOptions {
@@ -30,6 +30,10 @@ export const useUserHealthInformation = ({
     metabolismDefaultValues,
   );
 
+  useEffect(() => {
+    console.log(metabolismData);
+  }, [metabolismData]);
+
   const markReady = useCallback(
     (name: string) => {
       readySteps.current.add(name);
@@ -38,17 +42,31 @@ export const useUserHealthInformation = ({
     [totalSteps],
   );
 
-  const assignMetabolismFieldData = (fieldData: MetabolismFieldData) => {
-    if (!fieldData || !fieldData.field) return;
-    setMetabolismData((prev) => ({
-      ...prev,
-      [fieldData.field]: fieldData.value,
-    }));
-  };
+  const assignMetabolismFieldData = useCallback(
+    (fieldData: MetabolismFieldData) => {
+      if (!fieldData || !fieldData.field) return;
+      setMetabolismData((prev) => ({
+        ...prev,
+        [fieldData.field]: fieldData.value,
+      }));
+    },
+    [],
+  );
+
+  const assginMultipleMetabolismFieldData = useCallback(
+    (obj: Partial<MetabolismRequest>) => {
+      setMetabolismData((prev) => ({
+        ...prev,
+        ...obj,
+      }));
+    },
+    [],
+  );
 
   return {
     markReady,
     metabolismData,
     assignMetabolismFieldData,
+    assginMultipleMetabolismFieldData,
   };
 };
