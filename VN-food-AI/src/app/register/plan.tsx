@@ -1,9 +1,7 @@
-import {
-  BalancedPlanBox,
-  GainWeightPlanBox,
-  LoseWeightPlanBox,
-  useUserHealthInformationContext,
-} from "@/features/health-register";
+import { useUserHealthInformationContext } from "@/features/health-register";
+import { BalancedPlanBox } from "@/features/health-register/plan/components/BalancedPlanBox";
+import { GainWeightPlanBox } from "@/features/health-register/plan/components/GainWeightPlanBox";
+import { LoseWeightPlanBox } from "@/features/health-register/plan/components/LoseWeightPlanBox";
 import { router } from "expo-router";
 import { ArrowRight, LockIcon } from "lucide-react-native";
 import { useEffect, useState } from "react";

@@ -45,6 +45,7 @@ export const useSliderRuler = ({
 
   useEffect(() => {
     if (screenValue) screenValue.value = initialValue;
+    onChange?.(initialValue);
   }, []);
 
   const formatTickValue = useCallback(
@@ -71,11 +72,11 @@ export const useSliderRuler = ({
     ) * snap,
   );
 
-  const calculateValue = (pos: number) => {
+  const calculateValue = useCallback((pos: number) => {
     "worklet";
     const index = Math.round(-pos / snap);
     return Math.round((min + index * step) * valuePrecision) / valuePrecision;
-  };
+  }, []);
 
   const startPos = useSharedValue(0);
   useAnimatedReaction(
@@ -92,8 +93,8 @@ export const useSliderRuler = ({
         Math.max(0, Math.round(target)),
       );
       cancelAnimation(translatePos);
-      const pos = withTiming(-safeIndex * snap, { duration: 200 });
-      translatePos.value = pos;
+      const pos = -safeIndex * snap;
+      translatePos.value = withTiming(pos, { duration: 200 });
 
       if (onChange) {
         const v = calculateValue(pos);

@@ -1,8 +1,8 @@
 import { AnimatedTextInput } from "@/components/animated-components";
 import {
-  HeightSliderRuler,
-  HeightSliderRulerProps,
-} from "@/components/slider/ruler/HeightSliderRuler";
+    VerticalSliderRuler,
+    VerticalSliderRulerProps,
+} from "@/components/slider/ruler/VerticalSliderRuler";
 import { SliderRulerController } from "@/components/slider/ruler/ruler";
 import { useUserHealthInformationContext } from "@/features/health-register";
 import { router } from "expo-router";
@@ -26,7 +26,7 @@ export default function InputHeightScreen() {
   const ftScreenValue = useSharedValue<number>(0);
   const ftRulerController = useRef<SliderRulerController | null>(null);
 
-  const cmProps: HeightSliderRulerProps = {
+  const cmProps: VerticalSliderRulerProps = {
     min: 50,
     max: 250,
     initialValue: 160,
@@ -39,7 +39,7 @@ export default function InputHeightScreen() {
     controlRef: cmRulerController,
   };
 
-  const ftProps: HeightSliderRulerProps = {
+  const ftProps: VerticalSliderRulerProps = {
     min: 50,
     max: 250,
     initialValue: 160,
@@ -181,7 +181,7 @@ export default function InputHeightScreen() {
             style={{ opacity: isCmMode ? 1 : 0 }}
             pointerEvents={isCmMode ? "auto" : "none"}>
             <GestureHandlerRootView style={{ flex: 1 }}>
-              <HeightSliderRuler key="cm-ruler" {...cmProps} />
+              <VerticalSliderRuler key="cm-ruler" {...cmProps} />
             </GestureHandlerRootView>
           </View>
           <View
@@ -189,7 +189,7 @@ export default function InputHeightScreen() {
             style={{ opacity: isCmMode ? 0 : 1 }}
             pointerEvents={isCmMode ? "none" : "auto"}>
             <GestureHandlerRootView style={{ flex: 1 }}>
-              <HeightSliderRuler key="ft-ruler" {...ftProps} />
+              <VerticalSliderRuler key="ft-ruler" {...ftProps} />
             </GestureHandlerRootView>
           </View>
         </View>

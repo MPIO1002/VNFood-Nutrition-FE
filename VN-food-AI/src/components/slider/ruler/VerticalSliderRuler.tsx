@@ -1,13 +1,13 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { memo, useCallback, useMemo, useState } from "react";
-import { LayoutChangeEvent, Platform, Text, View } from "react-native";
+import { LayoutChangeEvent, Platform, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated, { useAnimatedProps } from "react-native-reanimated";
 import Svg, { G, Path, Text as SvgText } from "react-native-svg";
 
 import { AnimatedTextInput } from "@/components/animated-components";
 import { Circle } from "lucide-react-native";
-import { useHeightSliderRuler } from "./hooks/useHeightSliderRuler";
+import { useVerticalSliderRuler } from "./hooks/useVerticalSliderRuler";
 import { SliderRulerProps } from "./ruler";
 
 const LINE_START_X_DIFF = 32;
@@ -15,20 +15,20 @@ const RULER_OFFSET_LEFT = 20;
 const LABEL_WIDTH = 56;
 const LABEL_GAP = 4;
 
-export interface HeightSliderRulerProps extends SliderRulerProps {
+export interface VerticalSliderRulerProps extends SliderRulerProps {
   rulerWidth?: number;
   lineStartX?: number;
   onFinishLoading?: () => void;
 }
 
-export const HeightSliderRuler = memo(function HeightSliderRuler({
+export const VerticalSliderRuler = memo(function HeightSliderRuler({
   rulerWidth = 80,
   lineStartX = 48,
   minorPerMediumSegment = 1,
   mediumPerMajorSegment = 1,
   onFinishLoading,
   ...props
-}: HeightSliderRulerProps) {
+}: VerticalSliderRulerProps) {
   const majorLineStartX = lineStartX - LINE_START_X_DIFF;
   const minorLineStartX = lineStartX + LINE_START_X_DIFF;
 
@@ -39,7 +39,7 @@ export const HeightSliderRuler = memo(function HeightSliderRuler({
     formatTickValue,
     UIProps: sliderProps,
     UIstyle: sliderStyle,
-  } = useHeightSliderRuler(props);
+  } = useVerticalSliderRuler(props);
 
   const { ticks, SNAP, pan, tickCount, viewportPadding } = sliderProps;
 
@@ -242,7 +242,9 @@ export const HeightSliderRuler = memo(function HeightSliderRuler({
                       height: 24,
                       textAlign: "center",
                       textAlignVertical: "center",
-                      transform: [{ translateY: Platform.OS === "ios" ? -1 : 0 }],
+                      transform: [
+                        { translateY: Platform.OS === "ios" ? -1 : 0 },
+                      ],
                     }}
                   />
                 </View>

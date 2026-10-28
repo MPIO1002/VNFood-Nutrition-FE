@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { router } from "expo-router";
 import debounce from "lodash.debounce";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
@@ -244,11 +245,12 @@ export default function RegisterForm() {
             className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2"
             disabled={isSubmitting}
             activeOpacity={0.8}
-            onPress={form.handleSubmit((data) => {
-              onSubmit(data, {
-                onError: (e) => setError(e),
-              });
-            })}>
+            // onPress={form.handleSubmit((data) => {
+            //   onSubmit(data, {
+            //     onError: (e) => setError(e),
+            //   });
+            // })}
+            onPress={() => router.push("/register/weight")}>
             {isSubmitting ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (

@@ -10,7 +10,7 @@ import {
 import { scheduleOnRN } from "react-native-worklets";
 import { useSliderRuler, UseSliderRulerOptions } from "./useSliderRuler";
 
-export interface UseHeightSliderRulerOptions extends Omit<
+export interface UseHorizontalSliderRulerOptions extends Omit<
   UseSliderRulerOptions,
   "snap"
 > {
@@ -19,7 +19,7 @@ export interface UseHeightSliderRulerOptions extends Omit<
   externalScrollRef?: React.RefObject<ScrollView | null>;
 }
 
-export const useHeightSliderRuler = ({
+export const useHorizontalSliderRuler = ({
   initialValue,
   step = 1,
   min,
@@ -30,16 +30,16 @@ export const useHeightSliderRuler = ({
   onChange,
   controlRef,
   externalScrollRef,
-}: UseHeightSliderRulerOptions) => {
-  const TICK_HEIGHT = PixelRatio.roundToNearestPixel(tickWidth);
+}: UseHorizontalSliderRulerOptions) => {
   const TICK_GAP = PixelRatio.roundToNearestPixel(tickGap);
-  const SNAP = TICK_HEIGHT + TICK_GAP;
+  const TICK_WIDTH = PixelRatio.roundToNearestPixel(tickWidth);
+  const SNAP = TICK_WIDTH + TICK_GAP;
 
   const {
     props: rulerProps,
-    translatePos: translateY,
-    startPos: startY,
-    clampPos: clampY,
+    translatePos: translateX,
+    startPos: startX,
+    clampPos: clampX,
     formatTickValue,
     stepBy,
     calculateValue,
@@ -54,33 +54,31 @@ export const useHeightSliderRuler = ({
     step,
   });
 
-  const [containerHeight, setContainerHeight] = useState(0);
-  const viewportPadding = containerHeight / 2;
+  const [containerWidth, setContainerWidth] = useState(0);
+  const viewportPadding = containerWidth / 2;
 
   const pan = useMemo(() => {
     const p = Gesture.Pan()
       .onStart(() => {
-        cancelAnimation(translateY);
-        startY.value = translateY.value;
+        cancelAnimation(translateX);
+        startX.value = translateX.value;
       })
       .onUpdate((e) => {
-        translateY.value = clampY(startY.value + e.translationY);
+        translateX.value = clampX(startX.value + e.translationX);
       })
       .onEnd((e) => {
-        translateY.value = withDecay(
-          { velocity: e.velocityY, clamp: [-rulerProps.maxOffset, 0] },
+        translateX.value = withDecay(
+          { velocity: e.velocityX, clamp: [-rulerProps.maxOffset, 0] },
           (finished) => {
             "worklet";
             if (finished) {
               const snapped = Math.max(
                 -rulerProps.maxOffset,
-                Math.min(0, -Math.round(-translateY.value / SNAP) * SNAP),
+                Math.min(0, -Math.round(-translateX.value / SNAP) * SNAP),
               );
-              const y = withTiming(snapped, { duration: 150 });
-              translateY.value = y;
-
+              translateX.value = withTiming(snapped, { duration: 150 });
               if (onChange) {
-                const v = calculateValue(y);
+                const v = calculateValue(snapped);
                 scheduleOnRN(onChange, v);
               }
             }
@@ -90,17 +88,17 @@ export const useHeightSliderRuler = ({
 
     if (externalScrollRef) p.blocksExternalGesture(externalScrollRef);
     return p;
-  }, [rulerProps.maxOffset, SNAP, clampY, startY, translateY]);
+  }, [rulerProps.maxOffset, SNAP, clampX, startX, translateX]);
 
   const rulerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
+    transform: [{ translateX: translateX.value }],
   }));
 
-  const centerTop = {
-    top: Math.max(0, (containerHeight - TICK_HEIGHT) / 2),
+  const centerLeft = {
+    left: Math.max(0, (containerWidth - TICK_WIDTH) / 2),
   };
-  const rulerTop = {
-    top: Math.max(0, centerTop.top - viewportPadding),
+  const rulerLeft = {
+    left: Math.max(0, centerLeft.left - viewportPadding),
   };
 
   const UIProps = {
@@ -112,11 +110,11 @@ export const useHeightSliderRuler = ({
   };
 
   const UIstyle = {
-    centerTop,
-    rulerTop,
+    centerLeft,
+    rulerLeft,
     rulerStyle,
-    TICK_HEIGHT,
-    setContainerHeight,
+    TICK_WIDTH,
+    setContainerWidth,
   };
 
   return {
