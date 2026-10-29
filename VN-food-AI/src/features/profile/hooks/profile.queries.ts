@@ -1,9 +1,9 @@
 import {
   getGetProfileApiV1ProfileGetQueryKey,
   useAddWeightApiV1ProfileWeightPost,
+  useCalculateDailyNutritionApiV1NutritionCalculatePost,
   useGetProfileApiV1ProfileGet,
 } from "@/api/generated";
-import { useQueryClient } from "@tanstack/react-query";
 import { ProfileResponseSchema } from "../validation/profileSchema";
 
 export const profileQueryKeys = {
@@ -27,14 +27,8 @@ export const useProfileQuery = () => {
 };
 
 export const useUpdateWeightMutation = () => {
-  const queryClient = useQueryClient();
-  return useAddWeightApiV1ProfileWeightPost({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: profileQueryKeys.current(),
-        });
-      },
-    },
-  });
+  return useAddWeightApiV1ProfileWeightPost();
 };
+
+export const useCalculateNutritionMutation = () =>
+  useCalculateDailyNutritionApiV1NutritionCalculatePost();

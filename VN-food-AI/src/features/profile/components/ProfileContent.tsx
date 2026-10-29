@@ -1,5 +1,8 @@
 import { ProfileResponse } from "@/api/generated/model";
-import { useUpdateWeightMutation } from "../hooks/profile.queries";
+import {
+  useCalculateNutritionMutation,
+  useUpdateWeightMutation,
+} from "../hooks/profile.queries";
 import { ProfileFormSchema } from "../validation/profileSchema";
 import {
   Activity,
@@ -107,13 +110,11 @@ function EditableMetric({
   value,
   unit,
   onChange,
-  onSave,
 }: {
   label: string;
   value: number | null;
   unit: string;
   onChange: (delta: number) => void;
-  onSave: () => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   return (
@@ -125,7 +126,6 @@ function EditableMetric({
           className="mb-4 h-9 w-9 items-center justify-center rounded-full bg-zinc-100"
           onPress={() => {
             if (isEditing) {
-              onSave();
               setIsEditing(false);
             } else {
               setIsEditing(true);
@@ -155,29 +155,116 @@ function EditableMetric({
   );
 }
 
+const GOALS = [
+  { value: "lose_weight", label: "Giảm cân" },
+  { value: "maintain_weight", label: "Giữ dáng" },
+  { value: "gain_weight", label: "Tăng cân" },
+] as const;
+
+function EditableGoal({
+  value,
+  onChange,
+}: {
+  value: string | null;
+  onChange: (value: string) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  return (
+    <ProfileCard>
+      <View className="flex-row items-center justify-between">
+        <SectionTitle Icon={Target} title="Mục tiêu vóc dáng" />
+        <Pressable
+          accessibilityLabel={isEditing ? "Khóa mục tiêu vóc dáng" : "Mở khóa mục tiêu vóc dáng"}
+          className="mb-4 h-9 w-9 items-center justify-center rounded-full bg-zinc-100"
+          onPress={() => setIsEditing((current) => !current)}>
+          {isEditing ? <Unlock size={16} color={colors.green} /> : <Lock size={16} color={colors.muted} />}
+        </Pressable>
+      </View>
+      <View className="rounded-xl p-3" style={{ backgroundColor: colors.lavender }}>
+        <Text className="font-montserrat text-xs text-zinc-500">Mục tiêu hiện tại</Text>
+        <Text className="mt-1 font-montserrat-medium text-lg text-charcoal-pure">{goalLabel(value)}</Text>
+        {isEditing && (
+          <View className="mt-3 flex-row gap-2">
+            {GOALS.map((goal) => (
+              <Pressable
+                key={goal.value}
+                className="flex-1 rounded-xl border px-2 py-2.5"
+                style={{
+                  borderColor: value === goal.value ? colors.green : "#E4E4E7",
+                  backgroundColor: value === goal.value ? "#ECFDF5" : "#FFFFFF",
+                }}
+                onPress={() => onChange(goal.value)}>
+                <Text className="text-center font-montserrat-medium text-[11px] text-charcoal-pure">
+                  {goal.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+      </View>
+      <View className="mt-2 flex-row items-center justify-center gap-2 rounded-xl bg-zinc-100 py-2.5">
+        {isEditing ? <Unlock size={13} color={colors.green} /> : <Lock size={13} color={colors.muted} />}
+        <Text className="font-montserrat-medium text-xs text-charcoal-pure">
+          {isEditing ? "Khóa để giữ lựa chọn" : "Đang khóa chỉnh sửa"}
+        </Text>
+      </View>
+    </ProfileCard>
+  );
+}
+
 export function ProfileContent({ profile }: { profile: ProfileResponse }) {
   const updateWeight = useUpdateWeightMutation();
+  const calculateNutrition = useCalculateNutritionMutation();
   const [weight, setWeight] = useState(profile.weight);
   const [height, setHeight] = useState(profile.height);
+  const [goal, setGoal] = useState(profile.goal);
+  const [savedValues, setSavedValues] = useState({
+    weight: profile.weight,
+    height: profile.height,
+    goal: profile.goal,
+    bmi: profile.bmi,
+    tdee: profile.tdee,
+    targetCalories: profile.target_calories,
+  });
   const bmi = useMemo(() => {
-    if (weight == null || height == null || height <= 0) return profile.bmi;
-    return weight / ((height / 100) ** 2);
-  }, [height, profile.bmi, weight]);
-  const targetCalories = profile.target_calories ?? 0;
+    return savedValues.bmi;
+  }, [savedValues.bmi]);
+  const targetCalories = savedValues.targetCalories ?? 0;
   const changeWeight = (delta: number) => setWeight((current) => Math.max(0.1, Number(((current ?? 0) + delta).toFixed(1))));
-  const saveChanges = () => {
+  const saveChanges = async () => {
     const result = ProfileFormSchema.safeParse({ weight, height: height ?? 0 });
     if (!result.success) {
       Alert.alert("Dữ liệu chưa hợp lệ", result.error.issues[0]?.message);
       return;
     }
-    updateWeight.mutate(
-      { data: { weight_kg: result.data.weight } },
-      {
-        onSuccess: () => Alert.alert("Đã lưu", "Cân nặng của bạn đã được cập nhật."),
-        onError: () => Alert.alert("Không thể lưu", "Vui lòng thử lại sau."),
-      },
-    );
+    if (!profile.age || !profile.sex_for_equation || !profile.activity_level || !goal) {
+      Alert.alert("Thiếu dữ liệu", "Chưa đủ thông tin để tính lại chỉ số.");
+      return;
+    }
+    try {
+      await updateWeight.mutateAsync({ data: { weight_kg: result.data.weight } });
+      const nutrition = await calculateNutrition.mutateAsync({
+        data: {
+          age: profile.age,
+          height_cm: result.data.height,
+          weight_kg: result.data.weight,
+          sex_for_equation: profile.sex_for_equation as "male" | "female",
+          activity_level: profile.activity_level as "sedentary" | "light" | "moderate" | "active" | "very_active",
+          goal: goal as "gain_weight" | "lose_weight" | "maintain_weight",
+        },
+      });
+      setSavedValues({
+        weight: result.data.weight,
+        height: result.data.height,
+        goal,
+        bmi: nutrition.bmi,
+        tdee: nutrition.estimated_tdee_kcal_per_day,
+        targetCalories: nutrition.target_kcal_per_day,
+      });
+      Alert.alert("Đã lưu", "Các chỉ số đã được cập nhật.");
+    } catch {
+      Alert.alert("Không thể lưu", "Vui lòng thử lại sau.");
+    }
   };
 
   return (
@@ -216,33 +303,9 @@ export function ProfileContent({ profile }: { profile: ProfileResponse }) {
         </View>
       </ProfileCard>
 
-      <EditableMetric
-        label="Cân nặng hiện tại"
-        value={weight}
-        unit="kg"
-        onChange={changeWeight}
-        onSave={() => {
-          const result = ProfileFormSchema.safeParse({ weight, height: height ?? 0 });
-          if (!result.success) {
-            Alert.alert("Dữ liệu chưa hợp lệ", result.error.issues[0]?.message);
-            return;
-          }
-          updateWeight.mutate(
-            { data: { weight_kg: result.data.weight } },
-            {
-              onSuccess: () => Alert.alert("Đã lưu", "Cân nặng của bạn đã được cập nhật."),
-              onError: () => Alert.alert("Không thể lưu", "Vui lòng thử lại sau."),
-            },
-          );
-        }}
-      />
-      <EditableMetric
-        label="Chiều cao hiện tại"
-        value={height}
-        unit="cm"
-        onChange={(delta) => setHeight((current) => Math.max(1, Number(((current ?? 0) + delta).toFixed(1))))}
-        onSave={() => Alert.alert("Chưa hỗ trợ", "API hiện chưa có endpoint cập nhật chiều cao.")}
-      />
+      <EditableMetric label="Cân nặng hiện tại" value={weight} unit="kg" onChange={changeWeight} />
+      <EditableMetric label="Chiều cao hiện tại" value={height} unit="cm" onChange={(delta) => setHeight((current) => Math.max(1, Number(((current ?? 0) + delta).toFixed(1))))} />
+      <EditableGoal value={goal} onChange={setGoal} />
 
       <ProfileCard>
         <SectionTitle Icon={Target} title="Mục tiêu dinh dưỡng hàng ngày" />
@@ -258,7 +321,7 @@ export function ProfileContent({ profile }: { profile: ProfileResponse }) {
           ))}
         </View>
       </ProfileCard>
-      <Pressable className="mb-2 items-center rounded-xl bg-charcoal-pure py-4" disabled={updateWeight.isPending} onPress={saveChanges}>
+      <Pressable className="mb-2 items-center rounded-xl bg-charcoal-pure py-4"       disabled={updateWeight.isPending || calculateNutrition.isPending} onPress={saveChanges}>
         {updateWeight.isPending ? <ActivityIndicator color="#FFF" /> : <Text className="font-montserrat-semibold text-sm text-white">Lưu tất cả thay đổi</Text>}
       </Pressable>
       <Text className="mb-5 text-center font-montserrat text-[11px] text-zinc-500">Dữ liệu được mã hóa y tế và đồng bộ tức thời</Text>
