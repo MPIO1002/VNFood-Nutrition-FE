@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import debounce from "lodash.debounce";
-import { Circle, TrendingDown } from "lucide-react-native";
+import { Circle, TrendingDownIcon } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { PlanBox, PlanBoxProps } from "./PlanBox";
@@ -72,9 +72,10 @@ export function LoseWeightPlanBox({
       <View className="flex-row w-full justify-center items-center gap-2">
         <View
           className={`rounded-md p-3 ${props.activated ? "bg-black" : "bg-gray-300"} items-center justify-center`}>
-          <TrendingDown
+          <TrendingDownIcon
             color={props.activated ? "white" : "black"}
-            size={20}></TrendingDown>
+            size={20}
+          />
         </View>
         <View className="flex-1">
           <Text className="font-montserrat-bold">Giảm cân & Giảm mỡ</Text>

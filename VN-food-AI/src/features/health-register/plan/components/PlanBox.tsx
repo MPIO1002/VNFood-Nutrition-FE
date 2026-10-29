@@ -16,22 +16,21 @@ export function PlanBox({
   onPress,
 }: PlanBoxProps) {
   return (
-    <Pressable onPress={onPress}>
-      <View
-        className={`${className ?? ""} relative rounded-[20px] bg-white p-4 gap-2 border ${
-          activated
-            ? "border-charcoal-pure border-2"
-            : "border-zinc-200 opacity-70"
-        }`}>
-        <View className="absolute right-3 top-3">
-          {activated ? (
-            <CircleCheck size={24} fill={"black"} color={"white"} />
-          ) : (
-            <Circle size={24} fill={"#e4e4e7"} strokeWidth={0} />
-          )}
-        </View>
-        {children}
+    <Pressable
+      className={`${className ?? ""} relative rounded-[20px] bg-white p-4 gap-2 border ${
+        activated
+          ? "border-charcoal-pure border-2"
+          : "border-zinc-200 opacity-70"
+      }`}
+      onPress={onPress}>
+      <View className="absolute right-3 top-3">
+        {activated ? (
+          <CircleCheck size={24} fill={"black"} color={"white"} />
+        ) : (
+          <Circle size={24} fill={"#e4e4e7"} strokeWidth={0} />
+        )}
       </View>
+      {children}
     </Pressable>
   );
 }

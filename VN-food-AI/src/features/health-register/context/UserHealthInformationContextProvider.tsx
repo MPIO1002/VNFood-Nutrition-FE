@@ -1,11 +1,12 @@
 import { MetabolismRequest } from "@/api/generated/model";
 import { createContext, ReactNode, useContext } from "react";
+import { HealthSteps } from "../constant/register";
 import { MetabolismFieldData } from "../types/metabolism";
 import { useUserHealthInformation } from "./hooks/useUserHealthInformationContext";
 
 type UserHealthInformationContextContent = {
   metabolismData: MetabolismRequest | null;
-  markReady: (name: string) => void;
+  markReady: (name: HealthSteps) => void;
   assignMetabolismFieldData: (fieldData: MetabolismFieldData) => void;
   assginMultipleMetabolismFieldData: (obj: Partial<MetabolismRequest>) => void;
 };

@@ -250,7 +250,7 @@ export default function RegisterForm() {
             //     onError: (e) => setError(e),
             //   });
             // })}
-            onPress={() => router.push("/register/weight")}>
+            onPress={() => router.push("/register/gender")}>
             {isSubmitting ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (

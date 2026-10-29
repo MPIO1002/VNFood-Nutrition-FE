@@ -1,5 +1,6 @@
 import { MetabolismRequest } from "@/api/generated/model";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { HealthSteps } from "../../constant/register";
 import { MetabolismFieldData } from "../../types/metabolism";
 
 export interface UseUserHealthInformationContextOptions {
@@ -35,7 +36,7 @@ export const useUserHealthInformation = ({
   }, [metabolismData]);
 
   const markReady = useCallback(
-    (name: string) => {
+    (name: HealthSteps) => {
       readySteps.current.add(name);
       if (readySteps.current.size === totalSteps) onAllReady?.();
     },

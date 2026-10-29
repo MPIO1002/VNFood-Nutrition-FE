@@ -1,6 +1,9 @@
 import { useProgressStep } from "@/components/progress/step/hooks/useProgressStep";
 import ProgressStep from "@/components/progress/step/ProgressStep";
-import { HEALTH_INFORMATION_STEPS } from "@/constants/register";
+import {
+  HEALTH_STEPS,
+  HealthSteps,
+} from "@/features/health-register/constant/register";
 import UserHealthInformationContextProvider from "@/features/health-register/context/UserHealthInformationContextProvider";
 import { router, Tabs, usePathname } from "expo-router";
 import { ArrowLeft, DotIcon } from "lucide-react-native";
@@ -12,14 +15,20 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 function InputUserHealthInformationTopPanel() {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
-  const currentStepName = pathname.split("/").pop() ?? "weight";
+  const currentStepName = pathname.split("/").pop() ?? "gender";
 
   const getPageTitle = (step: string) => {
     switch (step) {
+      case "gender":
+        return "Giới tính";
+      case "age":
+        return "Độ tuổi";
       case "weight":
         return "Cân nặng";
       case "height":
         return "Chiều cao";
+      case "condition":
+        return "Điều kiện cơ thể";
       case "plan":
         return "Mục tiêu vóc dáng";
       default:
@@ -62,14 +71,18 @@ function InputUserHealthInformationTopPanel() {
 }
 
 function UserProgress() {
-  const stepLength = HEALTH_INFORMATION_STEPS.length;
+  const stepLength = HEALTH_STEPS.length;
   const { currentStep, setStep } = useProgressStep({
     steps: stepLength,
   });
   const pathname = usePathname();
+  const isValidStep = (step: string): step is HealthSteps =>
+    (HEALTH_STEPS as readonly string[]).includes(step);
+
   useEffect(() => {
     const name = pathname.split("/").pop() ?? "";
-    setStep(HEALTH_INFORMATION_STEPS.indexOf(name));
+    if (isValidStep(name)) setStep(HEALTH_STEPS.indexOf(name));
+    else setStep(0);
   }, [pathname]);
 
   const stepCategory =
@@ -103,7 +116,7 @@ export default function InputUserHealthInformationLayout() {
 
   return (
     <UserHealthInformationContextProvider
-      totalSteps={HEALTH_INFORMATION_STEPS.length}
+      totalSteps={HEALTH_STEPS.length}
       onAllReady={() => setIsLoading(false)}>
       <View className="bg-white w-full h-full">
         <InputUserHealthInformationTopPanel></InputUserHealthInformationTopPanel>
@@ -117,7 +130,7 @@ export default function InputUserHealthInformationLayout() {
               animation: "shift",
               tabBarStyle: { display: "none" },
             }}>
-            {HEALTH_INFORMATION_STEPS.map((name, i) => (
+            {HEALTH_STEPS.map((name, i) => (
               <Tabs.Screen key={i} name={name}></Tabs.Screen>
             ))}
           </Tabs>
