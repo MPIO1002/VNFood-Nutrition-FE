@@ -3,26 +3,22 @@
  * Converted from Stitch AI HTML/Tailwind → React Native + TypeScript + Expo
  */
 
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
 import {
   ArrowRight,
   BarChart3,
-  Bell,
   Box,
   Camera,
   CheckCircle2,
-  ChevronRight,
   Layers,
   Sliders,
   Sparkles,
-  User,
 } from 'lucide-react-native';
-import { ScrollView, Text, View, Pressable, Alert } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, Text, View, Pressable } from 'react-native';
 import { PressScale } from '@/components/PressScale';
 import { CalorieRing } from '@/components/CalorieRing';
+import { AppHeader } from '@/components/AppHeader';
 
 // ─── How-It-Works data ───────────────────────────────────────────────────────
 const HOW_STEPS = [
@@ -61,33 +57,7 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-surface">
-      <SafeAreaView edges={['top']} className="bg-surface/90 border-b border-border-hairline">
-        <View className="h-16 px-4 flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <Image
-              source={require('../../../assets/images/logo.png')}
-              style={{ width: 32, height: 32 }}
-              contentFit="contain"
-            />
-            <View>
-              <Text className="font-montserrat-bold text-xl text-charcoal-pure tracking-tight leading-6">CaloViet</Text>
-              <Text className="font-montserrat-medium text-xs text-zinc-500 tracking-wide">Nhật Ký</Text>
-            </View>
-          </View>
-          <View className="flex-row items-center gap-2">
-            <Pressable className="w-10 h-10 rounded-full items-center justify-center" accessibilityLabel="Thông báo">
-              <Bell size={22} color="#52525B" />
-            </Pressable>
-            <View className="w-8 h-8 rounded-full bg-charcoal-pure overflow-hidden">
-              <Image
-                source={require('../../../assets/images/avatartion.png')}
-                style={{ width: '100%', height: '100%' }}
-                contentFit="cover"
-              />
-            </View>
-          </View>
-        </View>
-      </SafeAreaView>
+      <AppHeader pageTitle="Trang chủ" />
 
       <ScrollView
         className="flex-1 bg-surface"
