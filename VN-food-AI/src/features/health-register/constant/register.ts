@@ -1,6 +1,6 @@
 export const HEALTH_STEPS = [
   "gender",
-  // "age",
+  "age",
   "weight",
   "height",
   "plan",

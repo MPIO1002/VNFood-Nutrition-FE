@@ -51,7 +51,7 @@ export default function InputGenderScreen() {
     }
 
     assginMultipleMetabolismFieldData(data);
-    router.push("/register/weight");
+    router.push("/register/age");
   };
 
   return (
