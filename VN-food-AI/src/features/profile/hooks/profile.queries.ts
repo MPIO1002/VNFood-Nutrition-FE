@@ -3,6 +3,8 @@ import {
   useAddWeightApiV1ProfileWeightPost,
   useCalculateDailyNutritionApiV1NutritionCalculatePost,
   useGetProfileApiV1ProfileGet,
+  useUpdateProfileApiV1ProfilePatch,
+  useUploadImageEndpointApiV1UploadImagePost,
 } from "@/api/generated";
 import { ProfileResponseSchema } from "../validation/profileSchema";
 
@@ -28,6 +30,14 @@ export const useProfileQuery = () => {
 
 export const useUpdateWeightMutation = () => {
   return useAddWeightApiV1ProfileWeightPost();
+};
+
+export const useUpdateProfileMutation = () => {
+  return useUpdateProfileApiV1ProfilePatch();
+};
+
+export const useUploadProfileImageMutation = () => {
+  return useUploadImageEndpointApiV1UploadImagePost();
 };
 
 export const useCalculateNutritionMutation = () =>

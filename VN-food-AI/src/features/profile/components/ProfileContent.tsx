@@ -1,11 +1,12 @@
 import { ProfileResponse } from "@/api/generated/model";
 import {
-  useCalculateNutritionMutation,
-  useUpdateWeightMutation,
+  useUpdateProfileMutation,
+  useUploadProfileImageMutation,
 } from "../hooks/profile.queries";
 import { ProfileFormSchema } from "../validation/profileSchema";
 import {
   Activity,
+  Camera,
   Lock,
   Minus,
   Plus,
@@ -16,6 +17,8 @@ import {
   Unlock,
 } from "lucide-react-native";
 import { useMemo, useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import * as ImagePicker from "expo-image-picker";
 import { ActivityIndicator, Alert, Image, Pressable, Text, View } from "react-native";
 
 const colors = {
@@ -213,8 +216,9 @@ function EditableGoal({
 }
 
 export function ProfileContent({ profile }: { profile: ProfileResponse }) {
-  const updateWeight = useUpdateWeightMutation();
-  const calculateNutrition = useCalculateNutritionMutation();
+  const queryClient = useQueryClient();
+  const updateProfile = useUpdateProfileMutation();
+  const uploadImage = useUploadProfileImageMutation();
   const [weight, setWeight] = useState(profile.weight);
   const [height, setHeight] = useState(profile.height);
   const [goal, setGoal] = useState(profile.goal);
@@ -242,24 +246,21 @@ export function ProfileContent({ profile }: { profile: ProfileResponse }) {
       return;
     }
     try {
-      await updateWeight.mutateAsync({ data: { weight_kg: result.data.weight } });
-      const nutrition = await calculateNutrition.mutateAsync({
+      const updatedProfile = await updateProfile.mutateAsync({
         data: {
-          age: profile.age,
           height_cm: result.data.height,
           weight_kg: result.data.weight,
-          sex_for_equation: profile.sex_for_equation as "male" | "female",
-          activity_level: profile.activity_level as "sedentary" | "light" | "moderate" | "active" | "very_active",
           goal: goal as "gain_weight" | "lose_weight" | "maintain_weight",
         },
       });
+      queryClient.setQueryData(["/api/v1/profile"], updatedProfile);
       setSavedValues({
         weight: result.data.weight,
         height: result.data.height,
         goal,
-        bmi: nutrition.bmi,
-        tdee: nutrition.estimated_tdee_kcal_per_day,
-        targetCalories: nutrition.target_kcal_per_day,
+        bmi: updatedProfile.bmi,
+        tdee: updatedProfile.tdee,
+        targetCalories: updatedProfile.target_calories,
       });
       Alert.alert("Đã lưu", "Các chỉ số đã được cập nhật.");
     } catch {
@@ -267,13 +268,61 @@ export function ProfileContent({ profile }: { profile: ProfileResponse }) {
     }
   };
 
+  const pickAvatar = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("Cần quyền truy cập", "Vui lòng cho phép truy cập thư viện ảnh để đổi ảnh đại diện.");
+      return;
+    }
+
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.85,
+    });
+    const asset = pickerResult.canceled ? null : pickerResult.assets[0];
+    if (!asset) return;
+
+    try {
+      const uploaded = await uploadImage.mutateAsync({
+        data: {
+          image: {
+            uri: asset.uri,
+            name: asset.fileName || "profile-avatar.jpg",
+            type: asset.mimeType || "image/jpeg",
+          },
+        },
+      });
+      await updateProfile.mutateAsync({ data: { avatar_url: uploaded.url } });
+      await queryClient.invalidateQueries({ queryKey: ["/api/v1/profile"] });
+      Alert.alert("Đã cập nhật", "Ảnh đại diện đã được thay đổi.");
+    } catch {
+      Alert.alert("Không thể cập nhật", "Vui lòng thử lại sau.");
+    }
+  };
+
   return (
     <>
       <ProfileCard>
         <View className="items-center">
-          {profile.avatar_url ? <Image source={{ uri: profile.avatar_url }} className="h-24 w-24 rounded-full" /> : (
-            <View className="h-24 w-24 items-center justify-center rounded-full bg-zinc-300"><UserRound size={36} color={colors.muted} /></View>
-          )}
+          <Pressable
+            accessibilityLabel="Đổi ảnh đại diện"
+            disabled={uploadImage.isPending || updateProfile.isPending}
+            onPress={pickAvatar}
+            className="relative">
+            {profile.avatar_url ? <Image source={{ uri: profile.avatar_url }} className="h-24 w-24 rounded-full" /> : (
+              <View className="h-24 w-24 items-center justify-center rounded-full bg-zinc-300"><UserRound size={36} color={colors.muted} /></View>
+            )}
+            {(uploadImage.isPending || updateProfile.isPending) && (
+              <View className="absolute inset-0 items-center justify-center rounded-full bg-black/40">
+                <ActivityIndicator color="#FFF" />
+              </View>
+            )}
+            <View className="absolute bottom-0 right-0 h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-charcoal-pure">
+              <Camera size={16} color="#FFFFFF" />
+            </View>
+          </Pressable>
           <Text className="mt-3 font-montserrat-medium text-base text-charcoal-pure">{profile.full_name || "Người dùng CaloViet"}</Text>
           <Text className="mt-1 font-montserrat text-xs text-zinc-500">
             {profile.email} · {profile.age ?? "--"} tuổi · Tham gia từ {new Date(profile.created_at).toLocaleDateString("vi-VN")}
@@ -321,8 +370,8 @@ export function ProfileContent({ profile }: { profile: ProfileResponse }) {
           ))}
         </View>
       </ProfileCard>
-      <Pressable className="mb-2 items-center rounded-xl bg-charcoal-pure py-4"       disabled={updateWeight.isPending || calculateNutrition.isPending} onPress={saveChanges}>
-        {updateWeight.isPending ? <ActivityIndicator color="#FFF" /> : <Text className="font-montserrat-semibold text-sm text-white">Lưu tất cả thay đổi</Text>}
+      <Pressable className="mb-2 items-center rounded-xl bg-charcoal-pure py-4" disabled={updateProfile.isPending} onPress={saveChanges}>
+        {updateProfile.isPending ? <ActivityIndicator color="#FFF" /> : <Text className="font-montserrat-semibold text-sm text-white">Lưu tất cả thay đổi</Text>}
       </Pressable>
       <Text className="mb-5 text-center font-montserrat text-[11px] text-zinc-500">Dữ liệu được mã hóa y tế và đồng bộ tức thời</Text>
     </>

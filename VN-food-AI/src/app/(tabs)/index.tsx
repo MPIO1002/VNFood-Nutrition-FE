@@ -19,6 +19,7 @@ import { ScrollView, Text, View, Pressable } from 'react-native';
 import { PressScale } from '@/components/PressScale';
 import { CalorieRing } from '@/components/CalorieRing';
 import { AppHeader } from '@/components/AppHeader';
+import { useProfileQuery } from '@/features/profile/hooks/profile.queries';
 
 // ─── How-It-Works data ───────────────────────────────────────────────────────
 const HOW_STEPS = [
@@ -54,10 +55,11 @@ const HOW_STEPS = [
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function HomeScreen() {
   const router = useRouter();
+  const profileQuery = useProfileQuery();
 
   return (
     <View className="flex-1 bg-surface">
-      <AppHeader pageTitle="Trang chủ" />
+      <AppHeader pageTitle="Trang chủ" avatarUri={profileQuery.data?.avatar_url} />
 
       <ScrollView
         className="flex-1 bg-surface"
