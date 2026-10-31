@@ -12,13 +12,14 @@ export const useFtSliderRuler = ({
   onReady,
   onValueChange,
 }: UseFtSliderRulerOptions = {}) => {
+  const INITIAL_VALUE = 160;
   const ftRulerController = useRef<SliderRulerController | null>(null);
-  const ftScreenValue = useSharedValue<number>(0);
+  const ftScreenValue = useSharedValue<number>(INITIAL_VALUE);
 
   const ftProps: VerticalSliderRulerProps = {
     min: 50,
     max: 250,
-    initialValue: 160,
+    initialValue: INITIAL_VALUE,
     minorPerMediumSegment: 0,
     mediumPerMajorSegment: 4,
     step: 1,

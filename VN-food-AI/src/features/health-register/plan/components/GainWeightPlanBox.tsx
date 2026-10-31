@@ -41,7 +41,7 @@ export function GainWeightPlanBox({
         setTarget(t < 0 ? 0 : t);
         onWeightChange?.(v);
       }, 300),
-    [],
+    [currentWeight],
   );
   useEffect(() => {
     return () => onValueChange.cancel();

@@ -1,5 +1,6 @@
 import {
   LoginRequest,
+  RefreshRequest,
   RegisterRequest,
   TokenResponse,
   UserResponse,
@@ -10,9 +11,9 @@ import {
   saveAuthSession,
 } from "@/api/session/session";
 
-import { LogoutApiV1AuthLogoutPostMutationVariables } from "@/api/generated";
 import { APIMutatorOptions } from "@/api/types/api";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 import {
   authQueryKeys,
   useCurrentUserQuery,
@@ -38,132 +39,141 @@ export const useAuth = () => {
     return defaultMsg;
   }
 
-  const initAuth = async ({
-    onUserChange,
-  }: {
-    onUserChange: (user: UserResponse | null) => void;
-  }) => {
-    const { user: storedUser } = await getStoredTokens();
-    if (storedUser) {
-      onUserChange(storedUser);
-    }
-    try {
-      const { data: me } = getCurrentUser();
-      onUserChange(me ?? null);
-    } catch {
-      // Không đồng bộ được profile nhưng vẫn có thể dùng storedUser
-    }
-  };
+  const initAuth = useCallback(
+    async ({
+      onUserChange,
+    }: {
+      onUserChange: (user: UserResponse | null) => void;
+    }) => {
+      const { user: storedUser } = await getStoredTokens();
+      if (storedUser) {
+        onUserChange(storedUser);
+      }
+      try {
+        const { data: me } = getCurrentUser();
+        onUserChange(me ?? null);
+      } catch {
+        // Không đồng bộ được profile nhưng vẫn có thể dùng storedUser
+      }
+    },
+    [],
+  );
 
-  const handleRegister = ({
-    data,
-    options,
-  }: {
-    data: RegisterRequest;
-    options?: APIMutatorOptions<TokenResponse, RegisterRequest>;
-  }) => {
-    registerMutation.mutate(
-      {
-        data: {
-          email: data.email.trim(),
-          password: data.password,
-          ...(data.full_name ? { full_name: data.full_name.trim() } : {}),
+  const handleRegister = useCallback(
+    ({
+      data,
+      options,
+    }: {
+      data: RegisterRequest;
+      options?: APIMutatorOptions<TokenResponse, RegisterRequest>;
+    }) => {
+      registerMutation.mutate(
+        {
+          data: {
+            email: data.email.trim(),
+            password: data.password,
+            ...(data.full_name ? { full_name: data.full_name.trim() } : {}),
+          },
         },
-      },
-      {
-        onSuccess: async (res: TokenResponse) => {
-          await saveAuthSession(res);
-          queryClient.invalidateQueries({
-            queryKey: authQueryKeys.currentUser(),
-          });
-          options?.onSuccess?.(res);
+        {
+          onSuccess: async (res: TokenResponse) => {
+            await saveAuthSession(res);
+            queryClient.invalidateQueries({
+              queryKey: authQueryKeys.currentUser(),
+            });
+            options?.onSuccess?.(res);
+          },
+          onError: (e) => {
+            console.log(`Failed to call api: ${e.cause?.message}`);
+            console.log(`Failed status: ${e.status}`);
+            options?.onError?.(e);
+          },
+          onSettled: (res, e, v) => {
+            options?.onSettled?.(res, e, { ...v.data });
+          },
         },
-        onError: (e) => {
-          console.log(`Failed to call api: ${e.cause?.message}`);
-          console.log(`Failed status: ${e.status}`);
-          options?.onError?.(e);
-        },
-        onSettled: (res, e, v) => {
-          options?.onSettled?.(res, e, { ...v.data });
-        },
-      },
-    );
-  };
+      );
+    },
+    [registerMutation],
+  );
 
-  const handleLogin = ({
-    data,
-    options,
-  }: {
-    data: LoginRequest;
-    options?: APIMutatorOptions<TokenResponse, LoginRequest>;
-  }) => {
-    loginMutation.mutate(
-      {
-        data: {
-          email: data.email.trim(),
-          password: data.password,
+  const handleLogin = useCallback(
+    ({
+      data,
+      options,
+    }: {
+      data: LoginRequest;
+      options?: APIMutatorOptions<TokenResponse, LoginRequest>;
+    }) => {
+      loginMutation.mutate(
+        {
+          data: {
+            email: data.email.trim(),
+            password: data.password,
+          },
         },
-      },
-      {
-        onSuccess: async (res: TokenResponse) => {
-          await saveAuthSession(res);
-          queryClient.invalidateQueries({
-            queryKey: authQueryKeys.currentUser(),
-          });
-          options?.onSuccess?.(res);
+        {
+          onSuccess: async (res: TokenResponse) => {
+            await saveAuthSession(res);
+            queryClient.invalidateQueries({
+              queryKey: authQueryKeys.currentUser(),
+            });
+            options?.onSuccess?.(res);
+          },
+          onError: (e) => {
+            console.log(`Failed to call api: ${e.cause?.message}`);
+            console.log(`Failed status: ${e.status}`);
+            options?.onError?.(e);
+          },
+          onSettled: (res, e, v) => {
+            options?.onSettled?.(res, e, { ...v.data });
+          },
         },
-        onError: (e) => {
-          console.log(`Failed to call api: ${e.cause?.message}`);
-          console.log(`Failed status: ${e.status}`);
-          options?.onError?.(e);
-        },
-        onSettled: (res, e, v) => {
-          options?.onSettled?.(res, e, { ...v.data });
-        },
-      },
-    );
-  };
+      );
+    },
+    [loginMutation],
+  );
 
-  const handleLogout = async ({
-    options,
-  }: {
-    options?: APIMutatorOptions<
-      void,
-      LogoutApiV1AuthLogoutPostMutationVariables
-    >;
-  }) => {
-    const { refreshToken } = await getStoredTokens();
-    if (!refreshToken) return;
+  const handleLogout = useCallback(
+    async ({
+      options,
+    }: {
+      options?: APIMutatorOptions<void, RefreshRequest>;
+    }) => {
+      const { refreshToken } = await getStoredTokens();
+      if (!refreshToken) return;
 
-    logOutMutation.mutate(
-      {
-        data: {
-          refresh_token: refreshToken,
+      logOutMutation.mutate(
+        {
+          data: {
+            refresh_token: refreshToken,
+          },
         },
-      },
-      {
-        onSuccess: async () => {
-          await clearAuthSession();
-          queryClient.invalidateQueries({
-            queryKey: authQueryKeys.currentUser(),
-          });
-          options?.onSuccess?.();
+        {
+          onSuccess: async () => {
+            await clearAuthSession();
+            queryClient.invalidateQueries({
+              queryKey: authQueryKeys.currentUser(),
+            });
+            options?.onSuccess?.();
+          },
+          onError: (e) => {
+            console.log(`Failed to call api: ${e.cause?.message}`);
+            console.log(`Failed status: ${e.status}`);
+            options?.onError?.(e);
+          },
+          onSettled: (_, e, req) => {
+            options?.onSettled?.(undefined, e, { ...req.data });
+          },
         },
-        onError: (e) => {
-          console.log(`Failed to call api: ${e.cause?.message}`);
-          console.log(`Failed status: ${e.status}`);
-          options?.onError?.(e);
-        },
-        onSettled: (_, e, req) => {
-          options?.onSettled?.(undefined, e, req);
-        },
-      },
-    );
-  };
+      );
+    },
+    [logOutMutation],
+  );
 
-  const getCurrentUser = () => {
+  const getCurrentUser = useCallback(() => {
     return useCurrentUserQuery();
-  };
+  }, []);
 
   return {
     handleLogin,

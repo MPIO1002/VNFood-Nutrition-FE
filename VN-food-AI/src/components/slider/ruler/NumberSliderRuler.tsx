@@ -11,20 +11,20 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { G, Text as SvgText } from "react-native-svg";
 
-import { useHorizontalSliderRuler } from "./hooks/useHorizontalSliderRuler";
+import { useVerticalSliderRuler } from "./hooks/useVerticalSliderRuler";
 import { SliderRulerProps } from "./ruler";
 
 const AnimatedG = Animated.createAnimatedComponent(G);
 
 export interface NumberSliderRulerProps extends SliderRulerProps {
-  rulerHeight?: number;
+  rulerWidth?: number;
   numberFontSize?: number;
   activeNumberFontSize?: number;
   onFinishLoading?: () => void;
 }
 
 export const NumberSliderRuler = memo(function NumberSliderRuler({
-  rulerHeight = 80,
+  rulerWidth = 160,
   numberFontSize = 40,
   activeNumberFontSize = 60,
   tickGap = 90,
@@ -48,7 +48,7 @@ export const NumberSliderRuler = memo(function NumberSliderRuler({
     formatTickValue,
     UIProps: sliderProps,
     UIstyle: sliderStyle,
-  } = useHorizontalSliderRuler({
+  } = useVerticalSliderRuler({
     ...props,
     tickGap,
     screenValue,
@@ -59,10 +59,14 @@ export const NumberSliderRuler = memo(function NumberSliderRuler({
   });
 
   const { ticks, SNAP, pan, tickCount, viewportPadding } = sliderProps;
-  const { TICK_WIDTH, rulerLeft, rulerStyle, setContainerWidth } = sliderStyle;
+  const { TICK_HEIGHT, rulerTop, rulerStyle, setContainerHeight } = sliderStyle;
 
-  const textX = viewportPadding + TICK_WIDTH / 2 + currentIndex * SNAP;
-  const textY = rulerHeight / 2 + activeNumberFontSize / 3;
+  const textX = rulerWidth / 2;
+  const textY =
+    viewportPadding +
+    TICK_HEIGHT / 2 +
+    currentIndex * SNAP +
+    activeNumberFontSize / 3;
 
   const activeScale = useDerivedValue(() => {
     const currentNumber = props.min + currentIndex * step;
@@ -71,23 +75,28 @@ export const NumberSliderRuler = memo(function NumberSliderRuler({
     const targetScale = Math.max(startScale, 1 - distanceFromCenter);
 
     return withTiming(targetScale, {
-      duration: 120,
+      duration: 200,
       easing: Easing.out(Easing.cubic),
     });
   }, [currentIndex, props.min, startScale, step]);
 
-  const activeProps = useAnimatedProps(
-    () => ({
-      transform: [{ scale: activeScale.value }],
-    }),
-    [activeScale],
-  );
+  const activeProps = useAnimatedProps(() => {
+    const centerOffset = -activeNumberFontSize / 3;
+
+    return {
+      transform: [
+        { translateY: centerOffset },
+        { scale: activeScale.value },
+        { translateY: -centerOffset },
+      ],
+    };
+  }, [activeNumberFontSize, activeScale]);
 
   const handleLayout = useCallback(
     ({ nativeEvent }: LayoutChangeEvent) => {
-      setContainerWidth(nativeEvent.layout.width);
+      setContainerHeight(nativeEvent.layout.height);
 
-      if (nativeEvent.layout.width > 0) {
+      if (nativeEvent.layout.height > 0) {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             setIsRulerReady(true);
@@ -96,7 +105,7 @@ export const NumberSliderRuler = memo(function NumberSliderRuler({
         });
       }
     },
-    [onFinishLoading, setContainerWidth],
+    [onFinishLoading, setContainerHeight],
   );
 
   return (
@@ -108,17 +117,29 @@ export const NumberSliderRuler = memo(function NumberSliderRuler({
           {isRulerReady && (
             <>
               <Animated.View
-                className="absolute top-1/3"
-                style={[rulerLeft, rulerStyle]}>
+                className="absolute"
+                style={[
+                  rulerTop,
+                  rulerStyle,
+                  {
+                    left: "50%",
+                    marginLeft: -rulerWidth / 2,
+                  },
+                ]}>
                 <Svg
-                  width={tickCount * SNAP + viewportPadding * 2}
-                  height={rulerHeight}>
+                  width={rulerWidth}
+                  height={tickCount * SNAP + viewportPadding * 2}>
                   <G>
                     {ticks.map((index) => (
                       <SvgText
                         key={index}
-                        x={viewportPadding + TICK_WIDTH / 2 + index * SNAP}
-                        y={textY}
+                        x={textX}
+                        y={
+                          viewportPadding +
+                          TICK_HEIGHT / 2 +
+                          index * SNAP +
+                          numberFontSize / 3
+                        }
                         fill="#737373"
                         fontFamily="Montserrat_400Regular"
                         fillOpacity={index === currentIndex ? 0 : 1}
@@ -152,28 +173,28 @@ export const NumberSliderRuler = memo(function NumberSliderRuler({
               <LinearGradient
                 pointerEvents="none"
                 colors={["white", "rgba(255,255,255,0)"]}
-                start={{ x: 0, y: 0.5 }}
-                end={{ x: 1, y: 0.5 }}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
                 style={{
                   position: "absolute",
                   left: 0,
+                  right: 0,
                   top: 0,
-                  bottom: 0,
-                  width: 48,
+                  height: 48,
                   zIndex: 2,
                 }}
               />
               <LinearGradient
                 pointerEvents="none"
                 colors={["rgba(255,255,255,0)", "white"]}
-                start={{ x: 0, y: 0.5 }}
-                end={{ x: 1, y: 0.5 }}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
                 style={{
                   position: "absolute",
                   right: 0,
-                  top: 0,
+                  left: 0,
                   bottom: 0,
-                  width: 48,
+                  height: 48,
                   zIndex: 2,
                 }}
               />

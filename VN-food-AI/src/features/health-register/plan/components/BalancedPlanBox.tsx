@@ -13,7 +13,14 @@ export function BalancedPlanBox(props: PlanBoxProps) {
           <ScaleIcon color={props.activated ? "white" : "black"} size={20} />
         </View>
         <View className="flex-1">
-          <Text className="font-montserrat-bold">Giữ cân & Săn chắc</Text>
+          <View className="flex-row gap-2 items-center">
+            <Text className="font-montserrat-bold">Giữ cân & Săn chắc</Text>
+            <Badge className="bg-green-200">
+              <Text className="font-montserrat-bold text-green-500 text-xs">
+                Tối ưu
+              </Text>
+            </Badge>
+          </View>
           <Text className="font-montserrat text-sm">
             Tái cấu trúc cơ thể & Tăng trao đổi chất
           </Text>

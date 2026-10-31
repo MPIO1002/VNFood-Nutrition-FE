@@ -1,10 +1,11 @@
 import { useUserHealthInformationContext } from "@/features/health-register";
+import HealthRegisterNextButton from "@/features/health-register/components/HealthNextButton";
 import CmSliderRuler from "@/features/health-register/height/CmSliderRuler";
 import FtSliderRuler from "@/features/health-register/height/FtSliderRuler";
 import { router } from "expo-router";
-import { ArrowRight, Dot, LockIcon } from "lucide-react-native";
+import { Dot } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function InputHeightScreen() {
@@ -29,7 +30,7 @@ export default function InputHeightScreen() {
       value: isCmMode ? cmValue.current : ftValue.current,
     });
 
-    router.push("/register/plan");
+    router.push("/register/(steps)/activity");
   };
 
   return (
@@ -101,22 +102,10 @@ export default function InputHeightScreen() {
           </View>
         </View>
       </View>
-      <View className="w-full gap-2.5">
-        <Pressable
-          className="w-full bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2 active:opacity-40"
-          onPress={onNext}>
-          <Text className="font-montserrat-bold text-[15px] text-white">
-            {"Tiếp tục (Chọn mục tiêu)"}
-          </Text>
-          <ArrowRight size={18} color="#FFF" />
-        </Pressable>
-        <View className="w-full flex-row items-center justify-center gap-1.5 pb-1">
-          <LockIcon size={12} color={"#9ca3af"} />
-          <Text className="text-xs font-montserrat text-center text-gray-400">
-            Dữ liệu được bảo mật an toàn cho lộ trình cá nhân
-          </Text>
-        </View>
-      </View>
+      <HealthRegisterNextButton
+        title="Tiếp tục (Chọn mục tiêu)"
+        onNext={onNext}
+      />
     </View>
   );
 }

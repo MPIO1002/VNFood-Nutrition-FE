@@ -1,10 +1,13 @@
-import { MetabolismRequest } from "@/api/generated/model";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { MetabolismRequest, MetabolismResponse } from "@/api/generated/model";
+import { APIMutatorOptions } from "@/api/types/api";
+import { useCallback, useRef } from "react";
 import { HealthSteps } from "../../constant/register";
+import { useHealthRegister } from "../../hooks/useHealthRegister";
 import { MetabolismFieldData } from "../../types/metabolism";
 
 export interface UseUserHealthInformationContextOptions {
   totalSteps: number;
+  onLoadingProgressChange?: (progress: number) => void;
   onAllReady?: () => void;
 }
 
@@ -24,20 +27,19 @@ const metabolismDefaultValues: MetabolismRequest = {
 
 export const useUserHealthInformation = ({
   totalSteps,
+  onLoadingProgressChange,
   onAllReady,
 }: UseUserHealthInformationContextOptions) => {
+  const { handleHealthRegister } = useHealthRegister();
   const readySteps = useRef<Set<string>>(new Set<string>());
-  const [metabolismData, setMetabolismData] = useState<MetabolismRequest>(
-    metabolismDefaultValues,
-  );
-
-  useEffect(() => {
-    console.log(metabolismData);
-  }, [metabolismData]);
+  const metabolismData = useRef<MetabolismRequest>(metabolismDefaultValues);
 
   const markReady = useCallback(
     (name: HealthSteps) => {
       readySteps.current.add(name);
+
+      const progress = readySteps.current.size / totalSteps;
+      onLoadingProgressChange?.(progress);
       if (readySteps.current.size === totalSteps) onAllReady?.();
     },
     [totalSteps],
@@ -46,22 +48,36 @@ export const useUserHealthInformation = ({
   const assignMetabolismFieldData = useCallback(
     (fieldData: MetabolismFieldData) => {
       if (!fieldData || !fieldData.field) return;
-      setMetabolismData((prev) => ({
-        ...prev,
+      metabolismData.current = {
+        ...metabolismData.current,
         [fieldData.field]: fieldData.value,
-      }));
+      };
     },
     [],
   );
 
   const assginMultipleMetabolismFieldData = useCallback(
     (obj: Partial<MetabolismRequest>) => {
-      setMetabolismData((prev) => ({
-        ...prev,
+      metabolismData.current = {
+        ...metabolismData.current,
         ...obj,
-      }));
+      };
     },
     [],
+  );
+
+  const submitMetabolismData = useCallback(
+    ({
+      options,
+    }: {
+      options?: APIMutatorOptions<MetabolismResponse, MetabolismRequest>;
+    } = {}) => {
+      handleHealthRegister({
+        data: metabolismData.current,
+        options: options,
+      });
+    },
+    [handleHealthRegister],
   );
 
   return {
@@ -69,5 +85,6 @@ export const useUserHealthInformation = ({
     metabolismData,
     assignMetabolismFieldData,
     assginMultipleMetabolismFieldData,
+    submitMetabolismData,
   };
 };

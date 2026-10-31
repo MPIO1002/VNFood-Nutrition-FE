@@ -12,13 +12,14 @@ export const useCmSliderRuler = ({
   onReady,
   onValueChange,
 }: UseCmSliderRulerOptions = {}) => {
+  const INITIAL_VALUE = 160;
   const cmRulerController = useRef<SliderRulerController | null>(null);
-  const cmScreenValue = useSharedValue<number>(0);
+  const cmScreenValue = useSharedValue<number>(INITIAL_VALUE);
 
   const cmProps: VerticalSliderRulerProps = {
     min: 50,
     max: 250,
-    initialValue: 160,
+    initialValue: INITIAL_VALUE,
     minorPerMediumSegment: 0,
     mediumPerMajorSegment: 4,
     step: 1,

@@ -12,13 +12,14 @@ export const useKgSliderRuler = ({
   onReady,
   onValueChange,
 }: UseKgSliderRulerOptions = {}) => {
+  const INITIAL_VALUE = 50;
   const kgRulerController = useRef<SliderRulerController | null>(null);
-  const kgScreenValue = useSharedValue<number>(0);
+  const kgScreenValue = useSharedValue<number>(INITIAL_VALUE);
 
   const kgProps: HorizontalSliderRulerProps = {
     min: 10,
     max: 300,
-    initialValue: 50,
+    initialValue: INITIAL_VALUE,
     step: 0.5,
     minorPerMediumSegment: 1,
     mediumPerMajorSegment: 4,

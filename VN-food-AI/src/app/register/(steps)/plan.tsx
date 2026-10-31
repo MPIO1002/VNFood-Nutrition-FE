@@ -1,28 +1,28 @@
 import { NutritionGoal } from "@/api/generated/model";
 import { useUserHealthInformationContext } from "@/features/health-register";
+import HealthRegisterNextButton from "@/features/health-register/components/HealthNextButton";
 import { BalancedPlanBox } from "@/features/health-register/plan/components/BalancedPlanBox";
 import { GainWeightPlanBox } from "@/features/health-register/plan/components/GainWeightPlanBox";
 import { LoseWeightPlanBox } from "@/features/health-register/plan/components/LoseWeightPlanBox";
 import { useHealthPlanRegister } from "@/features/health-register/plan/hooks/useHealthPlanRegister";
-import { ArrowRight, LockIcon } from "lucide-react-native";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  Text,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PlanChoiceScreen() {
   const insets = useSafeAreaInsets();
-  const { markReady, metabolismData, assginMultipleMetabolismFieldData } =
-    useUserHealthInformationContext();
+  const {
+    markReady,
+    metabolismData,
+    assginMultipleMetabolismFieldData,
+    submitMetabolismData,
+  } = useUserHealthInformationContext();
   const [choice, setChoice] = useState<NutritionGoal>("maintain_weight");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const currentWeight = metabolismData?.weight_kg || 0;
+  const currentWeight = metabolismData?.current?.weight_kg || 0;
   const { getPlanValues, onGainPlanValueChange, onLosePlanValueChange } =
     useHealthPlanRegister();
 
@@ -31,14 +31,14 @@ export default function PlanChoiceScreen() {
   }, []);
 
   const onNext = () => {
+    setIsSubmitting(true);
+
     const values = getPlanValues(choice);
     assginMultipleMetabolismFieldData({
       goal: choice,
       ...values,
     });
-
-    // if (router.canDismiss()) router.dismissAll();
-    // router.push("/(tabs)/analytics");
+    router.push("/register/submit");
   };
 
   return (
@@ -74,7 +74,6 @@ export default function PlanChoiceScreen() {
                 onLosePlanValueChange({ field: "weight_change_kg", value: v });
               }}
               onModeChange={(mode) => {
-                console.log(mode);
                 onLosePlanValueChange({ field: "goal_pace", value: mode });
               }}
             />
@@ -95,24 +94,11 @@ export default function PlanChoiceScreen() {
             />
           </View>
         </View>
-
-        {/* Bottom section anchored at bottom */}
-        <View className="w-full gap-2.5 mt-6">
-          <Pressable
-            className="w-full bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2 active:opacity-40"
-            onPress={onNext}>
-            <Text className="font-montserrat-bold text-[15px] text-white">
-              {"Hoàn tất & Khám phá CaloViet AI"}
-            </Text>
-            <ArrowRight size={18} color="#FFF" />
-          </Pressable>
-          <View className="w-full flex-row items-center justify-center gap-1.5 pb-1">
-            <LockIcon size={12} color={"#9ca3af"} />
-            <Text className="text-xs font-montserrat text-center text-gray-400">
-              Dữ liệu được bảo mật an toàn cho lộ trình cá nhân
-            </Text>
-          </View>
-        </View>
+        <HealthRegisterNextButton
+          title="Hoàn tất"
+          disabled={isSubmitting}
+          onNext={onNext}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

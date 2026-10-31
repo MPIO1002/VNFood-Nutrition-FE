@@ -1,10 +1,10 @@
 import { useUserHealthInformationContext } from "@/features/health-register";
+import HealthRegisterNextButton from "@/features/health-register/components/HealthNextButton";
 import KgSliderRuler from "@/features/health-register/weight/KgSliderRuler";
 import LbsSliderRuler from "@/features/health-register/weight/LbsSliderRuler";
 import { router } from "expo-router";
-import { ArrowRight, LockIcon } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function InputWeightScreen() {
@@ -28,7 +28,7 @@ export default function InputWeightScreen() {
       value: isKgMode ? kgValue.current : lbsValue.current,
     });
 
-    router.push("/register/height");
+    router.push("/register/(steps)/height");
   };
 
   return (
@@ -94,22 +94,10 @@ export default function InputWeightScreen() {
           </View>
         </View>
       </View>
-      <View className="w-full gap-2.5">
-        <Pressable
-          className="w-full bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2 active:opacity-40"
-          onPress={onNext}>
-          <Text className="font-montserrat-bold text-[15px] text-white">
-            {"Tiếp tục (Chọn chiều cao)"}
-          </Text>
-          <ArrowRight size={18} color="#FFF" />
-        </Pressable>
-        <View className="w-full flex-row items-center justify-center gap-1.5 pb-1">
-          <LockIcon size={12} color={"#9ca3af"} />
-          <Text className="text-xs font-montserrat text-center text-gray-400">
-            Dữ liệu được bảo mật an toàn cho lộ trình cá nhân
-          </Text>
-        </View>
-      </View>
+      <HealthRegisterNextButton
+        title="Tiếp tục (Chọn chiều cao)"
+        onNext={onNext}
+      />
     </View>
   );
 }

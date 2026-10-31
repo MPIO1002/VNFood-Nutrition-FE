@@ -3,6 +3,7 @@ export const HEALTH_STEPS = [
   "age",
   "weight",
   "height",
+  "activity",
   "plan",
 ] as const;
 

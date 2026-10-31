@@ -1,10 +1,12 @@
-import { HorizontalSliderRulerProps } from "@/components/slider/ruler/HorizontalSliderRuler";
-import { NumberSliderRuler } from "@/components/slider/ruler/NumberSliderRuler";
+import {
+  NumberSliderRuler,
+  NumberSliderRulerProps,
+} from "@/components/slider/ruler/NumberSliderRuler";
 import { useUserHealthInformationContext } from "@/features/health-register";
+import HealthRegisterNextButton from "@/features/health-register/components/HealthNextButton";
 import { router } from "expo-router";
-import { ArrowRight, LockIcon } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function InputAgeScreen() {
@@ -22,7 +24,7 @@ export default function InputAgeScreen() {
     setAge(value);
   };
 
-  const ageProps: HorizontalSliderRulerProps = {
+  const ageProps: NumberSliderRulerProps = {
     min: 10,
     max: 100,
     initialValue: INITIAL_AGE,
@@ -35,7 +37,7 @@ export default function InputAgeScreen() {
       field: "age",
       value: age,
     });
-    router.push("/register/weight");
+    router.push("/register/(steps)/weight");
   };
 
   return (
@@ -59,22 +61,10 @@ export default function InputAgeScreen() {
           </View>
         </View>
       </View>
-      <View className="w-full gap-2.5 mt-3">
-        <Pressable
-          className="w-full bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2 active:opacity-40"
-          onPress={onNext}>
-          <Text className="font-montserrat-bold text-[15px] text-white">
-            {"Tiếp tục (Chọn cân nặng)"}
-          </Text>
-          <ArrowRight size={18} color="#FFF" />
-        </Pressable>
-        <View className="w-full flex-row items-center justify-center gap-1.5 pb-1">
-          <LockIcon size={12} color={"#9ca3af"} />
-          <Text className="text-xs font-montserrat text-center text-gray-400">
-            Dữ liệu được bảo mật an toàn cho lộ trình cá nhân
-          </Text>
-        </View>
-      </View>
+      <HealthRegisterNextButton
+        title="Tiếp tục (Chọn cân nặng)"
+        onNext={onNext}
+      />
     </View>
   );
 }

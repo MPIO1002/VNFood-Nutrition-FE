@@ -1,146 +1,39 @@
-import { useProgressStep } from "@/components/progress/step/hooks/useProgressStep";
-import ProgressStep from "@/components/progress/step/ProgressStep";
-import {
-  HEALTH_STEPS,
-  HealthSteps,
-} from "@/features/health-register/constant/register";
+import StepLoadingScreen from "@/features/health-register/components/StepLoadingScreen";
+import { HEALTH_STEPS } from "@/features/health-register/constant/register";
 import UserHealthInformationContextProvider from "@/features/health-register/context/UserHealthInformationContextProvider";
-import { router, Tabs, usePathname } from "expo-router";
-import { ArrowLeft, DotIcon } from "lucide-react-native";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Stack } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 
-function InputUserHealthInformationTopPanel() {
-  const insets = useSafeAreaInsets();
-  const pathname = usePathname();
-  const currentStepName = pathname.split("/").pop() ?? "gender";
-
-  const getPageTitle = (step: string) => {
-    switch (step) {
-      case "gender":
-        return "Giới tính";
-      case "age":
-        return "Độ tuổi";
-      case "weight":
-        return "Cân nặng";
-      case "height":
-        return "Chiều cao";
-      case "condition":
-        return "Điều kiện cơ thể";
-      case "plan":
-        return "Mục tiêu vóc dáng";
-      default:
-        return "Thông tin cá nhân";
-    }
-  };
-
-  return (
-    <View
-      className="w-full h-fit gap-1 top-0 bg-white"
-      style={{
-        paddingTop: insets.top,
-      }}>
-      <View className="flex-row items-center justify-between h-14 px-5 relative">
-        <Pressable
-          onPress={() => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace("/");
-            }
-          }}
-          hitSlop={12}
-          className="z-10 p-2 -ml-2 active:opacity-40">
-          <ArrowLeft size={20} color="black" />
-        </Pressable>
-
-        <View className="absolute inset-0 items-center justify-center pointer-events-none">
-          <Text className="font-montserrat-bold text-base text-charcoal-pure">
-            {getPageTitle(currentStepName)}
-          </Text>
-        </View>
-
-        {/* Empty placeholder to balance the flex-row layout */}
-        <View className="w-8" />
-      </View>
-      <UserProgress></UserProgress>
-    </View>
-  );
-}
-
-function UserProgress() {
-  const stepLength = HEALTH_STEPS.length;
-  const { currentStep, setStep } = useProgressStep({
-    steps: stepLength,
-  });
-  const pathname = usePathname();
-  const isValidStep = (step: string): step is HealthSteps =>
-    (HEALTH_STEPS as readonly string[]).includes(step);
+export default function HealthRegisterLayout() {
+  const [loadingStepsProgress, setLoadingStepsProgress] = useState(0);
+  const [isLoadingSteps, setIsLoadingSteps] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const name = pathname.split("/").pop() ?? "";
-    if (isValidStep(name)) setStep(HEALTH_STEPS.indexOf(name));
-    else setStep(0);
-  }, [pathname]);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
-  const stepCategory =
-    currentStep === 2 ? "Mục tiêu cá nhân" : "Thể trạng ban đầu";
-
-  return (
-    <View className="w-full bg-gray-100 h-15 justify-center px-5 pt-4 pb-2">
-      <View className="w-full flex-row items-center">
-        <Text className="font-montserrat text-xs text-zinc-500">
-          Bước {currentStep + 1} trên {stepLength}
-        </Text>
-        <DotIcon size={16} color="#71717a" />
-        <Text className="font-montserrat text-xs text-zinc-500">
-          {stepCategory}
-        </Text>
-      </View>
-      <View className="w-full mt-1.5">
-        <ProgressStep
-          currentStep={currentStep}
-          totalSteps={stepLength}
-          color={"#E4E4E7"}
-          currentColor={"#000000"}
-          finishedColor={"#000000"}></ProgressStep>
-      </View>
-    </View>
-  );
-}
-
-export default function InputUserHealthInformationLayout() {
-  const [isLoading, setIsLoading] = useState(true);
+  const onAllStepsReady = () => {
+    timerRef.current = setTimeout(() => setIsLoadingSteps(false), 500);
+  };
 
   return (
     <UserHealthInformationContextProvider
       totalSteps={HEALTH_STEPS.length}
-      onAllReady={() => setIsLoading(false)}>
-      <View className="bg-white w-full h-full">
-        <InputUserHealthInformationTopPanel></InputUserHealthInformationTopPanel>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <Tabs
-            backBehavior="history"
-            screenOptions={{
-              lazy: false,
-              freezeOnBlur: true,
-              headerShown: false,
-              animation: "shift",
-              tabBarStyle: { display: "none" },
-            }}>
-            {HEALTH_STEPS.map((name, i) => (
-              <Tabs.Screen key={i} name={name}></Tabs.Screen>
-            ))}
-          </Tabs>
-        </GestureHandlerRootView>
-      </View>
-      {isLoading && (
-        <View className="bg-white w-full h-full z-50 absolute justify-center items-center">
-          <ActivityIndicator size={"large"} color={"black"}></ActivityIndicator>
-        </View>
-      )}
+      startLoading={() => setIsLoadingSteps(true)}
+      onLoadingProgressChange={(progress) => setLoadingStepsProgress(progress)}
+      onAllReady={() => onAllStepsReady()}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}>
+        <Stack.Screen name="condition" />
+        <Stack.Screen name="(steps)" />
+        <Stack.Screen name="submit" />
+      </Stack>
+      {isLoadingSteps && <StepLoadingScreen progress={loadingStepsProgress} />}
     </UserHealthInformationContextProvider>
   );
 }

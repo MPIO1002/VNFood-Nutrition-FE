@@ -16,11 +16,6 @@ export default function PregnantConditionBox(props: ConditionBoxProps) {
           Đang mang thai
         </Text>
       </View>
-      <View className="w-full justify-center">
-        <Text className="font-montserrat text-gray-400 text-base text-center">
-          Đang trong giai đoạn mang thai hoặc nuôi con bằng sữa mẹ
-        </Text>
-      </View>
     </ConditionBox>
   );
 }

@@ -23,7 +23,7 @@ export function PlanBox({
           : "border-zinc-200 opacity-70"
       }`}
       onPress={onPress}>
-      <View className="absolute right-3 top-3">
+      <View className="absolute right-3 top-3 z-10">
         {activated ? (
           <CircleCheck size={24} fill={"black"} color={"white"} />
         ) : (
