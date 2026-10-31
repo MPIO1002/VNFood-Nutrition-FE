@@ -236,7 +236,7 @@ export function ProfileContent({ profile }: { profile: ProfileResponse }) {
   const targetCalories = savedValues.targetCalories ?? 0;
   const changeWeight = (delta: number) => setWeight((current) => Math.max(0.1, Number(((current ?? 0) + delta).toFixed(1))));
   const saveChanges = async () => {
-    const result = ProfileFormSchema.safeParse({ weight, height: height ?? 0 });
+    const result = ProfileFormSchema.safeParse({ weight, height: height ?? 0, goal });
     if (!result.success) {
       Alert.alert("Dữ liệu chưa hợp lệ", result.error.issues[0]?.message);
       return;
@@ -250,7 +250,7 @@ export function ProfileContent({ profile }: { profile: ProfileResponse }) {
         data: {
           height_cm: result.data.height,
           weight_kg: result.data.weight,
-          goal: goal as "gain_weight" | "lose_weight" | "maintain_weight",
+          goal: result.data.goal,
         },
       });
       queryClient.setQueryData(["/api/v1/profile"], updatedProfile);
