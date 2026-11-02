@@ -1,6 +1,6 @@
 import {
+  HTTPValidationError,
   LoginRequest,
-  RefreshRequest,
   RegisterRequest,
   TokenResponse,
   UserResponse,
@@ -11,7 +11,10 @@ import {
   saveAuthSession,
 } from "@/api/session/session";
 
+import { LogoutApiV1AuthLogoutPostMutationVariables } from "@/api/generated";
+import { ErrorType } from "@/api/mutator/axios-instance";
 import { APIMutatorOptions } from "@/api/types/api";
+import { profileQueryKeys } from "@/features/profile/hooks/profile.queries";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import {
@@ -28,17 +31,6 @@ export const useAuth = () => {
   const registerMutation = useRegisterMutation();
   const logOutMutation = useLogoutMutation();
   const currentUserQuery = useCurrentUserQuery();
-
-  function extractErrorMessage(data: any, defaultMsg: string): string {
-    if (!data) return defaultMsg;
-    if (typeof data.detail === "string") return data.detail;
-    if (Array.isArray(data.detail) && data.detail.length > 0) {
-      const first = data.detail[0];
-      return first.msg || first.message || defaultMsg;
-    }
-    if (data.message) return data.message;
-    return defaultMsg;
-  }
 
   const initAuth = async ({
     onUserChange,
@@ -80,6 +72,9 @@ export const useAuth = () => {
             await saveAuthSession(res);
             queryClient.invalidateQueries({
               queryKey: authQueryKeys.currentUser(),
+            });
+            queryClient.invalidateQueries({
+              queryKey: profileQueryKeys.current(),
             });
             options?.onSuccess?.(res);
           },
@@ -124,6 +119,9 @@ export const useAuth = () => {
             queryClient.invalidateQueries({
               queryKey: authQueryKeys.currentUser(),
             });
+            queryClient.invalidateQueries({
+              queryKey: profileQueryKeys.current(),
+            });
             options?.onSuccess?.(res);
           },
           onError: (e) => {
@@ -146,48 +144,50 @@ export const useAuth = () => {
     [],
   );
 
-  const handleLogout = useCallback(
-    async ({
-      options,
-    }: {
-      options?: APIMutatorOptions<void, RefreshRequest>;
-    }) => {
-      const { refreshToken } = await getStoredTokens();
-      if (!refreshToken) return;
+  const handleLogout = async ({
+    options,
+  }: {
+    options?: APIMutatorOptions<
+      void,
+      LogoutApiV1AuthLogoutPostMutationVariables
+    >;
+  }) => {
+    const { refreshToken } = await getStoredTokens();
+    if (!refreshToken) {
+      await clearAuthSession();
+      queryClient.removeQueries({ queryKey: profileQueryKeys.current() });
+      options?.onSuccess?.();
+      return;
+    }
 
-      logOutMutation.mutate(
-        {
-          data: {
-            refresh_token: refreshToken,
-          },
+    try {
+      await logOutMutation.mutateAsync({
+        data: {
+          refresh_token: refreshToken,
         },
-        {
-          onSuccess: async () => {
-            await clearAuthSession();
-            queryClient.invalidateQueries({
-              queryKey: authQueryKeys.currentUser(),
-            });
-            options?.onSuccess?.();
-          },
-          onError: (e) => {
-            console.error("Logout request failed", {
-              message: e.message,
-              code: e.code,
-              status: e.response?.status,
-              url: e.config?.baseURL
-                ? `${e.config.baseURL}${e.config.url ?? ""}`
-                : e.config?.url,
-            });
-            options?.onError?.(e);
-          },
-          onSettled: (_, e, req) => {
-            options?.onSettled?.(undefined, e, { ...req.data });
-          },
-        },
-      );
-    },
-    [],
-  );
+      });
+      await clearAuthSession();
+      queryClient.removeQueries({ queryKey: authQueryKeys.currentUser() });
+      queryClient.removeQueries({ queryKey: profileQueryKeys.current() });
+      options?.onSuccess?.();
+    } catch (e) {
+      const error = e as ErrorType<HTTPValidationError>;
+      console.error("Logout request failed", {
+        message: error.message,
+        code: error.code,
+        status: error.response?.status,
+        url: error.config?.baseURL
+          ? `${error.config.baseURL}${error.config.url ?? ""}`
+          : error.config?.url,
+      });
+      options?.onError?.(error);
+      throw e;
+    } finally {
+      options?.onSettled?.(undefined, null, {
+        data: { refresh_token: refreshToken },
+      });
+    }
+  };
 
   return {
     handleLogin,

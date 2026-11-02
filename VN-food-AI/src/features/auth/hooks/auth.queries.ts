@@ -1,5 +1,4 @@
 import {
-  getMeApiV1AuthMeGetQueryKey,
   useLoginApiV1AuthLoginPost,
   useLogoutApiV1AuthLogoutPost,
   useMeApiV1AuthMeGet,
@@ -8,7 +7,8 @@ import {
 import { UserResponse } from "@/api/generated/model";
 
 export const authQueryKeys = {
-  currentUser: () => getMeApiV1AuthMeGetQueryKey(),
+  all: ["auth"] as const,
+  currentUser: () => [...authQueryKeys.all, "current"] as const,
 };
 
 export const useRegisterMutation = () => {

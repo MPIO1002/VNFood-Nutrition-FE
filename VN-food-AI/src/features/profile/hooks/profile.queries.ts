@@ -1,5 +1,4 @@
 import {
-  getGetProfileApiV1ProfileGetQueryKey,
   useAddWeightApiV1ProfileWeightPost,
   useCalculateDailyNutritionApiV1NutritionCalculatePost,
   useGetProfileApiV1ProfileGet,
@@ -10,13 +9,14 @@ import { ProfileResponseSchema } from "../validation/profileSchema";
 
 export const profileQueryKeys = {
   all: ["profile"] as const,
-  current: getGetProfileApiV1ProfileGetQueryKey,
+  current: () => [...profileQueryKeys.all, "current"] as const,
 };
 
 export const useProfileQuery = () => {
   return useGetProfileApiV1ProfileGet({
     query: {
       retry: 1,
+      queryKey: profileQueryKeys.current(),
       select: (response) => {
         const parsed = ProfileResponseSchema.safeParse(response);
         if (!parsed.success) {
