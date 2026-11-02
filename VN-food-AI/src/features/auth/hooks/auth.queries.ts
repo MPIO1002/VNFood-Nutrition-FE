@@ -7,7 +7,7 @@ import {
 import { UserResponse } from "@/api/generated/model";
 
 export const authQueryKeys = {
-  all: ["auth"],
+  all: ["auth"] as const,
   currentUser: () => [...authQueryKeys.all, "current"] as const,
 };
 

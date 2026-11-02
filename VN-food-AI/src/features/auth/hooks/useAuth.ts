@@ -3,7 +3,7 @@ import {
   LoginRequest,
   RegisterRequest,
   TokenResponse,
-  UserResponse
+  UserResponse,
 } from "@/api/generated/model";
 import {
   clearAuthSession,
@@ -31,17 +31,6 @@ export const useAuth = () => {
   const registerMutation = useRegisterMutation();
   const logOutMutation = useLogoutMutation();
   const currentUserQuery = useCurrentUserQuery();
-
-  function extractErrorMessage(data: any, defaultMsg: string): string {
-    if (!data) return defaultMsg;
-    if (typeof data.detail === "string") return data.detail;
-    if (Array.isArray(data.detail) && data.detail.length > 0) {
-      const first = data.detail[0];
-      return first.msg || first.message || defaultMsg;
-    }
-    if (data.message) return data.message;
-    return defaultMsg;
-  }
 
   const initAuth = async ({
     onUserChange,
@@ -83,6 +72,9 @@ export const useAuth = () => {
             await saveAuthSession(res);
             queryClient.invalidateQueries({
               queryKey: authQueryKeys.currentUser(),
+            });
+            queryClient.invalidateQueries({
+              queryKey: profileQueryKeys.current(),
             });
             options?.onSuccess?.(res);
           },
@@ -127,6 +119,9 @@ export const useAuth = () => {
             queryClient.invalidateQueries({
               queryKey: authQueryKeys.currentUser(),
             });
+            queryClient.invalidateQueries({
+              queryKey: profileQueryKeys.current(),
+            });
             options?.onSuccess?.(res);
           },
           onError: (e) => {
@@ -161,9 +156,6 @@ export const useAuth = () => {
     if (!refreshToken) {
       await clearAuthSession();
       queryClient.removeQueries({ queryKey: profileQueryKeys.current() });
-      queryClient.invalidateQueries({
-        queryKey: authQueryKeys.currentUser(),
-      });
       options?.onSuccess?.();
       return;
     }
@@ -175,10 +167,8 @@ export const useAuth = () => {
         },
       });
       await clearAuthSession();
+      queryClient.removeQueries({ queryKey: authQueryKeys.currentUser() });
       queryClient.removeQueries({ queryKey: profileQueryKeys.current() });
-      queryClient.invalidateQueries({
-        queryKey: authQueryKeys.currentUser(),
-      });
       options?.onSuccess?.();
     } catch (e) {
       const error = e as ErrorType<HTTPValidationError>;
