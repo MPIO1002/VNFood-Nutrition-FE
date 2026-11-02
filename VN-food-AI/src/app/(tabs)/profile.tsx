@@ -1,4 +1,3 @@
-import { AppHeader } from "@/components/AppHeader";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,11 +15,10 @@ import { AlertCircle, UserRound } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   Text,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -41,7 +39,7 @@ export default function ProfileScreen() {
     });
   };
 
-  const { isAuthenticated, isLoading: authLoading, logOut } = useAuthContext();
+  const { isAuthenticated, isLoading: authLoading } = useAuthContext();
   const profileQuery = useProfileQuery();
 
   if (authLoading || profileQuery.isLoading) {
@@ -89,32 +87,8 @@ export default function ProfileScreen() {
     );
   }
 
-  const logout = () =>
-    Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất?", [
-      { text: "Hủy" },
-      {
-        text: "Đăng xuất",
-        style: "destructive",
-        onPress: async () => {
-          await logOut();
-          router.replace("/");
-        },
-      },
-    ]);
-
   return (
     <View className="flex-1 bg-surface">
-      <AppHeader
-        pageTitle="Cá nhân"
-        avatarUri={profileQuery.data.avatar_url}
-        onSettingsPress={() =>
-          Alert.alert(
-            "Cài đặt",
-            "Tính năng cài đặt hồ sơ đang được phát triển.",
-          )
-        }
-        onLogoutPress={logout}
-      />
       <ScrollView
         contentContainerStyle={{ padding: 14, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}>
