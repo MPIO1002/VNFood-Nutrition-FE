@@ -127,11 +127,13 @@ export default function LoginForm() {
             className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2"
             disabled={isSubmitting}
             activeOpacity={0.8}
-            onPress={form.handleSubmit((data) => {
-              onSubmit(data, {
-                onError: (e) => setError(e),
-              });
-            })}>
+            onPress={() => {
+              void form.handleSubmit((data) => {
+                onSubmit(data, {
+                  onError: (e) => setError(e),
+                });
+              })();
+            }}>
             {isSubmitting ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (

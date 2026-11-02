@@ -1,14 +1,18 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import { Package } from 'lucide-react-native';
-import { CONTAINERS, ContainerConfig } from '../constants/containers';
+import React from "react";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { Package } from "lucide-react-native";
+import {
+  CONTAINERS,
+  CONTAINER_KEYS,
+  type ContainerConfig,
+} from "@/constants/containers";
 
-interface Props {
+export interface ContainerSelectorProps {
   selectedContainer: ContainerConfig;
   onSelectContainer: (c: ContainerConfig) => void;
 }
 
-export function ContainerSelector({ selectedContainer, onSelectContainer }: Props) {
+export function ContainerSelector({ selectedContainer, onSelectContainer }: ContainerSelectorProps) {
   return (
     <View className="mt-4 mb-2">
       <View className="flex-row items-end justify-between px-4 mb-3">
@@ -20,27 +24,29 @@ export function ContainerSelector({ selectedContainer, onSelectContainer }: Prop
           Chọn để AI ước lượng tốt hơn
         </Text>
       </View>
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.containerRow}
       >
-        {CONTAINERS.map(c => {
-          const active = c.key === selectedContainer.key;
-          const IconComponent = c.icon;
+        {CONTAINER_KEYS.map((c) => {
+          const container = CONTAINERS.find((x) => x.key === c);
+          if (!container) return null;
+          const active = c === selectedContainer.key;
+          const IconComponent = container.icon;
           return (
             <TouchableOpacity
-              key={c.key}
-              onPress={() => onSelectContainer(c)}
+              key={c}
+              onPress={() => onSelectContainer(container)}
               activeOpacity={0.75}
               style={[styles.chip, active && styles.chipActive]}
             >
-              <IconComponent size={24} color={active ? '#FFFFFF' : '#52525B'} strokeWidth={1.5} />
+              <IconComponent size={24} color={active ? "#FFFFFF" : "#52525B"} strokeWidth={1.5} />
               <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>
-                {c.label}
+                {container.label}
               </Text>
               <Text style={[styles.chipSubtitle, active && styles.chipSubtitleActive]}>
-                {c.subtitle}
+                {container.subtitle}
               </Text>
             </TouchableOpacity>
           );
@@ -52,8 +58,8 @@ export function ContainerSelector({ selectedContainer, onSelectContainer }: Prop
 
 const styles = StyleSheet.create({
   containerRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     gap: 8,
     paddingHorizontal: 16,
     paddingTop: 6,
@@ -62,33 +68,33 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 12,
     minWidth: 72,
-    flexDirection: 'column',
-    alignItems: 'center',
+    flexDirection: "column",
+    alignItems: "center",
     paddingVertical: 8,
     borderRadius: 16,
-    backgroundColor: '#F4F4F5',
+    backgroundColor: "#F4F4F5",
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: "transparent",
     gap: 3,
   },
   chipActive: {
-    backgroundColor: '#18181B',
-    borderColor: '#18181B',
+    backgroundColor: "#18181B",
+    borderColor: "#18181B",
   },
   chipLabel: {
     fontSize: 11,
-    color: '#52525B',
-    fontFamily: 'Montserrat-SemiBold',
+    color: "#52525B",
+    fontFamily: "Montserrat-SemiBold",
   },
   chipLabelActive: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
   chipSubtitle: {
     fontSize: 9,
-    color: '#A1A1AA',
-    fontFamily: 'Montserrat-Medium',
+    color: "#A1A1AA",
+    fontFamily: "Montserrat-Medium",
   },
   chipSubtitleActive: {
-    color: '#D4D4D8',
+    color: "#D4D4D8",
   },
 });

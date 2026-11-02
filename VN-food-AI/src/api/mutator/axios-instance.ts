@@ -11,7 +11,13 @@ import {
   saveAuthSession,
 } from "../session/session";
 
-const baseURL = process.env.EXPO_PUBLIC_API_URL;
+const baseURL = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, "");
+
+if (!baseURL) {
+  throw new Error(
+    "EXPO_PUBLIC_API_URL is not configured. Add it to the app's .env file and restart Expo.",
+  );
+}
 
 export const AXIOS_INSTANCE = Axios.create({ baseURL, timeout: 15000 });
 
@@ -86,8 +92,17 @@ AXIOS_INSTANCE.interceptors.response.use(
 export const customInstance = <T>(
   config: AxiosRequestConfig,
   options?: AxiosRequestConfig,
-): Promise<T> =>
-  AXIOS_INSTANCE({ ...config, ...options }).then(({ data }) => data);
+): Promise<T> => {
+  const requestConfig = { ...config, ...options };
+  if (
+    requestConfig.data instanceof FormData &&
+    requestConfig.headers
+  ) {
+    delete requestConfig.headers["Content-Type"];
+    delete requestConfig.headers["content-type"];
+  }
+  return AXIOS_INSTANCE(requestConfig).then(({ data }) => data);
+};
 
 export type ErrorType<E> = AxiosError<E>;
 export type BodyType<D> = D;

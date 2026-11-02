@@ -272,8 +272,12 @@ export default function RegisterForm() {
               Đăng ký không thành công
             </AlertDialogTitle>
             <AlertDialogDescription className="font-montserrat">
-              {`${error?.response?.data?.detail}` ||
-                "Đã có lỗi xảy ra. Vui lòng thử lại"}
+              {typeof error?.response?.data?.detail === "string"
+                ? error.response.data.detail
+                : error?.message === "Network Error" ||
+                    error?.code === "ECONNABORTED"
+                  ? "Không thể kết nối đến máy chủ. Hãy kiểm tra backend đang chạy và địa chỉ EXPO_PUBLIC_API_URL."
+                  : "Đã có lỗi xảy ra. Vui lòng thử lại"}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

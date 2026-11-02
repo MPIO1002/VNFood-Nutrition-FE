@@ -27,6 +27,7 @@ export const useAuth = () => {
   const loginMutation = useLoginMutation();
   const registerMutation = useRegisterMutation();
   const logOutMutation = useLogoutMutation();
+  const currentUserQuery = useCurrentUserQuery();
 
   function extractErrorMessage(data: any, defaultMsg: string): string {
     if (!data) return defaultMsg;
@@ -39,25 +40,24 @@ export const useAuth = () => {
     return defaultMsg;
   }
 
-  const initAuth = useCallback(
-    async ({
-      onUserChange,
-    }: {
-      onUserChange: (user: UserResponse | null) => void;
-    }) => {
-      const { user: storedUser } = await getStoredTokens();
-      if (storedUser) {
-        onUserChange(storedUser);
-      }
+  const initAuth = async ({
+    onUserChange,
+  }: {
+    onUserChange: (user: UserResponse | null) => void;
+  }) => {
+    const { accessToken, user: storedUser } = await getStoredTokens();
+    if (storedUser) {
+      onUserChange(storedUser);
+    }
+    if (accessToken) {
       try {
-        const { data: me } = getCurrentUser();
-        onUserChange(me ?? null);
+        const { data: me } = await currentUserQuery.refetch();
+        onUserChange(me ?? storedUser);
       } catch {
         // Không đồng bộ được profile nhưng vẫn có thể dùng storedUser
       }
-    },
-    [],
-  );
+    }
+  };
 
   const handleRegister = useCallback(
     ({
@@ -84,8 +84,14 @@ export const useAuth = () => {
             options?.onSuccess?.(res);
           },
           onError: (e) => {
-            console.log(`Failed to call api: ${e.cause?.message}`);
-            console.log(`Failed status: ${e.status}`);
+            console.error("Register request failed", {
+              message: e.message,
+              code: e.code,
+              status: e.response?.status,
+              url: e.config?.baseURL
+                ? `${e.config.baseURL}${e.config.url ?? ""}`
+                : e.config?.url,
+            });
             options?.onError?.(e);
           },
           onSettled: (res, e, v) => {
@@ -94,7 +100,7 @@ export const useAuth = () => {
         },
       );
     },
-    [registerMutation],
+    [],
   );
 
   const handleLogin = useCallback(
@@ -121,8 +127,14 @@ export const useAuth = () => {
             options?.onSuccess?.(res);
           },
           onError: (e) => {
-            console.log(`Failed to call api: ${e.cause?.message}`);
-            console.log(`Failed status: ${e.status}`);
+            console.error("Login request failed", {
+              message: e.message,
+              code: e.code,
+              status: e.response?.status,
+              url: e.config?.baseURL
+                ? `${e.config.baseURL}${e.config.url ?? ""}`
+                : e.config?.url,
+            });
             options?.onError?.(e);
           },
           onSettled: (res, e, v) => {
@@ -131,7 +143,7 @@ export const useAuth = () => {
         },
       );
     },
-    [loginMutation],
+    [],
   );
 
   const handleLogout = useCallback(
@@ -158,8 +170,14 @@ export const useAuth = () => {
             options?.onSuccess?.();
           },
           onError: (e) => {
-            console.log(`Failed to call api: ${e.cause?.message}`);
-            console.log(`Failed status: ${e.status}`);
+            console.error("Logout request failed", {
+              message: e.message,
+              code: e.code,
+              status: e.response?.status,
+              url: e.config?.baseURL
+                ? `${e.config.baseURL}${e.config.url ?? ""}`
+                : e.config?.url,
+            });
             options?.onError?.(e);
           },
           onSettled: (_, e, req) => {
@@ -168,17 +186,12 @@ export const useAuth = () => {
         },
       );
     },
-    [logOutMutation],
+    [],
   );
-
-  const getCurrentUser = useCallback(() => {
-    return useCurrentUserQuery();
-  }, []);
 
   return {
     handleLogin,
     handleRegister,
-    getCurrentUser,
     handleLogout,
     initAuth,
   };
