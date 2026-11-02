@@ -8,6 +8,7 @@ import {
 import {
   clearAuthSession,
   getStoredTokens,
+  initializeSessionState,
   saveAuthSession,
 } from "@/api/session/session";
 
@@ -37,6 +38,7 @@ export const useAuth = () => {
   }: {
     onUserChange: (user: UserResponse | null) => void;
   }) => {
+    await initializeSessionState();
     const { accessToken, user: storedUser } = await getStoredTokens();
     if (storedUser) {
       onUserChange(storedUser);

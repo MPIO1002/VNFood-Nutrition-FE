@@ -3,10 +3,11 @@ import Axios, {
   AxiosRequestConfig,
   InternalAxiosRequestConfig,
 } from "axios";
-import { STORAGE_KEYS, tokenStorage } from "../auth/token-storage";
+import { STORAGE_KEYS } from "../auth/token-storage";
 import { TokenResponse } from "../generated/model";
 import {
   clearAuthSession,
+  getStoredToken,
   getStoredTokens,
   saveAuthSession,
 } from "../session/session";
@@ -28,7 +29,7 @@ export const setUnauthorizedHandler = (fn: () => void) => {
 
 // Add the access token to every request
 AXIOS_INSTANCE.interceptors.request.use(async (config) => {
-  const token = await tokenStorage.get(STORAGE_KEYS.ACCESS_TOKEN);
+  const token = await getStoredToken(STORAGE_KEYS.ACCESS_TOKEN);
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -94,10 +95,7 @@ export const customInstance = <T>(
   options?: AxiosRequestConfig,
 ): Promise<T> => {
   const requestConfig = { ...config, ...options };
-  if (
-    requestConfig.data instanceof FormData &&
-    requestConfig.headers
-  ) {
+  if (requestConfig.data instanceof FormData && requestConfig.headers) {
     delete requestConfig.headers["Content-Type"];
     delete requestConfig.headers["content-type"];
   }
