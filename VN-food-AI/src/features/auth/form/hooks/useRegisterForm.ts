@@ -1,7 +1,6 @@
 import { RegisterRequest, TokenResponse } from "@/api/generated/model";
 import { APIMutatorOptions } from "@/api/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { router } from "expo-router";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useAuthContext } from "../../context/AuthContext";
@@ -82,7 +81,6 @@ export const useRegisterForm = () => {
         options: {
           onSuccess: (res) => {
             options?.onSuccess?.(res);
-            router.push("/register/weight");
           },
           onError: options?.onError,
           onSettled: (res, e, req) => {

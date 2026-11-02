@@ -6,49 +6,52 @@ import Animated from "react-native-reanimated";
 import Svg, { G, Path, Text as SvgText } from "react-native-svg";
 
 import { TriangleIcon } from "lucide-react-native";
-import { useWeightSliderRuler } from "./hooks/useWeightSliderRuler";
+import { useHorizontalSliderRuler } from "./hooks/useHorizontalSliderRuler";
 import { SliderRulerProps } from "./ruler";
 
 const LINE_START_Y_DIFF = 16;
 
-export interface WeightSliderRulerProps extends SliderRulerProps {
+export interface HorizontalSliderRulerProps extends SliderRulerProps {
   rulerHeight?: number;
   lineStartY?: number;
   onFinishLoading?: () => void;
 }
 
-export const WeightSliderRuler = memo(function SliderRuler({
+export const HorizontalSliderRuler = memo(function SliderRuler({
   rulerHeight = 80,
   lineStartY = 32,
   minorPerMediumSegment = 1,
   mediumPerMajorSegment = 1,
   onFinishLoading,
   ...props
-}: WeightSliderRulerProps) {
+}: HorizontalSliderRulerProps) {
   const [isRulerReady, setIsRulerReady] = useState(false);
   const {
     formatTickValue,
     UIProps: sliderProps,
     UIstyle: sliderStyle,
-  } = useWeightSliderRuler(props);
+  } = useHorizontalSliderRuler(props);
 
   const { ticks, SNAP, pan, tickCount, viewportPadding } = sliderProps;
 
   const { TICK_WIDTH, centerLeft, rulerLeft, rulerStyle, setContainerWidth } =
     sliderStyle;
 
-  const handleLayout = useCallback(({ nativeEvent }: LayoutChangeEvent) => {
-    setContainerWidth(nativeEvent.layout.width);
+  const handleLayout = useCallback(
+    ({ nativeEvent }: LayoutChangeEvent) => {
+      setContainerWidth(nativeEvent.layout.width);
 
-    if (nativeEvent.layout.width > 0) {
-      requestAnimationFrame(() => {
+      if (nativeEvent.layout.width > 0) {
         requestAnimationFrame(() => {
-          setIsRulerReady(true);
-          onFinishLoading?.();
+          requestAnimationFrame(() => {
+            setIsRulerReady(true);
+            onFinishLoading?.();
+          });
         });
-      });
-    }
-  }, []);
+      }
+    },
+    [onFinishLoading],
+  );
 
   const getPath = (index: number, y: number) => {
     const x = viewportPadding + TICK_WIDTH / 2 + index * SNAP;

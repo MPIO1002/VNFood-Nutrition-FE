@@ -29,7 +29,7 @@ const StepBar = memo(function StepBar({
   currentColor?: ColorValue;
   finishedColor?: ColorValue;
 }) {
-  const fill = useSharedValue(0);
+  const fill = useSharedValue(isCurrent ? 1 : 0);
   useEffect(() => {
     if (isCurrent) {
       if (fill.value == 1) return;
