@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
-import { Circle, Scale } from "lucide-react-native";
+import { Circle, ScaleIcon } from "lucide-react-native";
 import { Text, View } from "react-native";
 import { PlanBox, PlanBoxProps } from "./PlanBox";
 
@@ -10,10 +10,17 @@ export function BalancedPlanBox(props: PlanBoxProps) {
       <View className="flex-row w-full justify-center items-center gap-2">
         <View
           className={`rounded-md p-3 ${props.activated ? "bg-black" : "bg-gray-300"} items-center justify-center`}>
-          <Scale color={props.activated ? "white" : "black"} size={20}></Scale>
+          <ScaleIcon color={props.activated ? "white" : "black"} size={20} />
         </View>
         <View className="flex-1">
-          <Text className="font-montserrat-bold">Giữ cân & Săn chắc</Text>
+          <View className="flex-row gap-2 items-center">
+            <Text className="font-montserrat-bold">Giữ cân & Săn chắc</Text>
+            <Badge className="bg-green-200">
+              <Text className="font-montserrat-bold text-green-500 text-xs">
+                Tối ưu
+              </Text>
+            </Badge>
+          </View>
           <Text className="font-montserrat text-sm">
             Tái cấu trúc cơ thể & Tăng trao đổi chất
           </Text>

@@ -1,0 +1,36 @@
+import { Circle, CircleCheck } from "lucide-react-native";
+import { ReactNode } from "react";
+import { Pressable, View } from "react-native";
+
+export interface GenderBoxProps {
+  activated?: boolean;
+  className?: string;
+  children?: ReactNode;
+  onPress?: () => void;
+}
+
+export function GenderBox({
+  activated = false,
+  className,
+  children,
+  onPress,
+}: GenderBoxProps) {
+  return (
+    <Pressable
+      className={`${className ?? ""} relative rounded-[20px] bg-white p-4 gap-2 border ${
+        activated
+          ? "border-charcoal-pure border-2"
+          : "border-zinc-200 opacity-70"
+      }`}
+      onPress={onPress}>
+      <View className="absolute right-2 top-1/2">
+        {activated ? (
+          <CircleCheck size={24} fill={"black"} color={"white"} />
+        ) : (
+          <Circle size={24} fill={"#e4e4e7"} strokeWidth={0} />
+        )}
+      </View>
+      {children}
+    </Pressable>
+  );
+}

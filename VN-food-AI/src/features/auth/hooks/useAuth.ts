@@ -1,9 +1,9 @@
 import {
+  HTTPValidationError,
   LoginRequest,
   RegisterRequest,
   TokenResponse,
-  UserResponse,
-  HTTPValidationError,
+  UserResponse
 } from "@/api/generated/model";
 import {
   clearAuthSession,
@@ -12,10 +12,11 @@ import {
 } from "@/api/session/session";
 
 import { LogoutApiV1AuthLogoutPostMutationVariables } from "@/api/generated";
-import { APIMutatorOptions } from "@/api/types/api";
 import { ErrorType } from "@/api/mutator/axios-instance";
+import { APIMutatorOptions } from "@/api/types/api";
 import { profileQueryKeys } from "@/features/profile/hooks/profile.queries";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 import {
   authQueryKeys,
   useCurrentUserQuery,
@@ -61,86 +62,92 @@ export const useAuth = () => {
     }
   };
 
-  const handleRegister = ({
-    data,
-    options,
-  }: {
-    data: RegisterRequest;
-    options?: APIMutatorOptions<TokenResponse, RegisterRequest>;
-  }) => {
-    registerMutation.mutate(
-      {
-        data: {
-          email: data.email.trim(),
-          password: data.password,
-          ...(data.full_name ? { full_name: data.full_name.trim() } : {}),
+  const handleRegister = useCallback(
+    ({
+      data,
+      options,
+    }: {
+      data: RegisterRequest;
+      options?: APIMutatorOptions<TokenResponse, RegisterRequest>;
+    }) => {
+      registerMutation.mutate(
+        {
+          data: {
+            email: data.email.trim(),
+            password: data.password,
+            ...(data.full_name ? { full_name: data.full_name.trim() } : {}),
+          },
         },
-      },
-      {
-        onSuccess: async (res: TokenResponse) => {
-          await saveAuthSession(res);
-          queryClient.invalidateQueries({
-            queryKey: authQueryKeys.currentUser(),
-          });
-          options?.onSuccess?.(res);
+        {
+          onSuccess: async (res: TokenResponse) => {
+            await saveAuthSession(res);
+            queryClient.invalidateQueries({
+              queryKey: authQueryKeys.currentUser(),
+            });
+            options?.onSuccess?.(res);
+          },
+          onError: (e) => {
+            console.error("Register request failed", {
+              message: e.message,
+              code: e.code,
+              status: e.response?.status,
+              url: e.config?.baseURL
+                ? `${e.config.baseURL}${e.config.url ?? ""}`
+                : e.config?.url,
+            });
+            options?.onError?.(e);
+          },
+          onSettled: (res, e, v) => {
+            options?.onSettled?.(res, e, { ...v.data });
+          },
         },
-        onError: (e) => {
-          console.error("Register request failed", {
-            message: e.message,
-            code: e.code,
-            status: e.response?.status,
-            url: e.config?.baseURL
-              ? `${e.config.baseURL}${e.config.url ?? ""}`
-              : e.config?.url,
-          });
-          options?.onError?.(e);
-        },
-        onSettled: (res, e, v) => {
-          options?.onSettled?.(res, e, { ...v.data });
-        },
-      },
-    );
-  };
+      );
+    },
+    [],
+  );
 
-  const handleLogin = ({
-    data,
-    options,
-  }: {
-    data: LoginRequest;
-    options?: APIMutatorOptions<TokenResponse, LoginRequest>;
-  }) => {
-    loginMutation.mutate(
-      {
-        data: {
-          email: data.email.trim(),
-          password: data.password,
+  const handleLogin = useCallback(
+    ({
+      data,
+      options,
+    }: {
+      data: LoginRequest;
+      options?: APIMutatorOptions<TokenResponse, LoginRequest>;
+    }) => {
+      loginMutation.mutate(
+        {
+          data: {
+            email: data.email.trim(),
+            password: data.password,
+          },
         },
-      },
-      {
-        onSuccess: async (res: TokenResponse) => {
-          await saveAuthSession(res);
-          queryClient.invalidateQueries({
-            queryKey: authQueryKeys.currentUser(),
-          });
-          options?.onSuccess?.(res);
+        {
+          onSuccess: async (res: TokenResponse) => {
+            await saveAuthSession(res);
+            queryClient.invalidateQueries({
+              queryKey: authQueryKeys.currentUser(),
+            });
+            options?.onSuccess?.(res);
+          },
+          onError: (e) => {
+            console.error("Login request failed", {
+              message: e.message,
+              code: e.code,
+              status: e.response?.status,
+              url: e.config?.baseURL
+                ? `${e.config.baseURL}${e.config.url ?? ""}`
+                : e.config?.url,
+            });
+            options?.onError?.(e);
+          },
+          onSettled: (res, e, v) => {
+            options?.onSettled?.(res, e, { ...v.data });
+          },
         },
-        onError: (e) => {
-          console.error("Login request failed", {
-            message: e.message,
-            code: e.code,
-            status: e.response?.status,
-            url: e.config?.baseURL
-              ? `${e.config.baseURL}${e.config.url ?? ""}`
-              : e.config?.url,
-          });
-          options?.onError?.(e);
-        },
-        onSettled: (res, e, v) => {
-          options?.onSettled?.(res, e, { ...v.data });
-        },
-      },
-    );
-  };
+      );
+    },
+    [],
+  );
 
   const handleLogout = async ({
     options,

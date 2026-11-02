@@ -1,4 +1,4 @@
-import { HTTPValidationError } from "@/api/generated/model";
+import { HTTPValidationError, RegisterRequest } from "@/api/generated/model";
 import { ErrorType } from "@/api/mutator/axios-instance";
 import ErrorBadge from "@/components/form/ErrorBadge";
 import {
@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { router } from "expo-router";
 import debounce from "lodash.debounce";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
@@ -38,8 +39,12 @@ export default function RegisterForm() {
     textColorClass: "text-zinc-500",
   });
 
-  const { form, getPasswordStrength, isSubmitting, onSubmit } =
-    useRegisterForm();
+  const {
+    form,
+    getPasswordStrength,
+    isSubmitting,
+    onSubmit: register,
+  } = useRegisterForm();
   const formErrors = form.formState.errors;
 
   const testPasswordStrength = useMemo(
@@ -52,6 +57,13 @@ export default function RegisterForm() {
   useEffect(() => {
     return () => testPasswordStrength.cancel();
   }, [testPasswordStrength]);
+
+  const onSubmit = (data: RegisterRequest) => {
+    register(data, {
+      onSuccess: () => router.push("/register/condition"),
+      onError: (e) => setError(e),
+    });
+  };
 
   return (
     <View>
@@ -205,11 +217,6 @@ export default function RegisterForm() {
             className="flex-row items-start gap-2.5 mb-6"
             onPress={() => setIsAgreeTerms(!isAgreeTerms)}>
             <View className="mt-0.5">
-              {/* {isAgreeTerms ? (
-              <CheckSquare size={16} color="#27272A" />
-            ) : (
-              <Square size={16} color="#A1A1AA" />
-            )} */}
               <Controller
                 name="agreeTerms"
                 render={({ field }) => (
@@ -244,13 +251,7 @@ export default function RegisterForm() {
             className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2"
             disabled={isSubmitting}
             activeOpacity={0.8}
-            onPress={() => {
-              void form.handleSubmit((data) => {
-                onSubmit(data, {
-                  onError: (e) => setError(e),
-                });
-              })();
-            }}>
+            onPress={form.handleSubmit(onSubmit)}>
             {isSubmitting ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (
