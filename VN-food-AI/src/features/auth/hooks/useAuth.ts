@@ -14,6 +14,7 @@ import {
 import { LogoutApiV1AuthLogoutPostMutationVariables } from "@/api/generated";
 import { APIMutatorOptions } from "@/api/types/api";
 import { ErrorType } from "@/api/mutator/axios-instance";
+import { profileQueryKeys } from "@/features/profile/hooks/profile.queries";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   authQueryKeys,
@@ -152,7 +153,7 @@ export const useAuth = () => {
     const { refreshToken } = await getStoredTokens();
     if (!refreshToken) {
       await clearAuthSession();
-      queryClient.removeQueries({ queryKey: ["/api/v1/profile"] });
+      queryClient.removeQueries({ queryKey: profileQueryKeys.current() });
       queryClient.invalidateQueries({
         queryKey: authQueryKeys.currentUser(),
       });
@@ -167,7 +168,7 @@ export const useAuth = () => {
         },
       });
       await clearAuthSession();
-      queryClient.removeQueries({ queryKey: ["/api/v1/profile"] });
+      queryClient.removeQueries({ queryKey: profileQueryKeys.current() });
       queryClient.invalidateQueries({
         queryKey: authQueryKeys.currentUser(),
       });

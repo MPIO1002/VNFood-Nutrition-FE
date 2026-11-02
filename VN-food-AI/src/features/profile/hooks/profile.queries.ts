@@ -10,7 +10,7 @@ import { ProfileResponseSchema } from "../validation/profileSchema";
 
 export const profileQueryKeys = {
   all: ["profile"] as const,
-  current: getGetProfileApiV1ProfileGetQueryKey,
+  current: () => getGetProfileApiV1ProfileGetQueryKey(),
 };
 
 export const useProfileQuery = () => {
