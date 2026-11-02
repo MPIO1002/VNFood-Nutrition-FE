@@ -46,7 +46,7 @@ function CustomTabBar({ state, descriptors }: any) {
 
         // Configuration based on route name
         let Icon = Book;
-        let label = 'Nhật ký';
+        let label = 'Trang chủ';
         
         if (route.name === 'analytics') {
           Icon = TrendingUp;
@@ -56,7 +56,7 @@ function CustomTabBar({ state, descriptors }: any) {
           label = 'Quét AI';
         } else if (route.name === 'menu') {
           Icon = UtensilsCrossed;
-          label = 'Thực đơn';
+          label = 'Nhật ký';
         } else if (route.name === 'profile') {
           Icon = UserCircle;
           label = 'Cá nhân';
