@@ -10,7 +10,7 @@ import {
   Scale,
   Target,
   Unlock,
-  UserRound,
+  UserRoundIcon
 } from "lucide-react-native";
 import { useMemo, useState, type ReactNode } from "react";
 import { ActivityIndicator, Image, Pressable, Text, View } from "react-native";
@@ -385,7 +385,7 @@ export function ProfileContent({
               />
             ) : (
               <View className="h-24 w-24 items-center justify-center rounded-full bg-zinc-300">
-                <UserRound size={36} color={colors.muted} />
+                <UserRoundIcon size={36} color={colors.muted} />
               </View>
             )}
             {(isUploadingAvatar || isUpdatingProfile) && (

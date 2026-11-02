@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
-import { Bell, Settings, LogOut } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Bell, LogOut, Settings, UserRoundIcon } from "lucide-react-native";
 import { useState } from "react";
+import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type AppHeaderProps = {
@@ -54,15 +54,17 @@ export function AppHeader({
               if (hasMenu) setMenuOpen((open) => !open);
               onAvatarPress?.();
             }}>
-            <Image
-              source={
-                avatarUri
-                  ? { uri: avatarUri }
-                  : require("../../assets/images/avatartion.png")
-              }
-              style={{ width: "100%", height: "100%" }}
-              contentFit="cover"
-            />
+            {avatarUri ? (
+              <Image
+                source={{ uri: avatarUri }}
+                style={{ width: "100%", height: "100%" }}
+                contentFit="cover"
+              />
+            ) : (
+              <View className="h-full w-full items-center justify-center rounded-full bg-zinc-300">
+                <UserRoundIcon size={20} color={"#71717A"} />
+              </View>
+            )}
           </Pressable>
         </View>
         {hasMenu && menuOpen && (
@@ -79,13 +81,17 @@ export function AppHeader({
               className="flex-row items-center gap-3 rounded-xl px-3 py-3"
               onPress={onSettingsPress}>
               <Settings size={17} color="#52525B" />
-              <Text className="font-montserrat-medium text-sm text-charcoal-pure">Cài đặt</Text>
+              <Text className="font-montserrat-medium text-sm text-charcoal-pure">
+                Cài đặt
+              </Text>
             </Pressable>
             <Pressable
               className="flex-row items-center gap-3 rounded-xl px-3 py-3"
               onPress={onLogoutPress}>
               <LogOut size={17} color="#E11D48" />
-              <Text className="font-montserrat-medium text-sm text-rose-600">Đăng xuất</Text>
+              <Text className="font-montserrat-medium text-sm text-rose-600">
+                Đăng xuất
+              </Text>
             </Pressable>
           </View>
         )}
