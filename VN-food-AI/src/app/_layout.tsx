@@ -1,6 +1,5 @@
 import "../global.css";
 
-import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import {
   Montserrat_400Regular,
   Montserrat_500Medium,
@@ -15,28 +14,32 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { Appearance, useColorScheme } from "react-native";
 
+import LoadingScreen from "@/components/LoadingScreen";
 import { AuthProvider, useAuthContext } from "@/features/auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 SplashScreen.preventAutoHideAsync();
 
 const AppScreens = () => {
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, isLoading } = useAuthContext();
 
   return (
-    <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
-      <Stack.Protected guard={isAuthenticated}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="scan"
-          options={{ animation: "slide_from_bottom" }}
-        />
-      </Stack.Protected>
-      <Stack.Protected guard={!isAuthenticated}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="register" />
-      </Stack.Protected>
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
+        <Stack.Protected guard={isAuthenticated}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="scan"
+            options={{ animation: "slide_from_bottom" }}
+          />
+        </Stack.Protected>
+        <Stack.Protected guard={!isAuthenticated}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="register" />
+        </Stack.Protected>
+      </Stack>
+      <LoadingScreen show={isLoading} />
+    </>
   );
 };
 
@@ -68,7 +71,6 @@ export default function RootLayout() {
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
           <StatusBar style="auto"></StatusBar>
-          <AnimatedSplashOverlay />
           <AppScreens />
           <PortalHost />
         </ThemeProvider>

@@ -1,5 +1,6 @@
 import { HTTPValidationError, RegisterRequest } from "@/api/generated/model";
 import { ErrorType } from "@/api/mutator/axios-instance";
+import { sessionState } from "@/api/session/session";
 import ErrorBadge from "@/components/form/ErrorBadge";
 import {
   AlertDialog,
@@ -59,6 +60,7 @@ export default function RegisterForm() {
   }, [testPasswordStrength]);
 
   const onSubmit = (data: RegisterRequest) => {
+    sessionState.rememberMe = true;
     register(data, {
       onSuccess: () => router.push("/register/condition"),
       onError: (e) => setError(e),

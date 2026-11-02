@@ -1,5 +1,6 @@
-import { HTTPValidationError } from "@/api/generated/model";
+import { HTTPValidationError, LoginRequest } from "@/api/generated/model";
 import { ErrorType } from "@/api/mutator/axios-instance";
+import { sessionState } from "@/api/session/session";
 import ErrorBadge from "@/components/form/ErrorBadge";
 import {
   AlertDialog,
@@ -19,7 +20,7 @@ import {
   Mail,
   Square,
 } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, FormProvider } from "react-hook-form";
 import {
   ActivityIndicator,
@@ -32,14 +33,26 @@ import { useLoginForm } from "./hooks/useLoginForm";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
-  // REMINDER: DOES NOTHING
-  const [rememberMe, setRememberMe] = useState(false);
+  const [isRememberMe, setIsRememberMe] = useState(sessionState.rememberMe);
   const [error, setError] = useState<ErrorType<HTTPValidationError> | null>(
     null,
   );
 
-  const { form, isSubmitting, onSubmit } = useLoginForm();
+  const { form, isSubmitting, onSubmit: logIn } = useLoginForm();
   const formErrors = form.formState.errors;
+
+  useEffect(() => {
+    sessionState.rememberMe = isRememberMe;
+  }, [isRememberMe]);
+
+  const onSubmit = (data: LoginRequest) => {
+    logIn({
+      data,
+      options: {
+        onError: (e) => setError(e),
+      },
+    });
+  };
 
   return (
     <View>
@@ -106,8 +119,8 @@ export default function LoginForm() {
           <View className="flex-row items-center justify-between mb-6 mt-1">
             <TouchableOpacity
               className="flex-row items-center gap-2"
-              onPress={() => setRememberMe(!rememberMe)}>
-              {rememberMe ? (
+              onPress={() => setIsRememberMe(!isRememberMe)}>
+              {isRememberMe ? (
                 <CheckSquare size={16} color="#27272A" />
               ) : (
                 <Square size={16} color="#A1A1AA" />
@@ -127,13 +140,7 @@ export default function LoginForm() {
             className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2"
             disabled={isSubmitting}
             activeOpacity={0.8}
-            onPress={() => {
-              void form.handleSubmit((data) => {
-                onSubmit(data, {
-                  onError: (e) => setError(e),
-                });
-              })();
-            }}>
+            onPress={form.handleSubmit(onSubmit)}>
             {isSubmitting ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (

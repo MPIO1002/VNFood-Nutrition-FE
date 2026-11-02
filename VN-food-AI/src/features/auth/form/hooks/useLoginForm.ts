@@ -1,7 +1,7 @@
 import {
   LoginRequest,
   RegisterRequest,
-  TokenResponse
+  TokenResponse,
 } from "@/api/generated/model";
 import { APIMutatorOptions } from "@/api/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,10 +25,13 @@ export const useLoginForm = () => {
   });
 
   const onSubmit = useCallback(
-    (
-      data: LoginRequest,
-      options?: APIMutatorOptions<TokenResponse, RegisterRequest>,
-    ) => {
+    ({
+      data,
+      options,
+    }: {
+      data: LoginRequest;
+      options?: APIMutatorOptions<TokenResponse, RegisterRequest>;
+    }) => {
       setIsSubmitting(true);
       logIn({
         data,

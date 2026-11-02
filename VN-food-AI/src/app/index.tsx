@@ -1,14 +1,7 @@
 import LoginForm from "@/features/auth/form/LoginForm";
 import RegisterForm from "@/features/auth/form/RegisterForm";
 import { Image } from "expo-image";
-import { router } from "expo-router";
-import {
-  ChevronDown,
-  Compass,
-  Globe,
-  Sparkles,
-  User,
-} from "lucide-react-native";
+import { ChevronDown, Globe, Sparkles, User } from "lucide-react-native";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -50,122 +43,114 @@ const GoogleIcon = ({ size = 20 }) => (
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(false);
-  const handleGuest = () => {
-    router.replace("/(tabs)");
-  };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FDFDFE]" edges={["top", "bottom"]}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          {/* Header */}
-          <View className="px-5 py-4 flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <Image
-                source={require("../../assets/images/logo.png")}
-                style={{ width: 32, height: 32 }}
-                contentFit="contain"
-              />
-              <Text className="font-montserrat-bold text-lg text-charcoal-pure">
-                CaloViet AI
-              </Text>
-            </View>
-            <View className="flex-row items-center gap-3">
-              <View className="flex-row items-center gap-1.5 bg-zinc-100 px-3 py-1.5 rounded-full">
-                <Globe size={14} color="#52525B" />
-                <Text className="font-montserrat-medium text-xs text-zinc-700">
-                  VIE
-                </Text>
-                <ChevronDown size={14} color="#52525B" />
-              </View>
-              <View className="w-9 h-9 rounded-full bg-charcoal-pure items-center justify-center">
-                <User size={18} color="#FFF" />
-              </View>
-            </View>
-          </View>
-
-          {/* Main Content */}
-          <View className="px-5 pt-6 pb-10">
-            {/* Logo & Title */}
-            <View className="items-center mb-8">
-              <View className="w-20 h-20 mb-4 relative shadow-lg">
+    <>
+      <SafeAreaView className="flex-1 bg-[#FDFDFE]" edges={["top", "bottom"]}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+            {/* Header */}
+            <View className="px-5 py-4 flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2">
                 <Image
                   source={require("../../assets/images/logo.png")}
-                  style={{ width: "100%", height: "100%" }}
+                  style={{ width: 32, height: 32 }}
                   contentFit="contain"
                 />
-                <View className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm border border-zinc-100">
-                  <Sparkles size={14} color="#27272A" />
+                <Text className="font-montserrat-bold text-lg text-charcoal-pure">
+                  CaloViet AI
+                </Text>
+              </View>
+              <View className="flex-row items-center gap-3">
+                <View className="flex-row items-center gap-1.5 bg-zinc-100 px-3 py-1.5 rounded-full">
+                  <Globe size={14} color="#52525B" />
+                  <Text className="font-montserrat-medium text-xs text-zinc-700">
+                    VIE
+                  </Text>
+                  <ChevronDown size={14} color="#52525B" />
+                </View>
+                <View className="w-9 h-9 rounded-full bg-charcoal-pure items-center justify-center">
+                  <User size={18} color="#FFF" />
                 </View>
               </View>
-              <Text className="font-montserrat-bold text-[28px] text-charcoal-pure mb-2">
-                CaloViet AI
-              </Text>
-              <Text className="font-montserrat text-[13px] text-zinc-500 text-center px-4 leading-5">
-                Theo dõi calo & dinh dưỡng thông minh chuẩn món Việt
-              </Text>
             </View>
 
-            {/* Tabs */}
-            <View className="flex-row bg-[#F2F1F3] p-1.5 rounded-2xl mb-6">
-              <TouchableOpacity
-                className={`flex-1 py-3 rounded-xl items-center justify-center ${isLogin ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-                onPress={() => setIsLogin(true)}>
-                <Text
-                  className={`font-montserrat-medium text-sm ${isLogin ? "text-white" : "text-zinc-500"}`}>
-                  Đăng nhập
+            {/* Main Content */}
+            <View className="px-5 pt-6 pb-10">
+              {/* Logo & Title */}
+              <View className="items-center mb-8">
+                <View className="w-20 h-20 mb-4 relative shadow-lg">
+                  <Image
+                    source={require("../../assets/images/logo.png")}
+                    style={{ width: "100%", height: "100%" }}
+                    contentFit="contain"
+                  />
+                  <View className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm border border-zinc-100">
+                    <Sparkles size={14} color="#27272A" />
+                  </View>
+                </View>
+                <Text className="font-montserrat-bold text-[28px] text-charcoal-pure mb-2">
+                  CaloViet AI
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className={`flex-1 py-3 rounded-xl items-center justify-center ${!isLogin ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-                onPress={() => setIsLogin(false)}>
-                <Text
-                  className={`font-montserrat-medium text-sm ${!isLogin ? "text-white" : "text-zinc-500"}`}>
-                  Đăng ký
+                <Text className="font-montserrat text-[13px] text-zinc-500 text-center px-4 leading-5">
+                  Theo dõi calo & dinh dưỡng thông minh chuẩn món Việt
                 </Text>
-              </TouchableOpacity>
-            </View>
+              </View>
 
-            {/* Form Container */}
-            {isLogin ? <LoginForm></LoginForm> : <RegisterForm></RegisterForm>}
+              {/* Tabs */}
+              <View className="flex-row bg-[#F2F1F3] p-1.5 rounded-2xl mb-6">
+                <TouchableOpacity
+                  className={`flex-1 py-3 rounded-xl items-center justify-center ${isLogin ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
+                  onPress={() => setIsLogin(true)}>
+                  <Text
+                    className={`font-montserrat-medium text-sm ${isLogin ? "text-white" : "text-zinc-500"}`}>
+                    Đăng nhập
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className={`flex-1 py-3 rounded-xl items-center justify-center ${!isLogin ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
+                  onPress={() => setIsLogin(false)}>
+                  <Text
+                    className={`font-montserrat-medium text-sm ${!isLogin ? "text-white" : "text-zinc-500"}`}>
+                    Đăng ký
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-            {/* Divider */}
-            <View className="flex-row items-center mb-6 px-4">
-              <View className="flex-1 h-[1px] bg-zinc-200" />
-              <Text className="font-montserrat-medium text-[11px] text-zinc-500 mx-3 uppercase tracking-wider">
-                {isLogin ? "Hoặc tiếp tục với" : "Hoặc đăng ký nhanh với"}
-              </Text>
-              <View className="flex-1 h-[1px] bg-zinc-200" />
-            </View>
+              {/* Form Container */}
+              {isLogin ? (
+                <LoginForm></LoginForm>
+              ) : (
+                <RegisterForm></RegisterForm>
+              )}
 
-            {/* Social Buttons */}
-            <View className="flex-row gap-4 mb-8">
-              <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2.5 h-12 bg-white rounded-xl border border-zinc-100 shadow-sm">
-                <AppleIcon size={20} />
-                <Text className="font-montserrat-semibold text-[14px] text-charcoal-pure">
-                  Apple ID
+              {/* Divider */}
+              <View className="flex-row items-center mb-6 px-4">
+                <View className="flex-1 h-[1px] bg-zinc-200" />
+                <Text className="font-montserrat-medium text-[11px] text-zinc-500 mx-3 uppercase tracking-wider">
+                  {isLogin ? "Hoặc tiếp tục với" : "Hoặc đăng ký nhanh với"}
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2.5 h-12 bg-white rounded-xl border border-zinc-100 shadow-sm">
-                <GoogleIcon size={20} />
-                <Text className="font-montserrat-semibold text-[14px] text-charcoal-pure">
-                  Google
-                </Text>
-              </TouchableOpacity>
-            </View>
+                <View className="flex-1 h-[1px] bg-zinc-200" />
+              </View>
 
-            {isLogin ? (
-              <TouchableOpacity
-                className="flex-row items-center justify-center gap-2 mb-8"
-                onPress={handleGuest}>
-                <Compass size={16} color="#71717A" />
-                <Text className="font-montserrat-medium text-[13px] text-zinc-500">
-                  Tiếp tục với tư cách Khách (Duyệt nhanh)
-                </Text>
-              </TouchableOpacity>
-            ) : (
+              {/* Social Buttons */}
+              <View className="flex-row gap-4 mb-8">
+                <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2.5 h-12 bg-white rounded-xl border border-zinc-100 shadow-sm">
+                  <AppleIcon size={20} />
+                  <Text className="font-montserrat-semibold text-[14px] text-charcoal-pure">
+                    Apple ID
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2.5 h-12 bg-white rounded-xl border border-zinc-100 shadow-sm">
+                  <GoogleIcon size={20} />
+                  <Text className="font-montserrat-semibold text-[14px] text-charcoal-pure">
+                    Google
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
               <TouchableOpacity
                 className="flex-row items-center justify-center mb-8"
                 onPress={() => setIsLogin(true)}>
@@ -176,22 +161,22 @@ export default function AuthScreen() {
                   </Text>
                 </Text>
               </TouchableOpacity>
-            )}
 
-            <Text className="font-montserrat text-[11px] text-zinc-400 text-center leading-4 px-4">
-              Bằng việc tiếp tục, bạn đồng ý với{" "}
-              <Text className="font-montserrat-medium text-zinc-600">
-                Điều khoản
-              </Text>{" "}
-              &{" "}
-              <Text className="font-montserrat-medium text-zinc-600">
-                Chính sách bảo mật
-              </Text>{" "}
-              của CaloViet AI.
-            </Text>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+              <Text className="font-montserrat text-[11px] text-zinc-400 text-center leading-4 px-4">
+                Bằng việc tiếp tục, bạn đồng ý với{" "}
+                <Text className="font-montserrat-medium text-zinc-600">
+                  Điều khoản
+                </Text>{" "}
+                &{" "}
+                <Text className="font-montserrat-medium text-zinc-600">
+                  Chính sách bảo mật
+                </Text>{" "}
+                của CaloViet AI.
+              </Text>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </>
   );
 }
