@@ -1,11 +1,13 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
+import { mapAnalyzeResponse } from "@/features/analyzer/mapping/analyzeMapper";
 import {
   AnalyzeRequestInput,
   AnalyzeRequestSchema,
   AnalyzeResponseSchema,
 } from "@/features/analyzer/validation/analyzeSchema";
-import { mapAnalyzeResponse } from "@/features/analyzer/mapping/analyzeMapper";
+import { MIME_BY_EXT } from "@/types/image";
+import { useQueryClient } from "@tanstack/react-query";
+import * as FileSystem from "expo-file-system";
+import { z } from "zod";
 import { analyzerQueryKeys, useAnalyzeFoodMutation } from "./analyzer.queries";
 
 export type AnalyzeErrorType =
@@ -15,14 +17,20 @@ export type AnalyzeErrorType =
   | "unknown";
 
 export class AnalyzerValidationError extends Error {
-  constructor(message: string, public issues?: z.ZodIssue[]) {
+  constructor(
+    message: string,
+    public issues?: z.ZodIssue[],
+  ) {
     super(message);
     this.name = "AnalyzerValidationError";
   }
 }
 
 export class AnalyzerResponseError extends Error {
-  constructor(message: string, public issues?: z.ZodIssue[]) {
+  constructor(
+    message: string,
+    public issues?: z.ZodIssue[],
+  ) {
     super(message);
     this.name = "AnalyzerResponseError";
   }
@@ -34,7 +42,7 @@ function keyOf(input: AnalyzeRequestInput): string {
 
 export const useAnalyzer = () => {
   const queryClient = useQueryClient();
-  const mutation = useAnalyzeFoodMutation();
+  const analyzeMutation = useAnalyzeFoodMutation();
 
   const analyze = async ({
     imageUri,
@@ -55,21 +63,26 @@ export const useAnalyzer = () => {
     }
 
     // 2) Chuẩn bị file
-    const local = await fetch(parsed.data.imageUri);
-    if (!local.ok) {
-      throw new Error(`Không thể đọc ảnh (${local.status})`);
+    const info = new FileSystem.File(parsed.data.imageUri).info();
+    if (!info.exists) {
+      throw new Error(`Không thể đọc ảnh`);
     }
-    const blob = await local.blob();
+
+    const ext = parsed.data.imageUri
+      .split("?")[0]
+      .split(".")
+      .pop()
+      ?.toLowerCase();
     const file = {
       uri: parsed.data.imageUri,
       name: parsed.data.imageUri.split("/").pop() || "food-image.jpg",
-      type: blob.type || "image/jpeg",
+      type: (ext && MIME_BY_EXT[ext]) || "image/jpeg",
     };
 
     // 3) Gọi generated mutation (kèm signal abort có thể thêm ở bước sau)
-    const raw = await mutation.mutateAsync({
+    const raw = await analyzeMutation.mutateAsync({
       data: {
-        image: file,
+        image: file as unknown as Blob,
         container_type: parsed.data.containerType,
         response_format: parsed.data.responseFormat,
       },
@@ -85,14 +98,16 @@ export const useAnalyzer = () => {
     }
 
     const result = mapAnalyzeResponse(validated.data);
-    queryClient.setQueryData(analyzerQueryKeys.result(keyOf(parsed.data)), result);
+    queryClient.invalidateQueries({
+      queryKey: analyzerQueryKeys.result(keyOf(parsed.data)),
+    });
     return result;
   };
 
   return {
     analyze,
-    isAnalyzing: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
+    isAnalyzing: analyzeMutation.isPending,
+    error: analyzeMutation.error,
+    reset: analyzeMutation.reset,
   };
 };

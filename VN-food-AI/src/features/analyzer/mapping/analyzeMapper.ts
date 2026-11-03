@@ -31,12 +31,14 @@ export interface DetectedItem {
 }
 
 export interface AnalyzeResult {
+  dish_id: number | null;
   nutrition: FoodNutrition | null;
   detected: DetectedItem[];
   visualBase64: string | null;
   imageSize: { width: number; height: number } | null;
   warnings: string[];
   imageQuality: { isBlurry: boolean; issues: string[] } | null;
+  imageUrl?: string;
 }
 
 /**
@@ -58,12 +60,13 @@ export function mapAnalyzeResponse(res: AnalyzeResponse): AnalyzeResult {
     ? { width: res.image.width, height: res.image.height }
     : null;
   const warnings: string[] = res.warnings || [];
-  const imageQuality: { isBlurry: boolean; issues: string[] } | null = res.image_quality
-    ? {
-        isBlurry: res.image_quality.is_blurry ?? false,
-        issues: res.image_quality.issues ?? [],
-      }
-    : null;
+  const imageQuality: { isBlurry: boolean; issues: string[] } | null =
+    res.image_quality
+      ? {
+          isBlurry: res.image_quality.is_blurry ?? false,
+          issues: res.image_quality.issues ?? [],
+        }
+      : null;
 
   if (items.length > 0) {
     const firstItem = items[0];
@@ -71,13 +74,11 @@ export function mapAnalyzeResponse(res: AnalyzeResponse): AnalyzeResult {
     const estimatedComponents = food?.estimated_components || [];
 
     // Build detected items with maskPolygons (fix: API returns mask_polygons, we map to maskPolygons)
-    detected = (firstItem.mask_polygons || []).map(
-      (polygon, idx) => ({
-        label: firstItem.label || `Món ${idx + 1}`,
-        confidence: firstItem.detection_confidence || 0,
-        maskPolygons: [polygon],
-      }),
-    );
+    detected = (firstItem.mask_polygons || []).map((polygon, idx) => ({
+      label: firstItem.label || `Món ${idx + 1}`,
+      confidence: firstItem.detection_confidence || 0,
+      maskPolygons: [polygon],
+    }));
 
     const components = estimatedComponents.map((c) => ({
       name: c.name,
@@ -107,8 +108,14 @@ export function mapAnalyzeResponse(res: AnalyzeResponse): AnalyzeResult {
       };
     } else if (estimatedComponents.length > 0) {
       // Sum components to compute totals
-      const totalCal = components.reduce((sum, c) => sum + (c.calories || 0), 0);
-      const totalProtein = components.reduce((sum, c) => sum + (c.protein || 0), 0);
+      const totalCal = components.reduce(
+        (sum, c) => sum + (c.calories || 0),
+        0,
+      );
+      const totalProtein = components.reduce(
+        (sum, c) => sum + (c.protein || 0),
+        0,
+      );
       const totalFat = components.reduce((sum, c) => sum + (c.fat || 0), 0);
       const totalCarb = components.reduce((sum, c) => sum + (c.carbs || 0), 0);
 
@@ -124,5 +131,17 @@ export function mapAnalyzeResponse(res: AnalyzeResponse): AnalyzeResult {
     }
   }
 
-  return { nutrition, detected, visualBase64, imageSize, warnings, imageQuality };
+  const dish_id =
+    Number(res.items?.at?.(0)?.food?.food_id?.substring(3)) ?? null;
+
+  return {
+    dish_id,
+    nutrition,
+    detected,
+    visualBase64,
+    imageSize,
+    warnings,
+    imageQuality,
+    imageUrl: res.image_url ?? undefined,
+  };
 }

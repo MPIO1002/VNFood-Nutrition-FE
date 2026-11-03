@@ -1,7 +1,7 @@
-import React from "react";
 import { View } from "react-native";
-import { NutritionSummary } from "./NutritionSummary";
+import MealTypeSelect, { MealType } from "./MealTypeSelect";
 import { NutritionComponentList } from "./NutritionComponentList";
+import { NutritionSummary } from "./NutritionSummary";
 import { SaveMealButton } from "./SaveMealButton";
 
 export interface NutritionResultsProps {
@@ -12,8 +12,10 @@ export interface NutritionResultsProps {
   onAdjustWeight: (idx: number, delta: number) => void;
   onRemoveComponent: (idx: number) => void;
   onAddComponent: () => void;
+  onMealTypeChange?: (type: MealType) => void;
   onSave: () => void;
   saveState?: "idle" | "saving" | "saved";
+  disabled?: boolean;
 }
 
 export function NutritionResults({
@@ -24,12 +26,15 @@ export function NutritionResults({
   onAdjustWeight,
   onRemoveComponent,
   onAddComponent,
+  onMealTypeChange,
   onSave,
   saveState = "idle",
+  disabled = false,
 }: NutritionResultsProps) {
   return (
     <View className="px-4 mt-2">
       <NutritionSummary totals={totals} />
+      <MealTypeSelect disabled={disabled} onMealTypeChange={onMealTypeChange} />
       <NutritionComponentList
         nutrition={nutrition}
         onUpdateName={onUpdateName}
@@ -38,7 +43,7 @@ export function NutritionResults({
         onRemove={onRemoveComponent}
         onAdd={onAddComponent}
       />
-      <SaveMealButton state={saveState} onPress={onSave} />
+      <SaveMealButton disabled={disabled} state={saveState} onPress={onSave} />
     </View>
   );
 }

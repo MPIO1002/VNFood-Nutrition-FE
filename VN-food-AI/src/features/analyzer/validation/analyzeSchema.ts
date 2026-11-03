@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { CONTAINER_KEYS } from "@/constants/containers";
+import { z } from "zod";
 
 /** 1. Input do UI tạo ra trước khi upload */
 export const ContainerTypeSchema = z.enum(CONTAINER_KEYS);
@@ -23,7 +23,10 @@ const MacroSchema = z.object({
 export const AnalyzeResponseSchema = z.object({
   image: z.object({ width: z.number(), height: z.number() }).nullish(),
   image_quality: z
-    .object({ is_blurry: z.boolean().nullish(), issues: z.array(z.string()).nullish() })
+    .object({
+      is_blurry: z.boolean().nullish(),
+      issues: z.array(z.string()).nullish(),
+    })
     .nullish(),
   items: z
     .array(
@@ -33,6 +36,7 @@ export const AnalyzeResponseSchema = z.object({
         mask_polygons: z.array(z.array(z.array(z.number()))).nullish(),
         food: z
           .object({
+            food_id: z.string().nullish(),
             name: z.string().nullish(),
             estimated_totals: MacroSchema.nullish(),
             estimated_components: z
@@ -54,6 +58,7 @@ export const AnalyzeResponseSchema = z.object({
     .nullish(),
   visual_base64: z.string().nullish(),
   warnings: z.array(z.string()).nullish(),
+  image_url: z.url().nullish(),
 });
 export type AnalyzeResponse = z.infer<typeof AnalyzeResponseSchema>;
 

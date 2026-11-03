@@ -5,6 +5,7 @@ import {
   useUpdateProfileApiV1ProfilePatch,
   useUploadImageEndpointApiV1UploadImagePost,
 } from "@/api/generated";
+import { useCallback } from "react";
 import { ProfileResponseSchema } from "../validation/profileSchema";
 
 export const profileQueryKeys = {
@@ -12,7 +13,7 @@ export const profileQueryKeys = {
   current: () => [...profileQueryKeys.all, "current"] as const,
 };
 
-export const useProfileQuery = () => {
+export const useProfileQuery = useCallback(() => {
   return useGetProfileApiV1ProfileGet({
     query: {
       retry: 1,
@@ -26,19 +27,21 @@ export const useProfileQuery = () => {
       },
     },
   });
-};
+}, []);
 
-export const useUpdateWeightMutation = () => {
+export const useUpdateWeightMutation = useCallback(() => {
   return useAddWeightApiV1ProfileWeightPost();
-};
+}, []);
 
-export const useUpdateProfileMutation = () => {
+export const useUpdateProfileMutation = useCallback(() => {
   return useUpdateProfileApiV1ProfilePatch();
-};
+}, []);
 
-export const useUploadProfileImageMutation = () => {
+export const useUploadProfileImageMutation = useCallback(() => {
   return useUploadImageEndpointApiV1UploadImagePost();
-};
+}, []);
 
-export const useCalculateNutritionMutation = () =>
-  useCalculateDailyNutritionApiV1NutritionCalculatePost();
+export const useCalculateNutritionMutation = useCallback(
+  () => useCalculateDailyNutritionApiV1NutritionCalculatePost(),
+  [],
+);

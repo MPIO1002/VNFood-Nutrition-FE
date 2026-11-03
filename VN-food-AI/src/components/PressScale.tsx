@@ -1,9 +1,10 @@
-import React, { useRef } from 'react';
-import { Animated, Pressable, StyleProp, ViewStyle } from 'react-native';
+import React, { useRef } from "react";
+import { Animated, Pressable, StyleProp, ViewStyle } from "react-native";
 
 interface PressScaleProps {
   children: React.ReactNode;
   onPress?: () => void;
+  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   className?: string; // Support for NativeWind
   toValue?: number;
@@ -12,6 +13,7 @@ interface PressScaleProps {
 export function PressScale({
   children,
   onPress,
+  disabled,
   style,
   className,
   toValue = 0.97,
@@ -29,7 +31,7 @@ export function PressScale({
       onPress={onPress}
       style={style}
       className={className}
-    >
+      disabled={disabled}>
       <Animated.View style={{ transform: [{ scale }] }}>
         {children}
       </Animated.View>

@@ -15,13 +15,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-export default function LoadingScreen({
-  show = false,
-  onReady,
-}: {
-  show?: boolean;
-  onReady?: () => void;
-}) {
+export default function LoadingScreen({ show = false }: { show?: boolean }) {
   const circleOpacity = useSharedValue(0.5);
   const circleScale = useSharedValue(1);
 

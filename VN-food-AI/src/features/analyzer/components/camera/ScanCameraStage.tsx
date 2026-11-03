@@ -1,7 +1,7 @@
-import React from "react";
-import { CameraView, type CameraType, useCameraPermissions } from "expo-camera";
+import { CameraView, useCameraPermissions, type CameraType } from "expo-camera";
 import { Image } from "expo-image";
-import { Button, View, StyleSheet, Text } from "react-native";
+import { RefObject } from "react";
+import { Button, StyleSheet, Text, View } from "react-native";
 import Svg, { Polygon } from "react-native-svg";
 
 export interface ScanCameraStageProps {
@@ -13,6 +13,7 @@ export interface ScanCameraStageProps {
   foodName: string | null;
   confidence: number | null;
   cameraFacing: CameraType;
+  cameraRef?: RefObject<CameraView | null>;
 }
 
 export function ScanCameraStage({
@@ -24,6 +25,7 @@ export function ScanCameraStage({
   foodName,
   confidence,
   cameraFacing,
+  cameraRef,
 }: ScanCameraStageProps) {
   const [permission, requestPermission] = useCameraPermissions();
   // Format polygon points for SVG
@@ -49,8 +51,7 @@ export function ScanCameraStage({
               <Svg
                 style={styles.overlay}
                 viewBox={`0 0 ${imageSize?.width || 0} ${imageSize?.height || 0}`}
-                preserveAspectRatio="xMidYMid slice"
-              >
+                preserveAspectRatio="xMidYMid slice">
                 {maskPolygons.map((points, idx) => (
                   <Polygon
                     key={idx}
@@ -64,16 +65,20 @@ export function ScanCameraStage({
             )}
           </View>
         ) : permission?.granted ? (
-            <CameraView style={styles.camera} facing={cameraFacing} />
-          ) : (
-            <View style={styles.placeholder}>
-              <Text style={styles.placeholderText}>
-                Cho phép camera để chụp ảnh món ăn
-              </Text>
-              {permission && (
-                <Button title="Cho phép camera" onPress={requestPermission} />
-              )}
-            </View>
+          <CameraView
+            style={styles.camera}
+            facing={cameraFacing}
+            ref={cameraRef}
+          />
+        ) : (
+          <View style={styles.placeholder}>
+            <Text style={styles.placeholderText}>
+              Cho phép camera để chụp ảnh món ăn
+            </Text>
+            {permission && (
+              <Button title="Cho phép camera" onPress={requestPermission} />
+            )}
+          </View>
         )}
 
         {!activeImageUri && (
