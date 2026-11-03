@@ -1,9 +1,12 @@
 import { MetabolismRequest, MetabolismResponse } from "@/api/generated/model";
 import { APIMutatorOptions } from "@/api/types/api";
+import { profileQueryKeys } from "@/features/profile";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useHealthRegisterMutation } from "./health-register.queries";
 
 export const useHealthRegister = () => {
+  const queryClient = useQueryClient();
   const healthRegisterMutation = useHealthRegisterMutation();
 
   const handleHealthRegister = useCallback(
@@ -18,7 +21,9 @@ export const useHealthRegister = () => {
         { data },
         {
           onSuccess: (res: MetabolismResponse) => {
-            // REMINDER: invalidate profile key here
+            queryClient.invalidateQueries({
+              queryKey: profileQueryKeys.current(),
+            });
             options?.onSuccess?.(res);
           },
           onError: (e) => {

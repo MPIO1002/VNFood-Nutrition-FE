@@ -1,16 +1,24 @@
-import * as ImagePicker from "expo-image-picker";
-import type { CameraType } from "expo-camera";
-import { useState } from "react";
-import { AnalyzeRequestInput, AnalyzeRequestSchema } from "@/features/analyzer/validation/analyzeSchema";
-import { useAnalyzer } from "../../hooks/useAnalyzer";
-import type { AnalyzeResult } from "@/features/analyzer/mapping/analyzeMapper";
+import { MealCreateRequest, MealResponse } from "@/api/generated/model";
+import { APIMutatorOptions } from "@/api/types/api";
 import { CONTAINER_KEYS, type ContainerKey } from "@/constants/containers";
+import type { AnalyzeResult } from "@/features/analyzer/mapping/analyzeMapper";
+import {
+  AnalyzeRequestInput,
+  AnalyzeRequestSchema,
+} from "@/features/analyzer/validation/analyzeSchema";
+import { useMeal } from "@/features/meal/hooks/useMeal";
+import type { CameraType, CameraView } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
+import { RefObject, useCallback, useState } from "react";
+import { MealType } from "../../components/result/MealTypeSelect";
+import { useAnalyzer } from "../../hooks/useAnalyzer";
 
 export type ScanFormState = {
   activeImageUri: string | null;
   selectedContainer: ContainerKey;
   result: AnalyzeResult | null;
   totals: { kcal: number; protein: number; carbs: number; fat: number };
+  isTakingPicture: boolean;
   isAnalyzing: boolean;
   error: Error | null;
   warnings: string[];
@@ -21,7 +29,9 @@ export type ScanFormHandlers = {
   takePicture: () => Promise<void>;
   retake: () => void;
   setContainer: (container: string) => void;
-  submit: () => Promise<import("@/features/analyzer/mapping/analyzeMapper").AnalyzeResult | null>;
+  submit: () => Promise<
+    import("@/features/analyzer/mapping/analyzeMapper").AnalyzeResult | null
+  >;
   toggleFacing: () => void;
   cameraFacing: CameraType;
   updateName: (idx: number, name: string) => void;
@@ -29,21 +39,32 @@ export type ScanFormHandlers = {
   adjustWeight: (idx: number, delta: number) => void;
   removeComponent: (idx: number) => void;
   addComponent: () => void;
+  setMealType: (type: MealType) => void;
+  onSaveMeal: (
+    options?: APIMutatorOptions<MealResponse, MealCreateRequest>,
+  ) => void;
 };
 
-export function useScanForm(initialImageUri?: string): ScanFormState & ScanFormHandlers {
+export function useScanForm(
+  cameraRef: RefObject<CameraView | null>,
+  initialImageUri?: string,
+): ScanFormState & ScanFormHandlers {
   const [activeImageUri, setActiveImageUri] = useState<string | null>(
     initialImageUri || null,
   );
-  const [selectedContainer, setSelectedContainer] = useState<ContainerKey>("chen");
+  const [mealType, setMealType] = useState<MealType>("breakfast");
+  const [selectedContainer, setSelectedContainer] =
+    useState<ContainerKey>("chen");
   const [cameraType, setCameraType] = useState<ImagePicker.CameraType>(
     ImagePicker.CameraType.back,
   );
   const { analyze, isAnalyzing, error, reset } = useAnalyzer();
+  const { handleCreateMeal } = useMeal();
   const [warnings, setWarnings] = useState<string[]>([]);
   const [result, setResult] = useState<AnalyzeResult | null>(null);
+  const [isTaking, setIsTaking] = useState(false);
 
-  const pickImage = async () => {
+  const pickImage = useCallback(async () => {
     // Expo ImagePicker logic - simplified
     // In real implementation, use expo-image-picker
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -61,41 +82,44 @@ export function useScanForm(initialImageUri?: string): ScanFormState & ScanFormH
       setActiveImageUri(result.assets[0]?.uri ?? null);
       setWarnings([]);
     }
-  };
+  }, []);
 
-  const takePicture = async () => {
+  const takePicture = useCallback(async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       setWarnings(["Không có quyền truy cập camera"]);
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [4, 3],
+
+    setIsTaking(true);
+    const result = await cameraRef.current?.takePictureAsync({
       quality: 1,
-      cameraType,
     });
-    if (!result.canceled) {
-      setActiveImageUri(result.assets[0]?.uri ?? null);
+
+    if (result?.uri) {
+      setActiveImageUri(result.uri);
       setWarnings([]);
     }
-  };
 
-  const retake = () => {
+    setIsTaking(false);
+  }, [cameraRef]);
+
+  const retake = useCallback(() => {
     setActiveImageUri(null);
     setWarnings([]);
+    setResult(null);
+    setMealType("breakfast");
     // Reset form state
     reset();
-  };
+  }, [reset]);
 
-  const setContainer = (container: string) => {
+  const setContainer = useCallback((container: string) => {
     if (CONTAINER_KEYS.includes(container as ContainerKey)) {
       setSelectedContainer(container as ContainerKey);
     }
-  };
+  }, []);
 
-  const submit = async (): Promise<AnalyzeResult | null> => {
+  const submit = useCallback(async (): Promise<AnalyzeResult | null> => {
     if (!activeImageUri) return null;
 
     try {
@@ -108,28 +132,34 @@ export function useScanForm(initialImageUri?: string): ScanFormState & ScanFormH
       // Validate input thông qua schema
       const parsed = AnalyzeRequestSchema.safeParse(input);
       if (!parsed.success) {
-        throw new Error(parsed.error.issues[0]?.message || "Dữ liệu không hợp lệ");
+        throw new Error(
+          parsed.error.issues[0]?.message || "Dữ liệu không hợp lệ",
+        );
       }
 
       const analyzedResult = await analyze(input);
-      setWarnings(analyzedResult ? analyzedResult.warnings || [] : ["AI không nhận diện được món ăn trong ảnh"]);
+      setWarnings(
+        analyzedResult
+          ? analyzedResult.warnings || []
+          : ["AI không nhận diện được món ăn trong ảnh"],
+      );
       setResult(analyzedResult);
       return analyzedResult;
     } catch (e: any) {
       setWarnings([e.message || "Có lỗi xảy ra khi phân tích"]);
       return null;
     }
-  };
+  }, [activeImageUri, analyze, selectedContainer]);
 
-  const toggleFacing = () => {
+  const toggleFacing = useCallback(() => {
     setCameraType((current) =>
       current === ImagePicker.CameraType.back
         ? ImagePicker.CameraType.front
         : ImagePicker.CameraType.back,
     );
-  };
+  }, []);
 
-  const updateName = (idx: number, name: string) => {
+  const updateName = useCallback((idx: number, name: string) => {
     setResult((previous) => {
       if (!previous?.nutrition) return previous;
       const components = [...previous.nutrition.components];
@@ -137,15 +167,16 @@ export function useScanForm(initialImageUri?: string): ScanFormState & ScanFormH
       components[idx] = { ...components[idx], name };
       return { ...previous, nutrition: { ...previous.nutrition, components } };
     });
-  };
+  }, []);
 
-  const updateWeight = (idx: number, weight: number) => {
+  const updateWeight = useCallback((idx: number, weight: number) => {
     setResult((previous) => {
       if (!previous?.nutrition) return previous;
       const components = [...previous.nutrition.components];
       const component = components[idx];
       if (!component) return previous;
-      const ratio = component.originalWeight > 0 ? weight / component.originalWeight : 0;
+      const ratio =
+        component.originalWeight > 0 ? weight / component.originalWeight : 0;
       components[idx] = {
         ...component,
         weight,
@@ -166,24 +197,45 @@ export function useScanForm(initialImageUri?: string): ScanFormState & ScanFormH
         },
       };
     });
-  };
+  }, []);
 
-  const adjustWeight = (idx: number, delta: number) => {
-    const component = result?.nutrition?.components[idx];
-    if (component) updateWeight(idx, Math.max(0, component.weight + delta));
-  };
+  const adjustWeight = useCallback(
+    (idx: number, delta: number) => {
+      const component = result?.nutrition?.components[idx];
+      if (component) updateWeight(idx, Math.max(0, component.weight + delta));
+    },
+    [result, updateWeight],
+  );
 
-  const removeComponent = (idx: number) => {
+  const removeComponent = useCallback((idx: number) => {
     setResult((previous) => {
       if (!previous?.nutrition) return previous;
-      const components = previous.nutrition.components.filter((_, index) => index !== idx);
+      const components = previous.nutrition.components.filter(
+        (_, index) => index !== idx,
+      );
       return { ...previous, nutrition: { ...previous.nutrition, components } };
     });
-  };
+  }, []);
 
-  const addComponent = () => {
+  const onSaveMeal = useCallback(
+    (options?: APIMutatorOptions<MealResponse, MealCreateRequest>) => {
+      const data: MealCreateRequest = {
+        dish_id: result?.dish_id,
+        meal_type: mealType,
+        quantity: 1,
+        consumed_at: new Date().toISOString(),
+        image_url: result?.imageUrl,
+      };
+
+      handleCreateMeal(data, options);
+    },
+    [handleCreateMeal],
+  );
+
+  const addComponent = useCallback(() => {
     setResult((previous) => {
       if (!previous?.nutrition) return previous;
+
       const component = {
         name: "Nguyên liệu mới",
         weight: 100,
@@ -205,12 +257,13 @@ export function useScanForm(initialImageUri?: string): ScanFormState & ScanFormH
         },
       };
     });
-  };
+  }, []);
 
   return {
     activeImageUri,
     selectedContainer,
     result,
+    isTakingPicture: isTaking,
     totals: result?.nutrition
       ? {
           kcal: result.nutrition.calories,
@@ -221,6 +274,7 @@ export function useScanForm(initialImageUri?: string): ScanFormState & ScanFormH
       : { kcal: 0, protein: 0, carbs: 0, fat: 0 },
     isAnalyzing,
     error,
+    setMealType,
     pickImage,
     takePicture,
     retake,
@@ -232,6 +286,7 @@ export function useScanForm(initialImageUri?: string): ScanFormState & ScanFormH
     adjustWeight,
     removeComponent,
     addComponent,
+    onSaveMeal,
     warnings,
     cameraFacing: cameraType,
   };
