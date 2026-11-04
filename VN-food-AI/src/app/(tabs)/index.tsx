@@ -3,8 +3,12 @@
  * Converted from Stitch AI HTML/Tailwind → React Native + TypeScript + Expo
  */
 
-import { CalorieRing } from "@/components/CalorieRing";
 import { PressScale } from "@/components/PressScale";
+import {
+  CalorieRing,
+  DailyMealList,
+  useDailyMealsQuery,
+} from "@/features/meal";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import {
@@ -53,6 +57,10 @@ const HOW_STEPS = [
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function HomeScreen() {
   const router = useRouter();
+  const dailyMealsQuery = useDailyMealsQuery();
+  const dailyMeals = dailyMealsQuery.data;
+  const consumed = dailyMeals?.total_calories ?? 0;
+  const goal = dailyMeals?.target_kcal_per_day ?? 2100;
 
   return (
     <View className="flex-1 bg-surface">
@@ -74,7 +82,7 @@ export default function HomeScreen() {
               <Text className="font-montserrat text-xs text-zinc-500 mt-0.5">
                 Mục tiêu hôm nay:{" "}
                 <Text className="font-montserrat-bold text-charcoal-pure">
-                  2,100 kcal
+                  {goal.toLocaleString()} kcal
                 </Text>
               </Text>
             </View>
@@ -82,7 +90,17 @@ export default function HomeScreen() {
         </View>
 
         {/* Calorie Ring Hero Card */}
-        <CalorieRing goal={2100} consumed={650} burned={320} />
+        <CalorieRing
+          goal={goal}
+          consumed={consumed}
+          protein={dailyMeals?.total_protein_g}
+          proteinGoal={dailyMeals?.target_protein_g}
+          carbs={dailyMeals?.total_carb_g}
+          carbsGoal={dailyMeals?.target_carb_g}
+          fat={dailyMeals?.total_fat_g}
+          fatGoal={dailyMeals?.target_fat_g}
+          burned={320}
+        />
 
         {/* Dark Banner */}
         <View className="rounded-[24px] overflow-hidden bg-charcoal-pure border border-zinc-800 shadow-lg relative">
@@ -188,69 +206,11 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* Recent log */}
-        <View className="gap-3">
-          <View className="flex-row items-center justify-between px-0.5">
-            <View className="flex-row items-center gap-2">
-              <Text className="font-montserrat-bold text-base text-charcoal-pure tracking-tight">
-                Bữa sáng đã ghi nhận
-              </Text>
-              <View className="px-2.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200">
-                <Text className="font-montserrat-bold text-[11px] text-charcoal-pure">
-                  650 kcal
-                </Text>
-              </View>
-            </View>
-            <Pressable>
-              <Text className="font-montserrat-semibold text-xs text-charcoal-pure">
-                Chỉnh sửa
-              </Text>
-            </Pressable>
-          </View>
-          <View className="p-4 rounded-3xl bg-canvas-white border border-border-hairline flex-row items-center gap-3 shadow-sm">
-            <View className="w-16 h-16 rounded-2xl overflow-hidden shrink-0">
-              <Image
-                source="https://lh3.googleusercontent.com/aida-public/AB6AXuBfkkjEakLFXs1rjrfu1h-DyUsiHkgnY1fy2sddlG_m_PRuSGCd6w8LfxN7v2KCQXX22BE5jHwp3YcHqptGe-StzVsUz1hS6Kj10nwYO_6pRzg9U42Q5NEiN_AOfqNvP6B06MPTmb-QKWPKEtywietai5HLV3wRScxqBrQ39pcH5Fre4MzQ7yB3AW2aK0ZImmdJBCjSVmJY0RtLX8aOwTgUz-_p2eTGuhi_pej84IqR"
-                style={{ width: "100%", height: "100%" }}
-                contentFit="cover"
-              />
-            </View>
-            <View className="flex-1 min-w-0">
-              <View className="flex-row items-center justify-between gap-1">
-                <Text
-                  className="font-montserrat-bold text-[15px] text-charcoal-pure flex-1"
-                  numberOfLines={1}>
-                  Phở bò tái nạm gầu
-                </Text>
-                <Text className="font-montserrat-bold text-sm text-charcoal-pure shrink-0">
-                  520 kcal
-                </Text>
-              </View>
-              <Text
-                className="font-montserrat text-xs text-zinc-500 mt-1"
-                numberOfLines={1}>
-                1 tô vừa (580g) • Nước dùng trong, ít béo
-              </Text>
-              <View className="flex-row gap-1.5 mt-2">
-                <View className="px-2 py-0.5 rounded bg-slate-100 border border-slate-300">
-                  <Text className="font-montserrat-bold text-[10px] text-slate-700">
-                    P: 34g
-                  </Text>
-                </View>
-                <View className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200">
-                  <Text className="font-montserrat-bold text-[10px] text-amber-800">
-                    C: 62g
-                  </Text>
-                </View>
-                <View className="px-2 py-0.5 rounded bg-rose-50 border border-rose-200">
-                  <Text className="font-montserrat-bold text-[10px] text-rose-800">
-                    F: 14g
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
+        <DailyMealList
+          meals={dailyMeals?.meals ?? []}
+          isLoading={dailyMealsQuery.isLoading}
+          isError={dailyMealsQuery.isError}
+        />
 
         <View className="h-28" />
       </ScrollView>
