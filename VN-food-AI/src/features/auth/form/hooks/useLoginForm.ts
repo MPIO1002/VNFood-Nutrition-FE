@@ -1,6 +1,5 @@
 import {
   LoginRequest,
-  RegisterRequest,
   TokenResponse,
 } from "@/api/generated/model";
 import { APIMutatorOptions } from "@/api/types/api";
@@ -30,7 +29,7 @@ export const useLoginForm = () => {
       options,
     }: {
       data: LoginRequest;
-      options?: APIMutatorOptions<TokenResponse, RegisterRequest>;
+      options?: APIMutatorOptions<TokenResponse, LoginRequest>;
     }) => {
       setIsSubmitting(true);
       logIn({

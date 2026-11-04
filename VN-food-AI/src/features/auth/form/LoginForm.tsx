@@ -140,7 +140,7 @@ export default function LoginForm() {
             className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2"
             disabled={isSubmitting}
             activeOpacity={0.8}
-            onPress={form.handleSubmit(onSubmit)}>
+            onPress={() => form.handleSubmit(onSubmit)()}>
             {isSubmitting ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (
@@ -161,8 +161,12 @@ export default function LoginForm() {
               Đăng nhập không thành công
             </AlertDialogTitle>
             <AlertDialogDescription className="font-montserrat">
-              {`${error?.response?.data?.detail}` ||
-                "Đã có lỗi xảy ra. Vui lòng thử lại"}
+              {typeof error?.response?.data?.detail === "string"
+                ? error.response.data.detail
+                : error?.message === "Network Error" ||
+                    error?.code === "ECONNABORTED"
+                  ? "Không thể kết nối đến máy chủ. Hãy kiểm tra backend đang chạy và địa chỉ EXPO_PUBLIC_API_URL."
+                  : "Đã có lỗi xảy ra. Vui lòng thử lại"}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
