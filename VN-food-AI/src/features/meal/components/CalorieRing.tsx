@@ -1,22 +1,39 @@
-import React from 'react';
-import { Text, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
-import { Sparkles, ChevronRight, Utensils, Flame } from 'lucide-react-native';
-import { PressScale } from './PressScale';
+import { PressScale } from "@/components/PressScale";
+import { ChevronRight, Flame, Utensils } from "lucide-react-native";
+import { Text, View } from "react-native";
+import Svg, { Circle } from "react-native-svg";
+import { MacroCard } from "./MacroCard";
 
 interface CalorieRingProps {
   goal: number;
   consumed: number;
+  protein?: number;
+  proteinGoal?: number | null;
+  carbs?: number;
+  carbsGoal?: number | null;
+  fat?: number;
+  fatGoal?: number | null;
   burned?: number;
   className?: string;
 }
 
-export function CalorieRing({ goal, consumed, burned = 320, className }: CalorieRingProps) {
+export function CalorieRing({
+  goal,
+  consumed,
+  protein = 0,
+  proteinGoal = 140,
+  carbs = 0,
+  carbsGoal = 220,
+  fat = 0,
+  fatGoal = 65,
+  burned = 0,
+  className,
+}: CalorieRingProps) {
   const remaining = goal - consumed;
   const RING_R = 82;
   const RING_STROKE = 15;
   const CIRCUMFERENCE = 2 * Math.PI * RING_R;
-  const PROGRESS_RATIO = consumed / goal;
+  const PROGRESS_RATIO = goal > 0 ? Math.min(consumed / goal, 1) : 0;
   const STROKE_DASHOFFSET = CIRCUMFERENCE * (1 - PROGRESS_RATIO);
 
   return (
@@ -91,41 +108,43 @@ export function CalorieRing({ goal, consumed, burned = 320, className }: Calorie
         </View>
       </View>
 
-      {/* Macro Row placeholder */}
       <View className="flex-row gap-2 mt-4">
-        {/* We can extract Macro Pill later, keeping simple here */}
-        <View className="flex-1 bg-slate-50 p-3 rounded-2xl border border-slate-100">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="font-montserrat-semibold text-[11px] text-slate-700">Protein</Text>
-            <Text className="font-montserrat-bold text-[11px] text-slate-700">61%</Text>
-          </View>
-          <View className="h-[5px] bg-slate-200 rounded-full overflow-hidden mb-2">
-            <View className="h-full bg-macro-protein w-[61%]" />
-          </View>
-          <Text className="font-montserrat-bold text-[13px] text-charcoal-pure">85<Text className="font-montserrat-medium text-[11px] text-zinc-400">/140g</Text></Text>
-        </View>
-
-        <View className="flex-1 bg-amber-50 p-3 rounded-2xl border border-amber-100">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="font-montserrat-semibold text-[11px] text-amber-800">Carbs</Text>
-            <Text className="font-montserrat-bold text-[11px] text-amber-800">73%</Text>
-          </View>
-          <View className="h-[5px] bg-amber-200 rounded-full overflow-hidden mb-2">
-            <View className="h-full bg-macro-carbs w-[73%]" />
-          </View>
-          <Text className="font-montserrat-bold text-[13px] text-charcoal-pure">160<Text className="font-montserrat-medium text-[11px] text-zinc-400">/220g</Text></Text>
-        </View>
-
-        <View className="flex-1 bg-rose-50 p-3 rounded-2xl border border-rose-100">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="font-montserrat-semibold text-[11px] text-rose-800">Chất béo</Text>
-            <Text className="font-montserrat-bold text-[11px] text-rose-800">69%</Text>
-          </View>
-          <View className="h-[5px] bg-rose-200 rounded-full overflow-hidden mb-2">
-            <View className="h-full bg-macro-fat w-[69%]" />
-          </View>
-          <Text className="font-montserrat-bold text-[13px] text-charcoal-pure">45<Text className="font-montserrat-medium text-[11px] text-zinc-400">/65g</Text></Text>
-        </View>
+        <MacroCard
+          label="Protein"
+          value={protein}
+          goal={proteinGoal}
+          colors={{
+            background: "bg-slate-50",
+            border: "border-slate-100",
+            text: "text-slate-700",
+            track: "bg-slate-200",
+            fill: "bg-macro-protein",
+          }}
+        />
+        <MacroCard
+          label="Carbs"
+          value={carbs}
+          goal={carbsGoal}
+          colors={{
+            background: "bg-amber-50",
+            border: "border-amber-100",
+            text: "text-amber-800",
+            track: "bg-amber-200",
+            fill: "bg-macro-carbs",
+          }}
+        />
+        <MacroCard
+          label="Chất béo"
+          value={fat}
+          goal={fatGoal}
+          colors={{
+            background: "bg-rose-50",
+            border: "border-rose-100",
+            text: "text-rose-800",
+            track: "bg-rose-200",
+            fill: "bg-macro-fat",
+          }}
+        />
       </View>
     </View>
   );

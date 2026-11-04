@@ -253,7 +253,7 @@ export default function RegisterForm() {
             className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2"
             disabled={isSubmitting}
             activeOpacity={0.8}
-            onPress={form.handleSubmit(onSubmit)}>
+            onPress={() => form.handleSubmit(onSubmit)()}>
             {isSubmitting ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (

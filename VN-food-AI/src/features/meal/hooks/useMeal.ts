@@ -1,9 +1,11 @@
 import { MealCreateRequest, MealResponse } from "@/api/generated/model";
 import { APIMutatorOptions } from "@/api/types/api";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { useCreateMealMutation } from "./meal.queries";
+import { mealQueryKeys, useCreateMealMutation } from "./meal.queries";
 
 export const useMeal = () => {
+  const queryClient = useQueryClient();
   const createMealMutation = useCreateMealMutation();
 
   const handleCreateMeal = useCallback(
@@ -15,6 +17,9 @@ export const useMeal = () => {
         { data },
         {
           onSuccess: (res) => {
+            queryClient.invalidateQueries({
+              queryKey: mealQueryKeys.daily(),
+            });
             options?.onSuccess?.(res);
           },
           onError: (e) => {
@@ -26,7 +31,7 @@ export const useMeal = () => {
         },
       );
     },
-    [createMealMutation],
+    [createMealMutation, queryClient],
   );
 
   return { handleCreateMeal };
