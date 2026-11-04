@@ -1,7 +1,6 @@
 import { useCalculateDailyNutritionApiV1NutritionCalculatePost } from "@/api/generated";
-import { useCallback } from "react";
 
-export const useHealthRegisterMutation = useCallback(() => {
+export const useHealthRegisterMutation = () => {
   const mutation = useCalculateDailyNutritionApiV1NutritionCalculatePost();
   return { ...mutation };
-}, []);
+};
