@@ -50,7 +50,7 @@ export default function SubmitHealthRegisterScreen() {
 
   const onMoveToApp = () => {
     if (router.canDismiss()) router.dismissTo("/");
-    router.replace("/(tabs)");
+    router.replace("/(tabs)/home");
   };
 
   const onBackAuthPage = () => {

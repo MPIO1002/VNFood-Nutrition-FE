@@ -34,10 +34,13 @@ const AppScreens = () => {
             name="scan"
             options={{ animation: "slide_from_bottom" }}
           />
+          <Stack.Screen
+            name="register"
+            options={{ animation: "slide_from_right" }}
+          />
         </Stack.Protected>
-        <Stack.Protected guard={!isAuthenticated}>
+        <Stack.Protected guard={!isAuthenticated} redirectTo={"/home"}>
           <Stack.Screen name="index" />
-          <Stack.Screen name="register" />
         </Stack.Protected>
       </Stack>
       <LoadingScreen show={isLoading} />
