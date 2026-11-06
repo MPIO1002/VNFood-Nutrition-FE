@@ -8,6 +8,7 @@ import { APIMutatorOptions } from "@/api/types/api";
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -33,7 +34,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { initAuth, handleLogin, handleRegister, handleLogout } = useAuth();
 
@@ -48,49 +49,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logIn = ({
-    data,
-    options,
-  }: {
-    data: LoginRequest;
-    options?: APIMutatorOptions<TokenResponse, LoginRequest>;
-  }) => {
-    handleLogin({
+  const logIn = useCallback(
+    ({
       data,
-      options: {
-        onSuccess: (res: TokenResponse) => {
-          setCurrentUser(res.user);
-          options?.onSuccess?.(res);
+      options,
+    }: {
+      data: LoginRequest;
+      options?: APIMutatorOptions<TokenResponse, LoginRequest>;
+    }) => {
+      handleLogin({
+        data,
+        options: {
+          onSuccess: (res: TokenResponse) => {
+            setCurrentUser(res.user);
+            options?.onSuccess?.(res);
+          },
+          onError: options?.onError,
+          onSettled: options?.onSettled,
         },
-        onError: options?.onError,
-        onSettled: options?.onSettled,
-      },
-    });
-  };
+      });
+    },
+    [handleLogin],
+  );
 
-  const register = ({
-    data,
-    options,
-  }: {
-    data: RegisterRequest;
-    options?: APIMutatorOptions<TokenResponse, RegisterRequest>;
-  }) => {
-    handleRegister({
+  const register = useCallback(
+    ({
       data,
-      options: {
-        onSuccess: (res: TokenResponse) => {
-          setCurrentUser(res.user);
-          options?.onSuccess?.(res);
+      options,
+    }: {
+      data: RegisterRequest;
+      options?: APIMutatorOptions<TokenResponse, RegisterRequest>;
+    }) => {
+      handleRegister({
+        data,
+        options: {
+          onSuccess: (res: TokenResponse) => {
+            setCurrentUser(res.user);
+            options?.onSuccess?.(res);
+          },
+          onError: options?.onError,
+          onSettled: options?.onSettled,
         },
-        onError: options?.onError,
-        onSettled: options?.onSettled,
-      },
-    });
-  };
+      });
+    },
+    [handleRegister],
+  );
 
-  const logOut = async () => {
+  const logOut = useCallback(async () => {
     await handleLogout({ options: { onSuccess: () => setCurrentUser(null) } });
-  };
+  }, [handleLogout]);
 
   useEffect(() => {
     loadCurrentUser();

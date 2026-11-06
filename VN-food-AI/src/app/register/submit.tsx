@@ -25,6 +25,7 @@ export default function SubmitHealthRegisterScreen() {
   const { submitMetabolismData } = useUserHealthInformationContext();
   const [isBackAlert, setIsBackAlert] = useState(false);
   const [isDoneSubmitted, setIsDoneSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -37,11 +38,12 @@ export default function SubmitHealthRegisterScreen() {
 
     submitMetabolismData({
       options: {
-        onSuccess: () => {
-          setIsDoneSubmitted(true);
-        },
         onError: (e) => {
           console.log(e.response?.data.detail);
+          setError(e.message);
+        },
+        onSettled: () => {
+          setIsDoneSubmitted(true);
         },
       },
     });
@@ -51,10 +53,6 @@ export default function SubmitHealthRegisterScreen() {
   const onMoveToApp = () => {
     if (router.canDismiss()) router.dismissTo("/");
     router.replace("/(tabs)/home");
-  };
-
-  const onBackAuthPage = () => {
-    if (router.canDismiss()) router.dismissTo("/");
   };
 
   return (
@@ -94,27 +92,54 @@ export default function SubmitHealthRegisterScreen() {
           </Animated.View>
         ) : (
           <View className="gap-6 w-full">
-            <Animated.View
-              className="justify-center items-center"
-              entering={FadeInUp.duration(500).delay(1000)}>
-              <Text className="font-montserrat text-center">
-                Đăng ký hồ sơ thành công, chúc bạn một hành trình thú vị cùng
-                chúng tôi
-              </Text>
-            </Animated.View>
-            <Animated.View
-              className={`w-full justify-center`}
-              entering={FadeInUp.duration(600)
-                .delay(1500)
-                .easing(Easing.out(Easing.ease))}>
-              <Pressable
-                className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2 active:opacity-70"
-                onPress={onMoveToApp}>
-                <Text className="font-montserrat-bold text-lg text-white">
-                  Khám phá CaloViet AI ngay
-                </Text>
-              </Pressable>
-            </Animated.View>
+            {error ? (
+              <>
+                <Animated.View
+                  className="justify-center items-center"
+                  entering={FadeInUp.duration(500).delay(1000)}>
+                  <Text className="font-montserrat text-center text-red-500">
+                    Đăng ký hồ sơ thất bại, vui lòng thử lại sau bạn nhé
+                  </Text>
+                </Animated.View>
+                <Animated.View
+                  className={`w-full justify-center`}
+                  entering={FadeInUp.duration(600)
+                    .delay(1500)
+                    .easing(Easing.out(Easing.ease))}>
+                  <Pressable
+                    className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2 active:opacity-70"
+                    onPress={onMoveToApp}>
+                    <Text className="font-montserrat-bold text-lg text-white">
+                      Quay lại trang chủ
+                    </Text>
+                  </Pressable>
+                </Animated.View>
+              </>
+            ) : (
+              <>
+                <Animated.View
+                  className="justify-center items-center"
+                  entering={FadeInUp.duration(500).delay(1000)}>
+                  <Text className="font-montserrat text-center">
+                    Đăng ký hồ sơ thành công, chúc bạn một hành trình thú vị
+                    cùng chúng tôi
+                  </Text>
+                </Animated.View>
+                <Animated.View
+                  className={`w-full justify-center`}
+                  entering={FadeInUp.duration(600)
+                    .delay(1500)
+                    .easing(Easing.out(Easing.ease))}>
+                  <Pressable
+                    className="bg-charcoal-pure rounded-xl h-14 flex-row items-center justify-center gap-2 active:opacity-70"
+                    onPress={onMoveToApp}>
+                    <Text className="font-montserrat-bold text-lg text-white">
+                      Khám phá CaloViet AI ngay
+                    </Text>
+                  </Pressable>
+                </Animated.View>
+              </>
+            )}
           </View>
         )}
       </View>
@@ -137,7 +162,7 @@ export default function SubmitHealthRegisterScreen() {
             </AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-500"
-              onPress={() => onBackAuthPage()}>
+              onPress={() => onMoveToApp()}>
               <Text className="font-montserrat text-white">Quay lại</Text>
             </AlertDialogAction>
           </AlertDialogFooter>

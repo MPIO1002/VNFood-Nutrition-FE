@@ -1,3 +1,4 @@
+import { HeightUnit } from "@/api/generated/model";
 import { useUserHealthInformationContext } from "@/features/health-register";
 import HealthRegisterNextButton from "@/features/health-register/components/HealthNextButton";
 import CmSliderRuler from "@/features/health-register/height/CmSliderRuler";
@@ -10,10 +11,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function InputHeightScreen() {
   const insets = useSafeAreaInsets();
-  const { markReady, assignMetabolismFieldData } =
+  const { markReady, assginMultipleMetabolismFieldData } =
     useUserHealthInformationContext();
 
-  const [isCmMode, setIsCmMode] = useState(true);
+  const [mode, setMode] = useState<HeightUnit>("cm");
   const [isCmRulerReady, setIsCmRulerReady] = useState(false);
   const cmValue = useRef(0);
 
@@ -25,9 +26,9 @@ export default function InputHeightScreen() {
   }, [isCmRulerReady, isFtRulerReady]);
 
   const onNext = () => {
-    assignMetabolismFieldData({
-      field: "height_cm",
-      value: isCmMode ? cmValue.current : ftValue.current,
+    assginMultipleMetabolismFieldData({
+      height: mode === "cm" ? cmValue.current : ftValue.current,
+      height_unit: mode,
     });
 
     router.push("/register/(steps)/activity");
@@ -52,24 +53,24 @@ export default function InputHeightScreen() {
       <View className="w-full flex-1 my-3 p-5 bg-white rounded-[24px] shadow-sm justify-between relative">
         <View className="flex-row rounded-full bg-gray-200 p-0.5 top-4 left-4 absolute">
           <TouchableOpacity
-            className={`py-1.5 px-4 rounded-full items-center justify-center ${isCmMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-            onPress={() => setIsCmMode(true)}>
+            className={`py-1.5 px-4 rounded-full items-center justify-center ${mode === "cm" ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
+            onPress={() => setMode("cm")}>
             <Text
-              className={`font-montserrat-medium text-sm ${isCmMode ? "text-white" : "text-zinc-500"}`}>
+              className={`font-montserrat-medium text-sm ${mode === "cm" ? "text-white" : "text-zinc-500"}`}>
               cm
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className={`py-1.5 px-3 rounded-full items-center justify-center ${!isCmMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-            onPress={() => setIsCmMode(false)}>
+            className={`py-1.5 px-3 rounded-full items-center justify-center ${mode === "ft" ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
+            onPress={() => setMode("ft")}>
             <View className="flex-row items-center">
               <Text
-                className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
+                className={`font-montserrat-medium text-sm ${mode === "ft" ? "text-white" : "text-zinc-500"}`}>
                 ft
               </Text>
-              <Dot width={10} color={!isCmMode ? "#fff" : "#71717A"}></Dot>
+              <Dot width={10} color={mode === "ft" ? "#fff" : "#71717A"}></Dot>
               <Text
-                className={`font-montserrat-medium text-sm ${!isCmMode ? "text-white" : "text-zinc-500"}`}>
+                className={`font-montserrat-medium text-sm ${mode === "ft" ? "text-white" : "text-zinc-500"}`}>
                 in
               </Text>
             </View>
@@ -78,8 +79,8 @@ export default function InputHeightScreen() {
         <View className="relative h-[300px]">
           <View
             className="absolute inset-0"
-            style={{ opacity: isCmMode ? 1 : 0 }}
-            pointerEvents={isCmMode ? "auto" : "none"}>
+            style={{ opacity: mode === "cm" ? 1 : 0 }}
+            pointerEvents={mode === "cm" ? "auto" : "none"}>
             <CmSliderRuler
               className="w-full"
               onReady={() => setIsCmRulerReady(true)}
@@ -90,8 +91,8 @@ export default function InputHeightScreen() {
           </View>
           <View
             className="absolute inset-0"
-            style={{ opacity: isCmMode ? 0 : 1 }}
-            pointerEvents={isCmMode ? "none" : "auto"}>
+            style={{ opacity: mode === "ft" ? 1 : 0 }}
+            pointerEvents={mode === "ft" ? "auto" : "none"}>
             <FtSliderRuler
               className="w-full h-[300px]"
               onReady={() => setIsFtRulerReady(true)}

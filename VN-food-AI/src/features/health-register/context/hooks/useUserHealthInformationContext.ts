@@ -14,8 +14,10 @@ export interface UseUserHealthInformationContextOptions {
 const metabolismDefaultValues: MetabolismRequest = {
   sex_for_equation: "male",
   age: 18,
-  height_cm: 101,
-  weight_kg: 26,
+  height: 101,
+  height_unit: "cm",
+  weight: 26,
+  weight_unit: "kg",
   activity_level: "sedentary",
   goal: "lose_weight",
   weight_change_kg: 100,

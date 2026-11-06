@@ -33,25 +33,28 @@ export const useAuth = () => {
   const logOutMutation = useLogoutMutation();
   const currentUserQuery = useCurrentUserQuery();
 
-  const initAuth = async ({
-    onUserChange,
-  }: {
-    onUserChange: (user: UserResponse | null) => void;
-  }) => {
-    await initializeSessionState();
-    const { accessToken, user: storedUser } = await getStoredTokens();
-    if (storedUser) {
-      onUserChange(storedUser);
-    }
-    if (accessToken) {
-      try {
-        const { data: me } = await currentUserQuery.refetch();
-        onUserChange(me ?? storedUser);
-      } catch {
-        // Không đồng bộ được profile nhưng vẫn có thể dùng storedUser
+  const initAuth = useCallback(
+    async ({
+      onUserChange,
+    }: {
+      onUserChange: (user: UserResponse | null) => void;
+    }) => {
+      await initializeSessionState();
+      const { accessToken, user: storedUser } = await getStoredTokens();
+      if (storedUser) {
+        onUserChange(storedUser);
       }
-    }
-  };
+      if (accessToken) {
+        try {
+          const { data: me } = await currentUserQuery.refetch();
+          onUserChange(me ?? storedUser);
+        } catch {
+          // Không đồng bộ được profile nhưng vẫn có thể dùng storedUser
+        }
+      }
+    },
+    [],
+  );
 
   const handleRegister = useCallback(
     ({
@@ -146,50 +149,53 @@ export const useAuth = () => {
     [],
   );
 
-  const handleLogout = async ({
-    options,
-  }: {
-    options?: APIMutatorOptions<
-      void,
-      LogoutApiV1AuthLogoutPostMutationVariables
-    >;
-  }) => {
-    const { refreshToken } = await getStoredTokens();
-    if (!refreshToken) {
-      await clearAuthSession();
-      queryClient.removeQueries({ queryKey: profileQueryKeys.current() });
-      options?.onSuccess?.();
-      return;
-    }
+  const handleLogout = useCallback(
+    async ({
+      options,
+    }: {
+      options?: APIMutatorOptions<
+        void,
+        LogoutApiV1AuthLogoutPostMutationVariables
+      >;
+    }) => {
+      const { refreshToken } = await getStoredTokens();
+      if (!refreshToken) {
+        await clearAuthSession();
+        queryClient.removeQueries({ queryKey: profileQueryKeys.current() });
+        options?.onSuccess?.();
+        return;
+      }
 
-    try {
-      await logOutMutation.mutateAsync({
-        data: {
-          refresh_token: refreshToken,
-        },
-      });
-      await clearAuthSession();
-      queryClient.removeQueries({ queryKey: authQueryKeys.currentUser() });
-      queryClient.removeQueries({ queryKey: profileQueryKeys.current() });
-      options?.onSuccess?.();
-    } catch (e) {
-      const error = e as ErrorType<HTTPValidationError>;
-      console.error("Logout request failed", {
-        message: error.message,
-        code: error.code,
-        status: error.response?.status,
-        url: error.config?.baseURL
-          ? `${error.config.baseURL}${error.config.url ?? ""}`
-          : error.config?.url,
-      });
-      options?.onError?.(error);
-      throw e;
-    } finally {
-      options?.onSettled?.(undefined, null, {
-        data: { refresh_token: refreshToken },
-      });
-    }
-  };
+      try {
+        await logOutMutation.mutateAsync({
+          data: {
+            refresh_token: refreshToken,
+          },
+        });
+        await clearAuthSession();
+        queryClient.removeQueries({ queryKey: authQueryKeys.currentUser() });
+        queryClient.removeQueries({ queryKey: profileQueryKeys.current() });
+        options?.onSuccess?.();
+      } catch (e) {
+        const error = e as ErrorType<HTTPValidationError>;
+        console.error("Logout request failed", {
+          message: error.message,
+          code: error.code,
+          status: error.response?.status,
+          url: error.config?.baseURL
+            ? `${error.config.baseURL}${error.config.url ?? ""}`
+            : error.config?.url,
+        });
+        options?.onError?.(error);
+        throw e;
+      } finally {
+        options?.onSettled?.(undefined, null, {
+          data: { refresh_token: refreshToken },
+        });
+      }
+    },
+    [],
+  );
 
   return {
     handleLogin,
