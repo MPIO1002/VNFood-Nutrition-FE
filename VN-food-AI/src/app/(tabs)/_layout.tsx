@@ -12,7 +12,7 @@ import {
 import { useAuthContext } from "@/features/auth";
 import { useProfileQuery } from "@/features/profile";
 import { router, Tabs } from "expo-router";
-import { BottomTabBarProps } from "expo-router/build/react-navigation/bottom-tabs";
+import { BottomTabBarProps } from "expo-router/build/layouts/TabsClient.js";
 import {
   Book,
   ScanText,
@@ -40,7 +40,7 @@ function navigateToTab(routeName: string) {
       router.navigate("/(tabs)/profile");
       break;
     default:
-      router.navigate("/(tabs)");
+      router.navigate("/(tabs)/home");
   }
 }
 
@@ -162,7 +162,7 @@ export default function TabsLayout() {
       <Tabs
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{ headerShown: false }}>
-        <Tabs.Screen name="index" />
+        <Tabs.Screen name="home" />
         <Tabs.Screen name="analytics" />
         <Tabs.Screen name="menu" />
         <Tabs.Screen name="profile" />

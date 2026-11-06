@@ -37,7 +37,9 @@ export default function ConditionCheckScreen() {
     if (buttonDisabled) return;
     setButtonDisabled(true);
     if (router.canDismiss()) router.dismissTo("/");
+    router.replace("/(tabs)/home");
   };
+
   const onNext = () => {
     if (buttonDisabled) return;
     setButtonDisabled(true);

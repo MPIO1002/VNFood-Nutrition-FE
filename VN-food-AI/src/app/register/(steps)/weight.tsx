@@ -1,3 +1,4 @@
+import { WeightUnit } from "@/api/generated/model";
 import { useUserHealthInformationContext } from "@/features/health-register";
 import HealthRegisterNextButton from "@/features/health-register/components/HealthNextButton";
 import KgSliderRuler from "@/features/health-register/weight/KgSliderRuler";
@@ -9,9 +10,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function InputWeightScreen() {
   const insets = useSafeAreaInsets();
-  const { markReady, assignMetabolismFieldData } =
+  const { markReady, assginMultipleMetabolismFieldData } =
     useUserHealthInformationContext();
-  const [isKgMode, setIsKgMode] = useState(true);
+  const [mode, setMode] = useState<WeightUnit>("kg");
 
   const [isKgRulerReady, setIsKgRulerReady] = useState(false);
   const kgValue = useRef(0);
@@ -23,9 +24,9 @@ export default function InputWeightScreen() {
   }, [isKgRulerReady, isLbsRulerReady]);
 
   const onNext = () => {
-    assignMetabolismFieldData({
-      field: "weight_kg",
-      value: isKgMode ? kgValue.current : lbsValue.current,
+    assginMultipleMetabolismFieldData({
+      weight: mode === "kg" ? kgValue.current : lbsValue.current,
+      weight_unit: mode,
     });
 
     router.push("/register/(steps)/height");
@@ -51,18 +52,18 @@ export default function InputWeightScreen() {
       <View className="w-full flex-1 my-3 p-5 bg-white rounded-[24px] shadow-sm justify-between relative">
         <View className="flex-row rounded-full bg-gray-200 p-0.5 absolute top-4 left-4 z-30">
           <TouchableOpacity
-            className={`py-1.5 px-4 rounded-full items-center justify-center ${isKgMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-            onPress={() => setIsKgMode(true)}>
+            className={`py-1.5 px-4 rounded-full items-center justify-center ${mode === "kg" ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
+            onPress={() => setMode("kg")}>
             <Text
-              className={`font-montserrat-medium text-sm ${isKgMode ? "text-white" : "text-zinc-500"}`}>
+              className={`font-montserrat-medium text-sm ${mode === "kg" ? "text-white" : "text-zinc-500"}`}>
               kg
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className={`py-1.5 px-4 rounded-full items-center justify-center ${!isKgMode ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
-            onPress={() => setIsKgMode(false)}>
+            className={`py-1.5 px-4 rounded-full items-center justify-center ${mode === "lbs" ? "bg-charcoal-pure shadow-sm" : "shadow-none"}`}
+            onPress={() => setMode("lbs")}>
             <Text
-              className={`font-montserrat-medium text-sm ${!isKgMode ? "text-white" : "text-zinc-500"}`}>
+              className={`font-montserrat-medium text-sm ${mode === "lbs" ? "text-white" : "text-zinc-500"}`}>
               lbs
             </Text>
           </TouchableOpacity>
@@ -70,8 +71,8 @@ export default function InputWeightScreen() {
         <View className="relative">
           <View
             className="absolute inset-0"
-            style={{ opacity: isKgMode ? 1 : 0 }}
-            pointerEvents={isKgMode ? "auto" : "none"}>
+            style={{ opacity: mode === "kg" ? 1 : 0 }}
+            pointerEvents={mode === "kg" ? "auto" : "none"}>
             <KgSliderRuler
               className="w-full h-[300px]"
               onReady={() => setIsKgRulerReady(true)}
@@ -82,8 +83,8 @@ export default function InputWeightScreen() {
           </View>
           <View
             className="absolute inset-0"
-            style={{ opacity: isKgMode ? 0 : 1 }}
-            pointerEvents={isKgMode ? "none" : "auto"}>
+            style={{ opacity: mode === "lbs" ? 1 : 0 }}
+            pointerEvents={mode === "lbs" ? "auto" : "none"}>
             <LbsSliderRuler
               className="w-full h-[300px]"
               onReady={() => setIsLbsRulerReady(true)}
