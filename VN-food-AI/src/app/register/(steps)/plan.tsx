@@ -13,16 +13,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PlanChoiceScreen() {
   const insets = useSafeAreaInsets();
-  const {
-    markReady,
-    metabolismData,
-    assginMultipleMetabolismFieldData,
-    submitMetabolismData,
-  } = useUserHealthInformationContext();
+  const { markReady, metabolismData, assginMultipleMetabolismFieldData } =
+    useUserHealthInformationContext();
   const [choice, setChoice] = useState<NutritionGoal>("maintain_weight");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const currentWeight = metabolismData?.current?.weight_kg || 0;
+  const currentWeight = metabolismData?.current?.weight || 0;
+  const weightUnit = metabolismData?.current?.weight_unit || "kg";
   const { getPlanValues, onGainPlanValueChange, onLosePlanValueChange } =
     useHealthPlanRegister();
 
@@ -69,6 +66,7 @@ export default function PlanChoiceScreen() {
             <LoseWeightPlanBox
               activated={choice === "lose_weight"}
               currentWeight={currentWeight}
+              weightUnit={weightUnit}
               onPress={() => setChoice("lose_weight")}
               onWeightChange={(v) => {
                 onLosePlanValueChange({ field: "weight_change_kg", value: v });
@@ -84,6 +82,7 @@ export default function PlanChoiceScreen() {
             <GainWeightPlanBox
               activated={choice === "gain_weight"}
               currentWeight={currentWeight}
+              weightUnit={weightUnit}
               onPress={() => setChoice("gain_weight")}
               onWeightChange={(v) => {
                 onGainPlanValueChange({ field: "weight_change_kg", value: v });
