@@ -4,3 +4,7 @@ export { MacroDistributionCard } from "./components/MacroDistributionCard";
 export { PeriodToggle } from "./components/PeriodToggle";
 export { WeeklyLogCard } from "./components/WeeklyLogCard";
 export { WeeklyProgressCard } from "./components/WeeklyProgressCard";
+export { useAnalytics } from "./hooks/useAnalytics";
+export type { AnalyticsMetrics } from "./hooks/useAnalytics";
+export { getAnalyticsDateRange } from "./utils/date-range";
+export type { AnalyticsDateRange, AnalyticsPeriod } from "./utils/date-range";
