@@ -33,8 +33,8 @@ function navigateToTab(routeName: string) {
     case "scan":
       router.navigate("/scan");
       break;
-    case "menu":
-      router.navigate("/(tabs)/menu");
+    case "diary":
+      router.navigate("/(tabs)/diary");
       break;
     case "profile":
       router.navigate("/(tabs)/profile");
@@ -78,7 +78,7 @@ function CustomTabBar({ state, descriptors }: BottomTabBarProps) {
         } else if (route.name === "scan") {
           Icon = ScanText;
           label = "Quét AI";
-        } else if (route.name === "menu") {
+        } else if (route.name === "diary") {
           Icon = UtensilsCrossed;
           label = "Nhật ký";
         } else if (route.name === "profile") {
@@ -164,7 +164,7 @@ export default function TabsLayout() {
         screenOptions={{ headerShown: false }}>
         <Tabs.Screen name="home" />
         <Tabs.Screen name="analytics" />
-        <Tabs.Screen name="menu" />
+        <Tabs.Screen name="diary" />
         <Tabs.Screen name="profile" />
       </Tabs>
       <AlertDialog open={isShowLogOutAlert}>
