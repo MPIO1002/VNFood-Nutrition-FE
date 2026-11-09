@@ -1,4 +1,4 @@
-import { GoalPace } from "@/api/generated/model";
+import { GoalPace, WeightUnit } from "@/api/generated/model";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
@@ -10,12 +10,14 @@ import { PlanBox, PlanBoxProps } from "./PlanBox";
 
 export interface LoseWeightPlanBoxProps extends PlanBoxProps {
   currentWeight: number;
+  weightUnit?: WeightUnit;
   onWeightChange?: (value: number) => void;
   onModeChange?: (mode: GoalPace) => void;
 }
 
 export function LoseWeightPlanBox({
   currentWeight,
+  weightUnit = "kg",
   onModeChange,
   onWeightChange,
   ...props
@@ -80,7 +82,7 @@ export function LoseWeightPlanBox({
         <View className="flex-1">
           <Text className="font-montserrat-bold">Giảm cân & Giảm mỡ</Text>
           <Text className="font-montserrat text-sm">
-            Tốc độ bền vững: ~0.5kg/tuần
+            {`Tốc độ bền vững: ~0.5${weightUnit}/tuần`}
           </Text>
         </View>
       </View>
@@ -109,7 +111,7 @@ export function LoseWeightPlanBox({
             className="rounded-xl border-0 bg-transparent text-black text-2xl font-montserrat-bold"
           />
         </View>
-        <Text className="font-montserrat-bold self-end">kg</Text>
+        <Text className="font-montserrat-bold self-end">{weightUnit}</Text>
       </View>
       <View className="w-full items-center justify-center mt-2">
         <Text className="font-montserrat-bold">Tốc độ thực hiện</Text>
@@ -144,8 +146,8 @@ export function LoseWeightPlanBox({
         <View className="shrink-0 items-center justify-center">
           <Text className="font-montserrat color-gray-400 text-sm text-center">
             {mode === "standard"
-              ? "Điều chỉnh -500kcal/ngày, tương đương tốc độ an toàn ≈0.5 kg/tuần"
-              : "Điều chỉnh -250 kcal/ngày, tương đương tốc độ nhẹ nhàng ≈0.25kg/tuần"}
+              ? `Điều chỉnh -500kcal/ngày, tương đương tốc độ an toàn ≈0.5 ${weightUnit}/tuần`
+              : `Điều chỉnh -250 kcal/ngày, tương đương tốc độ nhẹ nhàng ≈0.25${weightUnit}/tuần`}
           </Text>
         </View>
       </View>
@@ -154,7 +156,10 @@ export function LoseWeightPlanBox({
           <Text className="font-montserrat-medium text-sm">
             Đích đến dự kiến:
           </Text>
-          <Text className="font-montserrat-bold text-sm">{target}kg</Text>
+          <Text className="font-montserrat-bold text-sm">
+            {target}
+            {weightUnit}
+          </Text>
         </View>
         <View className="items-end">
           <Badge className="bg-green-200">

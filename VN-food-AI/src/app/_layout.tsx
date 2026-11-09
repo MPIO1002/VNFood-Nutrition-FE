@@ -12,12 +12,14 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { Appearance, useColorScheme } from "react-native";
+import { Appearance, LogBox, useColorScheme } from "react-native";
 
 import LoadingScreen from "@/components/LoadingScreen";
 import { AuthProvider, useAuthContext } from "@/features/auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+// REMINDER: Kill this if u want log show on u app
+LogBox.ignoreAllLogs();
 SplashScreen.preventAutoHideAsync();
 
 const AppScreens = () => {
@@ -32,10 +34,13 @@ const AppScreens = () => {
             name="scan"
             options={{ animation: "slide_from_bottom" }}
           />
+          <Stack.Screen
+            name="register"
+            options={{ animation: "slide_from_right" }}
+          />
         </Stack.Protected>
-        <Stack.Protected guard={!isAuthenticated}>
+        <Stack.Protected guard={!isAuthenticated} redirectTo={"/home"}>
           <Stack.Screen name="index" />
-          <Stack.Screen name="register" />
         </Stack.Protected>
       </Stack>
       <LoadingScreen show={isLoading} />

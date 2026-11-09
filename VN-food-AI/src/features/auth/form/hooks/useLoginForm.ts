@@ -1,7 +1,4 @@
-import {
-  LoginRequest,
-  TokenResponse,
-} from "@/api/generated/model";
+import { LoginRequest, TokenResponse } from "@/api/generated/model";
 import { APIMutatorOptions } from "@/api/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
@@ -37,7 +34,7 @@ export const useLoginForm = () => {
         options: {
           onSuccess: (res) => {
             options?.onSuccess?.(res);
-            router.replace("/(tabs)");
+            router.replace("/(tabs)/home");
           },
           onError: options?.onError,
           onSettled: (res, e, req) => {
