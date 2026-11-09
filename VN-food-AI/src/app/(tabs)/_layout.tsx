@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuthContext } from "@/features/auth";
 import { useProfileQuery } from "@/features/profile";
-import { router, Tabs } from "expo-router";
+import { router, Tabs, usePathname } from "expo-router";
 import { BottomTabBarProps } from "expo-router/build/layouts/TabsClient.js";
 import {
   Book,
@@ -140,6 +140,14 @@ export default function TabsLayout() {
   const [isShowLogOutAlert, setIsShowLogOutAlert] = useState(false);
   const { logOut } = useAuthContext();
   const profileQuery = useProfileQuery();
+  const pathname = usePathname();
+  const pageTitle = pathname.endsWith("/analytics")
+    ? "Phân tích"
+    : pathname.endsWith("/menu")
+      ? "Nhật ký"
+      : pathname.endsWith("/profile")
+        ? "Cá nhân"
+        : "Trang chủ";
 
   const onLogout = async () => {
     setIsShowLogOutAlert(false);
@@ -149,7 +157,7 @@ export default function TabsLayout() {
   return (
     <View className="w-full h-full">
       <AppHeader
-        pageTitle="Cá nhân"
+        pageTitle={pageTitle}
         avatarUri={profileQuery?.data?.avatar_url}
         onSettingsPress={() =>
           Alert.alert(

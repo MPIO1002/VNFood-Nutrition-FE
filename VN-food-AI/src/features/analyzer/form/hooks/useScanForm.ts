@@ -92,16 +92,34 @@ export function useScanForm(
     }
 
     setIsTaking(true);
-    const result = await cameraRef.current?.takePictureAsync({
-      quality: 1,
-    });
+    try {
+      const camera = cameraRef.current;
+      if (!camera) {
+        setWarnings(["Camera chưa sẵn sàng, vui lòng thử lại"]);
+        return;
+      }
 
-    if (result?.uri) {
+      const result = await camera.takePictureAsync({
+        quality: 0.8,
+        skipProcessing: true,
+      });
+
+      if (!result?.uri) {
+        setWarnings(["Không thể lưu ảnh từ camera, vui lòng thử lại"]);
+        return;
+      }
+
       setActiveImageUri(result.uri);
       setWarnings([]);
+    } catch (error) {
+      setWarnings([
+        error instanceof Error
+          ? error.message
+          : "Không thể chụp ảnh, vui lòng thử lại",
+      ]);
+    } finally {
+      setIsTaking(false);
     }
-
-    setIsTaking(false);
   }, [cameraRef]);
 
   const retake = useCallback(() => {
