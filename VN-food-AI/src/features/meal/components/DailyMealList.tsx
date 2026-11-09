@@ -1,6 +1,7 @@
 import type { MealResponse } from "@/api/generated/model";
 import { Image } from "expo-image";
 import { Text, View } from "react-native";
+import { DailyMealListSkeleton } from "./skeleton";
 
 function formatQuantity(quantity: number) {
   return Number.isInteger(quantity) ? quantity.toString() : quantity.toFixed(1);
@@ -67,6 +68,8 @@ export function DailyMealList({
   isLoading: boolean;
   isError: boolean;
 }) {
+  if (isLoading) return <DailyMealListSkeleton />;
+
   return (
     <View className="gap-3">
       <View className="flex-row items-center justify-between px-0.5">
@@ -81,11 +84,7 @@ export function DailyMealList({
           </View>
         </View>
       </View>
-      {isLoading ? (
-        <Text className="font-montserrat text-sm text-zinc-500">
-          Đang tải nhật ký bữa ăn...
-        </Text>
-      ) : isError ? (
+      {isError ? (
         <Text className="font-montserrat text-sm text-rose-600">
           Không thể tải nhật ký bữa ăn hôm nay.
         </Text>

@@ -1,24 +1,24 @@
+import { RefreshableScrollView } from "@/components/RefreshableScrollView";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuthContext } from "@/features/auth";
 import { ProfileContent } from "@/features/profile/components/ProfileContent";
+import { ProfileSkeleton } from "@/features/profile/components/skeleton";
 import { useProfileQuery } from "@/features/profile/hooks/profile.queries";
 import { router } from "expo-router";
 import { AlertCircle, UserRound } from "lucide-react-native";
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  View
+    Pressable,
+    Text,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -44,9 +44,12 @@ export default function ProfileScreen() {
 
   if (authLoading || profileQuery.isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-surface">
-        <ActivityIndicator size="large" color={colors.ink} />
-      </View>
+      <RefreshableScrollView
+        className="flex-1 bg-surface"
+        contentContainerStyle={{ padding: 14, paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}>
+        <ProfileSkeleton />
+      </RefreshableScrollView>
     );
   }
   if (!isAuthenticated) {
@@ -71,25 +74,34 @@ export default function ProfileScreen() {
   }
   if (profileQuery.isError || !profileQuery.data) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-surface px-6">
-        <AlertCircle size={36} color={colors.rose} />
-        <Text className="mt-3 text-center font-montserrat text-sm text-charcoal-pure">
-          Không thể tải hồ sơ.
-        </Text>
-        <Pressable
-          className="mt-4 rounded-xl bg-charcoal-pure px-5 py-3"
-          onPress={() => profileQuery.refetch()}>
-          <Text className="font-montserrat-semibold text-sm text-white">
-            Thử lại
+      <SafeAreaView className="flex-1 bg-surface">
+        <RefreshableScrollView
+          className="flex-1"
+          contentContainerStyle={{
+            flexGrow: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            paddingHorizontal: 24,
+          }}>
+          <AlertCircle size={36} color={colors.rose} />
+          <Text className="mt-3 text-center font-montserrat text-sm text-charcoal-pure">
+            Không thể tải hồ sơ.
           </Text>
-        </Pressable>
+          <Pressable
+            className="mt-4 rounded-xl bg-charcoal-pure px-5 py-3"
+            onPress={() => profileQuery.refetch()}>
+            <Text className="font-montserrat-semibold text-sm text-white">
+              Thử lại
+            </Text>
+          </Pressable>
+        </RefreshableScrollView>
       </SafeAreaView>
     );
   }
 
   return (
     <View className="flex-1 bg-surface">
-      <ScrollView
+      <RefreshableScrollView
         contentContainerStyle={{ padding: 14, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}>
         <ProfileContent
@@ -97,7 +109,7 @@ export default function ProfileScreen() {
           profile={profileQuery.data}
           onShowAlert={showAlert}
         />
-      </ScrollView>
+      </RefreshableScrollView>
       <AlertDialog open={isShowAlert}>
         <AlertDialogContent className="bg-white">
           <AlertDialogHeader>
