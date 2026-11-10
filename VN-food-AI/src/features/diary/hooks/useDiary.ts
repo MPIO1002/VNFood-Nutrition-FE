@@ -1,31 +1,70 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { MonthlyDiaryItem } from "@/api/generated/model";
+import { useProfileQuery } from "@/features/profile";
+import { ViewToken } from "@legendapp/list/react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDiaryByMonthInfiniteQuery } from "./diary.queries";
+
+type MonthItem = {
+  key: string;
+  data?: MonthlyDiaryItem;
+};
 
 export const useDiary = () => {
-  const INITIAL = 3;
-  const BATCH = 3;
-  const MAX_MONTHS = 12;
+  const LIMIT = 3;
 
-  const monthKey = useCallback((offset: number) => {
-    const now = new Date();
-    const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-  }, []);
-
-  const shiftMonth = useCallback((key: string, back: number) => {
-    const [y, m] = key.split("-").map(Number);
-    const d = new Date(y, m - 1 - back, 1);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-  }, []);
-
-  const [months, setMonths] = useState<string[]>(() =>
-    Array.from({ length: INITIAL }, (_, i) => monthKey(INITIAL - 1 - i)),
+  const { data: me } = useProfileQuery();
+  const userRegisterDate = useMemo(
+    () => (me?.created_at ? new Date(me.created_at) : undefined),
+    [me?.created_at],
   );
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    error,
+    isFetchingNextPage,
+  } = useDiaryByMonthInfiniteQuery({
+    startMonth: new Date(),
+    limit: LIMIT,
+    userRegisterDate: userRegisterDate,
+    wait: !!userRegisterDate,
+  });
+
+  const getMonthKey = useCallback((startMonth: string) => {
+    const [y, m, d] = startMonth.split("-").map(Number);
+
+    const date = new Date(y, m - 1, d);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  }, []);
+
+  const months = useMemo<MonthItem[]>(() => {
+    if (data && userRegisterDate) {
+      const rev = [...data.pages].reverse().flatMap((p) => p.data);
+      const res: MonthItem[] = [];
+
+      for (let i of rev) {
+        const [_y, m, _d] = i.month_start.split("-");
+        if (userRegisterDate.getMonth() + 1 > Number(m)) {
+          continue;
+        }
+
+        res.push({
+          key: getMonthKey(i.month_start),
+          data: i,
+        });
+      }
+      return res;
+    }
+    return [];
+  }, [data]);
+
   const [activeMonths, setActiveMonths] = useState<Set<string>>(
-    () => new Set([monthKey(0)]),
+    new Set(months.slice(1).map((m) => m.key)),
   );
 
   const readyRef = useRef(false);
-  const loadingRef = useRef(false);
   const monthsLengthRef = useRef(months.length);
 
   useEffect(() => {
@@ -33,38 +72,32 @@ export const useDiary = () => {
   }, [months]);
 
   const onLoadOlderMonths = useCallback(
-    (setIsLoading?: (isLoading: boolean) => void) => {
-      if (!readyRef.current || loadingRef.current) return;
-      if (monthsLengthRef.current >= MAX_MONTHS) return;
+    async ({
+      onError,
+    }: {
+      onError?: (e: Error | null) => void;
+    } = {}) => {
+      if (!hasNextPage) return;
+      if (!readyRef.current || isFetching) return;
 
-      loadingRef.current = true;
-      setIsLoading?.(true);
-
-      setMonths((prev) => {
-        if (prev.length >= MAX_MONTHS) return prev;
-        const older = Array.from({ length: BATCH }, (_, i) =>
-          shiftMonth(prev[0], BATCH - i),
-        );
-        return [...older, ...prev];
-      });
-
-      setTimeout(() => {
-        loadingRef.current = false;
-        setIsLoading?.(false);
-      }, 400);
+      try {
+        await fetchNextPage();
+      } catch {
+        onError?.(error);
+      }
     },
-    [],
+    [hasNextPage, fetchNextPage, isFetching],
   );
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 30 }).current;
   const onViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: any[] }) => {
+    ({ viewableItems }: { viewableItems: ViewToken<MonthItem>[] }) => {
       setActiveMonths((prev) => {
         const next = new Set(prev);
         let changed = false;
         for (const v of viewableItems) {
-          if (v.isViewable && !next.has(v.item)) {
-            next.add(v.item);
+          if (v.isViewable && !next.has(v.item.key)) {
+            next.add(v.item.key);
             changed = true;
           }
         }
@@ -74,13 +107,11 @@ export const useDiary = () => {
   ).current;
 
   return {
-    INITIAL,
-    BATCH,
-    MAX_MONTHS,
+    LIMIT,
+    isFetchingNextPage,
     months,
     activeMonths,
     readyRef,
-    loadingRef,
     viewabilityConfig,
     onViewableItemsChanged,
     onLoadOlderMonths,

@@ -1,13 +1,17 @@
+import { MonthlyDiaryItem } from "@/api/generated/model";
+import { useMemo } from "react";
 import { Text, useWindowDimensions, View } from "react-native";
 
 export interface MonthViewProps {
   month: string;
+  data?: MonthlyDiaryItem;
   active: boolean;
   onFinishedLoading?: () => void;
 }
 
 export function MonthView({
   month,
+  data,
   active,
   onFinishedLoading,
 }: MonthViewProps) {
@@ -17,15 +21,17 @@ export function MonthView({
   const offset = new Date(y, m - 1, 1).getDay();
   const daysInMonth = new Date(y, m, 0).getDate();
 
-  // const { data } = useQuery({
-  //   queryKey: ['photos-month', month],
-  //   queryFn: () => fetchMonth(month),
-  //   enabled: active,                       // <- only fetch once visible
-  //   staleTime: 1000 * 60 * 10,
-  //   gcTime: 1000 * 60 * 60 * 24,
-  // })
+  const daysHaveData = useMemo<Set<number>>(() => {
+    const days =
+      data?.days.map((data) => {
+        const [_y, _m, d] = data.date.split("-");
+        const day = Number(d);
 
-  // const byDay = new Map(data?.map((p) => [p.day, p]))
+        return isNaN(day) ? -1 : day;
+      }) ?? [];
+
+    return new Set(days);
+  }, [data]);
 
   const getMonthLabel = () => {
     const monthNames = [
@@ -68,50 +74,45 @@ export function MonthView({
           </View>
         ))}
       </View>
-      <View className="flex-row flex-wrap gap-1 w-full pl-2 py-2">
-        {Array.from({ length: offset }).map((_, i) => (
-          <View
-            key={`e${i}`}
-            className="justify-center items-center mb-2"
-            style={{ width: cellSize, height: cellSize }}>
+      {data ? (
+        <View className="flex-row flex-wrap gap-1 w-full pl-2 py-2">
+          {Array.from({ length: offset }).map((_, i) => (
             <View
-              className="rounded-full bg-gray-500"
-              style={{ width: cellSize / 8, height: cellSize / 8 }}
-            />
-          </View>
-        ))}
-
-        {Array.from({ length: daysInMonth }, (_, i) => {
-          const day = i + 1;
-          // const photo = byDay.get(day)
-          return (
-            <View
-              key={day}
-              className="mb-2"
-              style={{
-                width: cellSize,
-                height: cellSize,
-                padding: 1,
-              }}>
-              {/* {photo ? (
-                <Image
-                  source={{ uri: photo.thumbUrl, cacheKey: photo.id + '_thumb' }}
-                  placeholder={photo.blurhash ? { blurhash: photo.blurhash } : undefined}
-                  cachePolicy="memory-disk"
-                  contentFit="cover"
-                  recyclingKey={photo.id}
-                  style={{ flex: 1, borderRadius: 4 }}
-                />
-              ) : (
-                <Text style={{ color: '#666', fontSize: 11 }}>{day}</Text>
-              )} */}
-              <View className="w-full h-full rounded-xl border justify-center items-center">
-                <Text className="font-montserrat">{day}</Text>
-              </View>
+              key={`e${i}`}
+              className="justify-center items-center mb-2"
+              style={{ width: cellSize, height: cellSize }}>
+              <View
+                className="rounded-full bg-gray-500"
+                style={{ width: cellSize / 8, height: cellSize / 8 }}
+              />
             </View>
-          );
-        })}
-      </View>
+          ))}
+
+          {Array.from({ length: daysInMonth }, (_, i) => {
+            const day = i + 1;
+            return (
+              <View
+                key={day}
+                className="mb-2"
+                style={{
+                  width: cellSize,
+                  height: cellSize,
+                  padding: 1,
+                }}>
+                <View className="w-full h-full rounded-xl border justify-center items-center">
+                  {daysHaveData.has(day) ? (
+                    <Text className="font-montserrat">yes</Text>
+                  ) : (
+                    <Text className="font-montserrat">no</Text>
+                  )}
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      ) : (
+        <></>
+      )}
     </View>
   );
 }
