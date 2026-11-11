@@ -1,8 +1,18 @@
 import { PressScale } from "@/components/PressScale";
 import { ChevronRight, Flame, Utensils } from "lucide-react-native";
+import { useEffect } from "react";
 import { Text, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedProps,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import Svg, { Circle } from "react-native-svg";
 import { MacroCard } from "./MacroCard";
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 interface CalorieRingProps {
   goal: number;
@@ -15,6 +25,7 @@ interface CalorieRingProps {
   fatGoal?: number | null;
   burned?: number;
   className?: string;
+  animationKey?: number;
 }
 
 export function CalorieRing({
@@ -28,13 +39,28 @@ export function CalorieRing({
   fatGoal = 65,
   burned = 0,
   className,
+  animationKey,
 }: CalorieRingProps) {
   const remaining = goal - consumed;
   const RING_R = 82;
   const RING_STROKE = 15;
   const CIRCUMFERENCE = 2 * Math.PI * RING_R;
   const PROGRESS_RATIO = goal > 0 ? Math.min(consumed / goal, 1) : 0;
-  const STROKE_DASHOFFSET = CIRCUMFERENCE * (1 - PROGRESS_RATIO);
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = withSequence(
+      withTiming(0, { duration: 0 }),
+      withTiming(PROGRESS_RATIO, {
+        duration: 1000,
+        easing: Easing.out(Easing.cubic),
+      }),
+    );
+  }, [PROGRESS_RATIO, animationKey, progress]);
+
+  const animatedCircleProps = useAnimatedProps(() => ({
+    strokeDashoffset: CIRCUMFERENCE * (1 - progress.value),
+  }));
 
   return (
     <View className={`bg-canvas-white rounded-[24px] p-5 shadow-sm border border-border-subtle mb-6 ${className || ''}`}>
@@ -59,7 +85,7 @@ export function CalorieRing({
       <View className="items-center justify-center my-2 relative">
         <Svg width={200} height={200} viewBox="0 0 200 200" style={{ transform: [{ rotate: '-90deg' }] }}>
           <Circle cx={100} cy={100} r={RING_R} fill="none" stroke="#F4F4F5" strokeWidth={RING_STROKE} />
-          <Circle
+          <AnimatedCircle
             cx={100}
             cy={100}
             r={RING_R}
@@ -67,8 +93,8 @@ export function CalorieRing({
             stroke="#18181B"
             strokeWidth={RING_STROKE}
             strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={STROKE_DASHOFFSET}
             strokeLinecap="round"
+            animatedProps={animatedCircleProps}
           />
         </Svg>
         <View className="absolute items-center justify-center pointer-events-none">
