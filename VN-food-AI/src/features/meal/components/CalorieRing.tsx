@@ -6,6 +6,7 @@ import Animated, {
   Easing,
   useAnimatedProps,
   useSharedValue,
+  withSequence,
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Circle } from "react-native-svg";
@@ -24,6 +25,7 @@ interface CalorieRingProps {
   fatGoal?: number | null;
   burned?: number;
   className?: string;
+  animationKey?: number;
 }
 
 export function CalorieRing({
@@ -37,6 +39,7 @@ export function CalorieRing({
   fatGoal = 65,
   burned = 0,
   className,
+  animationKey,
 }: CalorieRingProps) {
   const remaining = goal - consumed;
   const RING_R = 82;
@@ -46,11 +49,14 @@ export function CalorieRing({
   const progress = useSharedValue(0);
 
   useEffect(() => {
-    progress.value = withTiming(PROGRESS_RATIO, {
-      duration: 1000,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [PROGRESS_RATIO, progress]);
+    progress.value = withSequence(
+      withTiming(0, { duration: 0 }),
+      withTiming(PROGRESS_RATIO, {
+        duration: 1000,
+        easing: Easing.out(Easing.cubic),
+      }),
+    );
+  }, [PROGRESS_RATIO, animationKey, progress]);
 
   const animatedCircleProps = useAnimatedProps(() => ({
     strokeDashoffset: CIRCUMFERENCE * (1 - progress.value),

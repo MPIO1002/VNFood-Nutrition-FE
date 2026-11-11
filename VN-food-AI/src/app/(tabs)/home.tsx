@@ -108,6 +108,7 @@ export default function HomeScreen() {
           <CalorieRing
             goal={goal}
             consumed={consumed}
+            animationKey={dailyMealsQuery.dataUpdatedAt}
             protein={dailyMeals?.total_protein_g}
             proteinGoal={dailyMeals?.target_protein_g}
             carbs={dailyMeals?.total_carb_g}
