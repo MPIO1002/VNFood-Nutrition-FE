@@ -4,11 +4,15 @@
  */
 
 import { PressScale } from "@/components/PressScale";
+import { RefreshableScrollView } from "@/components/RefreshableScrollView";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthContext } from "@/features/auth";
 import {
   CalorieRing,
   DailyMealList,
   useDailyMealsQuery,
 } from "@/features/meal";
+import { CalorieRingSkeleton } from "@/features/meal/components/skeleton";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import {
@@ -57,14 +61,16 @@ const HOW_STEPS = [
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function HomeScreen() {
   const router = useRouter();
+  const { currentUser } = useAuthContext();
   const dailyMealsQuery = useDailyMealsQuery();
   const dailyMeals = dailyMealsQuery.data;
   const consumed = dailyMeals?.total_calories ?? 0;
   const goal = dailyMeals?.target_kcal_per_day ?? 2100;
+  const displayName = currentUser?.full_name?.trim() || "bạn";
 
   return (
     <View className="flex-1 bg-surface">
-      <ScrollView
+      <RefreshableScrollView
         className="flex-1 bg-surface"
         contentContainerStyle={{
           paddingHorizontal: 16,
@@ -77,30 +83,41 @@ export default function HomeScreen() {
           <View className="flex-row items-center gap-2.5 flex-1">
             <View className="flex-1 min-w-0">
               <Text className="font-montserrat-semibold text-base text-charcoal-pure tracking-tight">
-                Chào Phúc, sẵn sàng chưa?
+                Chào {displayName}, sẵn sàng chưa?
               </Text>
-              <Text className="font-montserrat text-xs text-zinc-500 mt-0.5">
-                Mục tiêu hôm nay:{" "}
-                <Text className="font-montserrat-bold text-charcoal-pure">
-                  {goal.toLocaleString()} kcal
+              <View className="mt-0.5 flex-row items-center">
+                <Text className="font-montserrat text-xs text-zinc-500">
+                  Mục tiêu hôm nay:{" "}
                 </Text>
-              </Text>
+                {dailyMealsQuery.isLoading ? (
+                  <Skeleton className="h-3 w-16" />
+                ) : (
+                  <Text className="font-montserrat-bold text-xs text-charcoal-pure">
+                    {goal.toLocaleString()} kcal
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
         </View>
 
         {/* Calorie Ring Hero Card */}
-        <CalorieRing
-          goal={goal}
-          consumed={consumed}
-          protein={dailyMeals?.total_protein_g}
-          proteinGoal={dailyMeals?.target_protein_g}
-          carbs={dailyMeals?.total_carb_g}
-          carbsGoal={dailyMeals?.target_carb_g}
-          fat={dailyMeals?.total_fat_g}
-          fatGoal={dailyMeals?.target_fat_g}
-          burned={320}
-        />
+        {dailyMealsQuery.isLoading ? (
+          <CalorieRingSkeleton />
+        ) : (
+          <CalorieRing
+            goal={goal}
+            consumed={consumed}
+            animationKey={dailyMealsQuery.dataUpdatedAt}
+            protein={dailyMeals?.total_protein_g}
+            proteinGoal={dailyMeals?.target_protein_g}
+            carbs={dailyMeals?.total_carb_g}
+            carbsGoal={dailyMeals?.target_carb_g}
+            fat={dailyMeals?.total_fat_g}
+            fatGoal={dailyMeals?.target_fat_g}
+            burned={0}
+          />
+        )}
 
         {/* Dark Banner */}
         <View className="rounded-[24px] overflow-hidden bg-charcoal-pure border border-zinc-800 shadow-lg relative">
@@ -213,7 +230,7 @@ export default function HomeScreen() {
         />
 
         <View className="h-28" />
-      </ScrollView>
+      </RefreshableScrollView>
     </View>
   );
 }
