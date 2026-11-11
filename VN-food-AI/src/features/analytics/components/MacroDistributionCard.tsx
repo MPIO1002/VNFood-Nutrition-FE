@@ -20,13 +20,13 @@ export function MacroDistributionCard({
       Icon: Dumbbell,
     },
     {
-      label: "Tinh bột (Carbs)",
+      label: "Tinh bột (Carb)",
       grams: metrics.totalCarbGrams,
       color: "#F59E0B",
       Icon: Wheat,
     },
     {
-      label: "Chất béo (Lipid)",
+      label: "Chất béo (Fat)",
       grams: metrics.totalFatGrams,
       color: "#F43F5E",
       Icon: Droplets,

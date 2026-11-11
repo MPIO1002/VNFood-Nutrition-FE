@@ -148,7 +148,7 @@ export function CalorieRing({
           }}
         />
         <MacroCard
-          label="Carbs"
+          label="Carb"
           value={carbs}
           goal={carbsGoal}
           colors={{
@@ -160,7 +160,7 @@ export function CalorieRing({
           }}
         />
         <MacroCard
-          label="Chất béo"
+          label="Fat"
           value={fat}
           goal={fatGoal}
           colors={{

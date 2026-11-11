@@ -7,6 +7,17 @@ function formatQuantity(quantity: number) {
   return Number.isInteger(quantity) ? quantity.toString() : quantity.toFixed(1);
 }
 
+function formatMealType(mealType: string) {
+  const labels: Record<string, string> = {
+    breakfast: "Bữa sáng",
+    lunch: "Bữa trưa",
+    dinner: "Bữa tối",
+    snack: "Bữa phụ",
+  };
+
+  return labels[mealType.toLowerCase()] ?? mealType;
+}
+
 function MealCard({ meal }: { meal: MealResponse }) {
   return (
     <View className="flex-row items-center gap-3 rounded-3xl border border-border-hairline bg-canvas-white p-4 shadow-sm">
@@ -35,7 +46,7 @@ function MealCard({ meal }: { meal: MealResponse }) {
         <Text
           className="mt-1 font-montserrat text-xs text-zinc-500"
           numberOfLines={1}>
-          {meal.meal_type} • {formatQuantity(meal.quantity)} phần
+          {formatMealType(meal.meal_type)} • {formatQuantity(meal.quantity)} phần
         </Text>
         <View className="mt-2 flex-row gap-1.5">
           <View className="rounded border border-slate-300 bg-slate-100 px-2 py-0.5">

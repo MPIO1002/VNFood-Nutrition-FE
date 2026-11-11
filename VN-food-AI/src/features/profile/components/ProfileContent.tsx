@@ -507,9 +507,9 @@ export function ProfileContent({
         </View>
         <View className="mt-4 flex-row gap-2">
           {[
-            ["Carbs", "45%", colors.orange, "#FFF7E6"],
-            ["Đạm", "30%", colors.blue, "#F1F5F9"],
-            ["Chất béo", "25%", colors.rose, "#FFF1F2"],
+            ["Carb", "45%", colors.orange, "#FFF7E6"],
+            ["Protein", "30%", colors.blue, "#F1F5F9"],
+            ["Fat", "25%", colors.rose, "#FFF1F2"],
           ].map(([label, percent, color, backgroundColor]) => (
             <View
               key={label}

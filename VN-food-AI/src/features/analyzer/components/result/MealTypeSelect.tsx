@@ -1,20 +1,13 @@
 import { Icon } from "@/components/ui/icon";
 import {
-  Option,
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectTrigger,
-} from "@/components/ui/select";
-import {
+  ClockIcon,
+  CoffeeIcon,
+  MoonIcon,
   SunIcon,
   SunriseIcon,
-  SunsetIcon,
-  UtensilsIcon,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
-import MealSelectItem, { MealSelectItemProps } from "./MealSelectItem";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
 
@@ -23,103 +16,169 @@ export interface MealTypeSelectProps {
   onMealTypeChange?: (type: MealType) => void;
 }
 
+const mealOptions = [
+  {
+    value: "breakfast",
+    label: "Sáng",
+    icon: SunriseIcon,
+    color: "#F59E0B",
+  },
+  {
+    value: "lunch",
+    label: "Trưa",
+    icon: SunIcon,
+    color: "#EA580C",
+  },
+  {
+    value: "dinner",
+    label: "Tối",
+    icon: MoonIcon,
+    color: "#818CF8",
+  },
+  {
+    value: "snack",
+    label: "Phụ",
+    icon: CoffeeIcon,
+    color: "#10B981",
+  },
+] as const satisfies readonly {
+  value: MealType;
+  label: string;
+  icon: typeof SunriseIcon;
+  color: string;
+}[];
+
+const styles = StyleSheet.create({
+  option: {
+    minHeight: 48,
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderRadius: 16,
+    paddingHorizontal: 6,
+  },
+  selectedOption: {
+    backgroundColor: "#18181B",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  disabledOption: {
+    opacity: 0.6,
+  },
+  optionLabel: {
+    color: "#18181B",
+    fontFamily: "Montserrat_400Regular",
+  },
+  selectedOptionLabel: {
+    color: "#FFFFFF",
+    fontFamily: "Montserrat_600SemiBold",
+  },
+});
+
+function getSuggestedMealType(date: Date): MealType {
+  const hour = date.getHours();
+
+  if (hour >= 5 && hour < 11) return "breakfast";
+  if (hour >= 11 && hour < 15) return "lunch";
+  if (hour >= 17 && hour < 22) return "dinner";
+  return "snack";
+}
+
 export default function MealTypeSelect({
   disabled = false,
   onMealTypeChange,
 }: MealTypeSelectProps) {
-  const options: MealSelectItemProps[] = [
-    {
-      value: "breakfast",
-      label: "Bữa sáng",
-      textColor: "#92f6fc",
-      checkColor: "#92f6fc",
-      icon: SunriseIcon,
-      iconColor: "#92f6fc",
-      iconFillColor: "yellow",
-      iconSize: 15,
-      className: "bg-orange-300 rounded-none",
-    },
-    {
-      value: "lunch",
-      label: "Bữa trưa",
-      textColor: "#2391FF",
-      checkColor: "#2391FF",
-      icon: SunIcon,
-      iconColor: "#2391FF",
-      iconFillColor: "orange",
-      iconSize: 15,
-      className: "bg-yellow-300 rounded-none",
-    },
-    {
-      value: "dinner",
-      label: "Bữa tối",
-      textColor: "#e8817f",
-      checkColor: "#e8817f",
-      icon: SunsetIcon,
-      iconColor: "#e8817f",
-      iconFillColor: "orange",
-      iconSize: 15,
-      className: "bg-[#5a336e] rounded-none",
-    },
-    {
-      value: "snack",
-      label: "Bữa phụ",
-      textColor: "white",
-      checkColor: "white",
-      icon: UtensilsIcon,
-      iconColor: "white",
-      iconFillColor: "white",
-      iconSize: 15,
-      className: "bg-black rounded-none",
-    },
-  ];
-
-  const [mealType, setMealType] = useState<Option>(options[0]);
-  const selected = options.find((o) => o.value === mealType?.value);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+  const [mealType, setMealType] = useState<MealType>(() =>
+    getSuggestedMealType(new Date()),
+  );
+  const [isManuallySelected, setIsManuallySelected] = useState(false);
 
   useEffect(() => {
-    onMealTypeChange?.((mealType?.value as MealType) ?? "breakfast");
-  }, [mealType]);
+    const interval = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now);
+
+      if (!isManuallySelected) {
+        setMealType(getSuggestedMealType(now));
+      }
+    }, 30_000);
+
+    return () => clearInterval(interval);
+  }, [isManuallySelected]);
+
+  useEffect(() => {
+    onMealTypeChange?.(mealType);
+  }, [mealType, onMealTypeChange]);
+
+  const formattedTime = currentTime.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 
   return (
-    <View className="w-full justify-center items-center p-3 bg-white rounded-3xl shadow-sm border border-zinc-100 gap-4">
-      <View className="flex-row justify-center items-center">
-        <View className="flex-1 w-full">
-          <Text className="font-montserrat-semibold">Bữa ăn này là</Text>
+    <View className="w-full gap-3 rounded-[28px] border border-zinc-200 bg-white p-3 shadow-sm mb-5">
+      <View className="flex-row items-center justify-between gap-2 px-1">
+        <View className="min-w-0 flex-1 flex-row items-center gap-2">
+          <Icon as={ClockIcon} color="#18181B" size={22} />
+          <Text
+            numberOfLines={1}
+            className="shrink font-montserrat-semibold text-[12px] text-zinc-900">
+            Phân loại bữa ăn
+          </Text>
         </View>
-        <View>
-          <Select
-            disabled={disabled}
-            onValueChange={setMealType}
-            className={`${disabled && "opacity-70"}`}>
-            <SelectTrigger
-              chevronColor={selected?.iconColor}
-              className={`w-[150px] border-0 ${selected?.className} rounded-full`}>
-              <View className="flex-row items-center gap-2">
-                {selected?.icon && (
-                  <Icon
-                    as={selected?.icon}
-                    color={selected.iconColor ?? "black"}
-                    fill={selected.iconFillColor ?? "black"}
-                    size={selected.iconSize ?? 10}
-                  />
-                )}
-                <Text
-                  className="font-montserrat"
-                  style={{ color: selected?.textColor }}>
-                  {selected?.label ?? "Chọn bữa ăn"}
-                </Text>
-              </View>
-            </SelectTrigger>
-            <SelectContent className="w-[160px] bg-white p-0 overflow-hidden">
-              <SelectGroup>
-                {options.map((o) => (
-                  <MealSelectItem key={o.value} {...o} />
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+        <View className="shrink-0 flex-row items-center gap-2 rounded-full border border-zinc-200 bg-zinc-100 px-3 py-2">
+          <View className="size-2 rounded-full bg-amber-500" />
+          <Text className="font-montserrat text-xs text-zinc-600">
+            {formattedTime} •{" "}
+            {isManuallySelected ? "Đã chọn thủ công" : "Đề xuất tự động"}
+          </Text>
         </View>
+      </View>
+
+      <View
+        accessibilityRole="radiogroup"
+        className="flex-row items-center justify-between rounded-[24px] border border-zinc-200 bg-zinc-100 p-1.5">
+        {mealOptions.map((option) => {
+          const isSelected = mealType === option.value;
+
+          return (
+            <Pressable
+              key={option.value}
+              accessibilityRole="radio"
+              accessibilityLabel={`Bữa ${option.label.toLowerCase()}`}
+              accessibilityState={{ checked: isSelected, disabled }}
+              disabled={disabled}
+              onPress={() => {
+                setIsManuallySelected(true);
+                setMealType(option.value);
+              }}
+              style={[
+                styles.option,
+                isSelected && styles.selectedOption,
+                disabled && styles.disabledOption,
+              ]}>
+              <Icon
+                as={option.icon}
+                color={option.color}
+                size={21}
+              />
+              <Text
+                style={[
+                  styles.optionLabel,
+                  isSelected && styles.selectedOptionLabel,
+                ]}>
+                {option.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
