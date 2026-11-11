@@ -1,118 +1,119 @@
-import { MonthlyDiaryItem } from "@/api/generated/model";
+import { DayCellResponse, MonthlyDiaryItem } from "@/api/generated/model";
+import { Badge } from "@/components/ui/badge";
+import { Icon } from "@/components/ui/icon";
+import { dateUtils } from "@/lib/utils";
+import { YearMonth, YearMonthDay } from "@/types/date";
+import { Image } from "expo-image";
+import { CircleIcon } from "lucide-react-native";
 import { useMemo } from "react";
 import { Text, useWindowDimensions, View } from "react-native";
 
 export interface MonthViewProps {
-  month: string;
+  month: YearMonth;
   data?: MonthlyDiaryItem;
-  active: boolean;
-  onFinishedLoading?: () => void;
 }
 
-export function MonthView({
-  month,
-  data,
-  active,
-  onFinishedLoading,
-}: MonthViewProps) {
+export function MonthView({ month, data }: MonthViewProps) {
   const { width } = useWindowDimensions();
   const cellSize = (width - 50) / 7;
-  const [y, m] = month.split("-").map(Number);
+  const [y, m] = dateUtils.getFromDateFormat(month).map(Number);
   const offset = new Date(y, m - 1, 1).getDay();
   const daysInMonth = new Date(y, m, 0).getDate();
 
-  const daysHaveData = useMemo<Set<number>>(() => {
-    const days =
-      data?.days.map((data) => {
-        const [_y, _m, d] = data.date.split("-");
+  const dayHasData = useMemo<Map<number, DayCellResponse | null>>(() => {
+    const d =
+      data?.days.map((data): [number, DayCellResponse | null] => {
+        const [_y, _m, d] = dateUtils.getFromDateFormat(
+          data.date as YearMonthDay,
+        );
         const day = Number(d);
 
-        return isNaN(day) ? -1 : day;
+        return isNaN(day) ? [-1, null] : [day, data];
       }) ?? [];
 
-    return new Set(days);
+    return new Map(d);
   }, [data]);
 
-  const getMonthLabel = () => {
-    const monthNames = [
-      "January",
-      "Feburary",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-
-    const monthLabel =
-      isNaN(m) || !monthNames[m - 1] ? "Unknown Month" : monthNames[m - 1];
-
-    return `${monthLabel} ${y}`;
+  const loadImageCell = (day: number) => {
+    const data = dayHasData.get(day);
+    return data && data.representative_image_url ? (
+      <View className="rounded-xl overflow-hidden h-full w-full">
+        <Image
+          source={{
+            uri: data.representative_image_url,
+          }}
+          cachePolicy="memory"
+          style={{ width: "100%", height: "100%" }}
+          contentFit="cover"
+          recyclingKey={`${y}-${m}-${day}-img`}
+        />
+      </View>
+    ) : (
+      <View className="w-full h-full bg-gray-400" />
+    );
   };
 
   return (
     <View className="justify-center w-full rounded-3xl bg-surface shadow shadow-slate-800 items-center overflow-hidden">
-      <View className="p-2 pl-5 justify-center bg-black w-full">
-        <Text className="font-montserrat-bold text-white">
-          {getMonthLabel()}
+      <View className="p-2 pl-5 items-center mb-2 w-full flex-row">
+        <Text className="flex-1 font-montserrat-bold text-black text-lg">
+          {`${dateUtils.getMonthLabel(m)} năm ${y}`}
         </Text>
+        <Badge className="bg-black">
+          <Icon as={CircleIcon} size={10} fill={"#FFED29"} color={"#FFED29"} />
+          <Text className="font-montserrat-medium text-sm text-white">
+            {`${data?.total_kcal ?? 0} kcal/ngày`}
+          </Text>
+        </Badge>
       </View>
       <View className="flex-row flex-wrap gap-1 w-full pl-2 py-2">
-        {Array.from({ length: 7 }).map((_, i) => (
+        {Array.from({ length: offset }).map((_, i) => (
           <View
             key={`e${i}`}
-            className="justify-center items-center"
-            style={{ width: cellSize, height: cellSize }}>
-            <Text className="font-montserrat">
-              {i === 0 ? "Sun" : `T${i + 1}`}
-            </Text>
-          </View>
+            className="justify-center items-center mb-2"
+            style={{ width: cellSize, height: cellSize }}
+          />
         ))}
-      </View>
-      {data ? (
-        <View className="flex-row flex-wrap gap-1 w-full pl-2 py-2">
-          {Array.from({ length: offset }).map((_, i) => (
-            <View
-              key={`e${i}`}
-              className="justify-center items-center mb-2"
-              style={{ width: cellSize, height: cellSize }}>
-              <View
-                className="rounded-full bg-gray-500"
-                style={{ width: cellSize / 8, height: cellSize / 8 }}
-              />
-            </View>
-          ))}
 
-          {Array.from({ length: daysInMonth }, (_, i) => {
-            const day = i + 1;
-            return (
-              <View
-                key={day}
-                className="mb-2"
-                style={{
-                  width: cellSize,
-                  height: cellSize,
-                  padding: 1,
-                }}>
-                <View className="w-full h-full rounded-xl border justify-center items-center">
-                  {daysHaveData.has(day) ? (
-                    <Text className="font-montserrat">yes</Text>
-                  ) : (
-                    <Text className="font-montserrat">no</Text>
-                  )}
+        {Array.from({ length: daysInMonth }, (_, i) => {
+          const day = i + 1;
+          return data ? (
+            <View
+              key={day}
+              className="mb-2"
+              style={{
+                width: cellSize,
+                height: cellSize,
+                padding: 1,
+              }}>
+              {dayHasData.has(day) ? (
+                loadImageCell(day)
+              ) : (
+                <View
+                  key={`e${i}`}
+                  className="justify-center items-center mb-2"
+                  style={{ width: cellSize, height: cellSize }}>
+                  <View
+                    className="rounded-full bg-gray-500"
+                    style={{ width: cellSize / 6, height: cellSize / 6 }}
+                  />
                 </View>
-              </View>
-            );
-          })}
-        </View>
-      ) : (
-        <></>
-      )}
+              )}
+            </View>
+          ) : (
+            <View
+              key={day}
+              className="mb-2"
+              style={{
+                width: cellSize,
+                height: cellSize,
+                padding: 1,
+              }}>
+              <View className="w-full h-full rounded-xl border-0 justify-center items-center bg-gray-300" />
+            </View>
+          );
+        })}
+      </View>
     </View>
   );
 }

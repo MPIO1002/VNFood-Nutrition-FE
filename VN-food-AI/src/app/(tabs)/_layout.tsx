@@ -161,7 +161,7 @@ export default function TabsLayout() {
       />
       <Tabs
         tabBar={(props) => <CustomTabBar {...props} />}
-        screenOptions={{ headerShown: false }}>
+        screenOptions={{ headerShown: false, animation: "shift" }}>
         <Tabs.Screen name="home" />
         <Tabs.Screen name="analytics" />
         <Tabs.Screen name="diary" />

@@ -3,7 +3,8 @@ import {
   useMonthlyDiaryApiV1DiaryMonthlyGet,
 } from "@/api/generated";
 import { MonthlyDiaryApiV1DiaryMonthlyGetParams } from "@/api/generated/model";
-import { toYMDFormat } from "@/lib/utils";
+import { dateUtils } from "@/lib/utils";
+import { YearMonthDay } from "@/types/date";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 export const diaryQueryKeys = {
@@ -28,14 +29,15 @@ export const useDiaryByMonthQuery = (
 };
 
 const getNextMonthRange = (
-  startMonth: string,
+  startMonth: YearMonthDay,
   limit: number,
   userRegisterDate?: Date,
 ): MonthlyDiaryApiV1DiaryMonthlyGetParams | null => {
   if (!userRegisterDate) return null;
 
-  const [y, m, _] = startMonth.split("-");
-  const endDate = new Date(Number(y), Number(m) - 1, 1);
+  const [y, m, _] = dateUtils.getFromDateFormat(startMonth).map(Number);
+  // minus one for convert real month to 0-based index + one for step back one month
+  const endDate = new Date(y, m - 2, 1);
   const startDate = new Date(
     endDate.getFullYear(),
     endDate.getMonth() - limit,
@@ -44,10 +46,10 @@ const getNextMonthRange = (
   const capDate = new Date(userRegisterDate);
   capDate.setDate(1);
 
-  if (startDate < capDate) return null;
+  if (startDate < capDate && endDate < capDate) return null;
   return {
-    start_date: toYMDFormat(startDate),
-    end_date: toYMDFormat(endDate),
+    start_date: dateUtils.toYMDFormat(startDate),
+    end_date: dateUtils.toYMDFormat(endDate),
   };
 };
 
@@ -55,12 +57,12 @@ export const useDiaryByMonthInfiniteQuery = ({
   startMonth,
   limit,
   userRegisterDate,
-  wait,
+  enabled,
 }: {
   startMonth: Date;
   limit: number;
   userRegisterDate?: Date;
-  wait?: boolean;
+  enabled?: boolean;
 }) => {
   const startDate = new Date(
     startMonth.getFullYear(),
@@ -74,8 +76,8 @@ export const useDiaryByMonthInfiniteQuery = ({
   );
 
   const initial: MonthlyDiaryApiV1DiaryMonthlyGetParams = {
-    start_date: toYMDFormat(startDate),
-    end_date: toYMDFormat(endDate),
+    start_date: dateUtils.toYMDFormat(startDate),
+    end_date: dateUtils.toYMDFormat(endDate),
   };
 
   return useInfiniteQuery({
@@ -87,7 +89,11 @@ export const useDiaryByMonthInfiniteQuery = ({
       monthlyDiaryApiV1DiaryMonthlyGet(pageParam, undefined, signal),
     initialPageParam: initial,
     getNextPageParam: (_lastPage, _allPage, lastPageParam) =>
-      getNextMonthRange(lastPageParam.start_date, limit, userRegisterDate),
-    enabled: wait,
+      getNextMonthRange(
+        lastPageParam.start_date as YearMonthDay,
+        limit,
+        userRegisterDate,
+      ),
+    enabled: enabled,
   });
 };
