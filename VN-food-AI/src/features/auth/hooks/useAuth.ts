@@ -17,6 +17,7 @@ import { ErrorType } from "@/api/mutator/axios-instance";
 import { APIMutatorOptions } from "@/api/types/api";
 import { profileQueryKeys } from "@/features/profile/hooks/profile.queries";
 import { useQueryClient } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { useCallback } from "react";
 import {
   authQueryKeys,
@@ -175,6 +176,8 @@ export const useAuth = () => {
         await clearAuthSession();
         queryClient.removeQueries({ queryKey: authQueryKeys.currentUser() });
         queryClient.removeQueries({ queryKey: profileQueryKeys.current() });
+        await Image.clearMemoryCache();
+
         options?.onSuccess?.();
       } catch (e) {
         const error = e as ErrorType<HTTPValidationError>;
