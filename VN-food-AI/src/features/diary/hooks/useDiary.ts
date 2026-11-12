@@ -1,14 +1,10 @@
 import { MonthlyDiaryItem } from "@/api/generated/model";
+import { MonthlyMealItem } from "@/features/meal/type/meal";
 import { useProfileQuery } from "@/features/profile";
 import { dateUtils } from "@/lib/utils";
 import { YearMonth, YearMonthDay } from "@/types/date";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDiaryByMonthInfiniteQuery } from "./diary.queries";
-
-type MonthItem = {
-  key: YearMonth;
-  data?: MonthlyDiaryItem;
-};
 
 export const useDiary = () => {
   const LIMIT = 3;
@@ -65,13 +61,13 @@ export const useDiary = () => {
     if (data && userRegisterDate) {
       setMonths((prev) => {
         const monthlyData = [...data.pages].flatMap((p) => p.data);
-        lastMonths.current = dateUtils.convertToYMFormat(
+        lastMonths.current = dateUtils.convertYMDFormatToYMFormat(
           data.pages.at(-1)?.data.at(0)?.month_start as YearMonthDay,
         );
 
         const mp = new Map(prev);
         for (let i of monthlyData) {
-          const dateKey = dateUtils.convertToYMFormat(
+          const dateKey = dateUtils.convertYMDFormatToYMFormat(
             i.month_start as YearMonthDay,
           );
 
@@ -121,11 +117,11 @@ export const useDiary = () => {
     }
   };
 
-  const monthlyData: MonthItem[] = useMemo(
+  const monthlyData: MonthlyMealItem[] = useMemo(
     () =>
       [
         ...months.entries().map(
-          (i): MonthItem => ({
+          (i): MonthlyMealItem => ({
             key: i[0],
             data: i[1],
           }),

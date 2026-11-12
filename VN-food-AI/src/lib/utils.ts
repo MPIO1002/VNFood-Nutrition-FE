@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const dateUtils = {
   getFromDateFormat: (date: YearMonthDay | YearMonth) => {
-    return date.split("-");
+    return date?.split("-");
   },
   toYMDFormat: (d: Date): YearMonthDay => {
     const y = d.getFullYear();
@@ -21,11 +21,11 @@ export const dateUtils = {
     const m = String(d.getMonth() + 1).padStart(2, "0");
     return `${y}-${m}` as YearMonth;
   },
-  convertToYMFormat: (date: YearMonthDay) => {
+  convertYMDFormatToYMFormat: (date: YearMonthDay) => {
     const [y, m, _] = dateUtils.getFromDateFormat(date);
     return `${y}-${m}` as YearMonth;
   },
-  convertToYMDFormat: (date: YearMonth, day: Day) => {
+  convertYMFormatToYMDFormat: (date: YearMonth, day: Day) => {
     const [y, m] = dateUtils.getFromDateFormat(date);
     return `${y}-${m}-${day}` as YearMonthDay;
   },
@@ -59,5 +59,12 @@ export const dateUtils = {
         : monthNames[month - 1];
 
     return monthLabel;
+  },
+  formatTime: (date: Date) => {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  },
+  now: (): YearMonthDay => {
+    return dateUtils.toYMDFormat(new Date());
   },
 };

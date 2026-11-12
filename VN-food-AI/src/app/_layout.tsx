@@ -35,6 +35,10 @@ const AppScreens = () => {
             options={{ animation: "slide_from_bottom" }}
           />
           <Stack.Screen
+            name="meal_detail"
+            options={{ animation: "simple_push" }}
+          />
+          <Stack.Screen
             name="register"
             options={{ animation: "slide_from_right" }}
           />

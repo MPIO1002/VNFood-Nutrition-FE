@@ -1,5 +1,6 @@
+import { MealType } from "@/features/meal/type/meal";
 import { View } from "react-native";
-import MealTypeSelect, { MealType } from "./MealTypeSelect";
+import MealTypeSelect from "./MealTypeSelect";
 import { NutritionComponentList } from "./NutritionComponentList";
 import { NutritionSummary } from "./NutritionSummary";
 import { SaveMealButton } from "./SaveMealButton";

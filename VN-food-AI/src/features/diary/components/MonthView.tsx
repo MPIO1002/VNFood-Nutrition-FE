@@ -1,22 +1,24 @@
-import { DayCellResponse, MonthlyDiaryItem } from "@/api/generated/model";
+import { DayCellResponse } from "@/api/generated/model";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
+import { MonthlyMealItem } from "@/features/meal/type/meal";
 import { dateUtils } from "@/lib/utils";
-import { YearMonth, YearMonthDay } from "@/types/date";
+import { YearMonthDay } from "@/types/date";
 import { Image } from "expo-image";
 import { CircleIcon } from "lucide-react-native";
 import { useMemo } from "react";
-import { Text, useWindowDimensions, View } from "react-native";
+import { Pressable, Text, useWindowDimensions, View } from "react-native";
 
 export interface MonthViewProps {
-  month: YearMonth;
-  data?: MonthlyDiaryItem;
+  props: MonthlyMealItem;
+  onDayHasDataPress?: (date: YearMonthDay) => void;
 }
 
-export function MonthView({ month, data }: MonthViewProps) {
+export function MonthView({ props, onDayHasDataPress }: MonthViewProps) {
+  const { key, data } = props;
   const { width } = useWindowDimensions();
   const cellSize = (width - 50) / 7;
-  const [y, m] = dateUtils.getFromDateFormat(month).map(Number);
+  const [y, m] = dateUtils.getFromDateFormat(key).map(Number);
   const offset = new Date(y, m - 1, 1).getDay();
   const daysInMonth = new Date(y, m, 0).getDate();
 
@@ -36,8 +38,13 @@ export function MonthView({ month, data }: MonthViewProps) {
 
   const loadImageCell = (day: number) => {
     const data = dayHasData.get(day);
-    return data && data.representative_image_url ? (
-      <View className="rounded-xl overflow-hidden h-full w-full">
+
+    return data?.representative_image_url ? (
+      <Pressable
+        className="rounded-xl overflow-hidden h-full w-full"
+        onPress={() => {
+          onDayHasDataPress?.(data.date as YearMonthDay);
+        }}>
         <Image
           source={{
             uri: data.representative_image_url,
@@ -45,11 +52,15 @@ export function MonthView({ month, data }: MonthViewProps) {
           cachePolicy="memory"
           style={{ width: "100%", height: "100%" }}
           contentFit="cover"
-          recyclingKey={`${y}-${m}-${day}-img`}
         />
-      </View>
+      </Pressable>
     ) : (
-      <View className="w-full h-full bg-gray-400" />
+      <Pressable
+        className="w-full h-full bg-gray-400"
+        onPress={() => {
+          onDayHasDataPress?.(data?.date as YearMonthDay);
+        }}
+      />
     );
   };
 
