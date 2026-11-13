@@ -120,9 +120,9 @@ export default function DiaryScreen() {
                     color={"#9ca3af"}
                   />
                 </View>
-                <View className="flex-row rounded-full bg-white shadow shadow-slate-800 w-full justify-center items-center h-16 relative">
+                <View className="flex-row rounded-full bg-white shadow-sm shadow-slate-500/50 w-full justify-center items-center h-16 relative">
                   <View className="flex-row w-1/2 justify-center gap-2">
-                    <HeartIcon size={19} color={"#FFED29"} fill={"#FFED29"} />
+                    <HeartIcon size={19} fill={"#FFC928"} color={"#FFC928"} />
                     <View className="flex-row justify-center items-center gap-1">
                       <Text className="font-montserrat-bold">
                         {locketCaloCount}
