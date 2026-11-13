@@ -17,7 +17,7 @@ export interface MonthViewProps {
 export function MonthView({ props, onDayHasDataPress }: MonthViewProps) {
   const { key, data } = props;
   const { width } = useWindowDimensions();
-  const cellSize = (width - 50) / 7;
+  const cellSize = (width - 70) / 7;
   const [y, m] = dateUtils.getFromDateFormat(key).map(Number);
   const offset = new Date(y, m - 1, 1).getDay();
   const daysInMonth = new Date(y, m, 0).getDate();
