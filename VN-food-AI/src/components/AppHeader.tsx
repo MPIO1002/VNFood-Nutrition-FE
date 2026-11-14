@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import { Bell, LogOut, Settings, UserRoundIcon } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -44,7 +45,8 @@ export function AppHeader({
         <View className="flex-row items-center gap-2">
           <Pressable
             className="h-10 w-10 items-center justify-center rounded-full"
-            accessibilityLabel="Thông báo">
+            accessibilityLabel="Thông báo"
+            onPress={() => router.push("/meal_detail")}>
             <Bell size={22} color="#52525B" />
           </Pressable>
           <Pressable

@@ -1,52 +1,14 @@
 import { Icon } from "@/components/ui/icon";
-import {
-  ClockIcon,
-  CoffeeIcon,
-  MoonIcon,
-  SunIcon,
-  SunriseIcon,
-} from "lucide-react-native";
+import { MEAL_TYPE_OPTIONS } from "@/features/meal/constants/meal";
+import { MealType } from "@/features/meal/type/meal";
+import { ClockIcon } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-
-export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
 
 export interface MealTypeSelectProps {
   disabled?: boolean;
   onMealTypeChange?: (type: MealType) => void;
 }
-
-const mealOptions = [
-  {
-    value: "breakfast",
-    label: "Sáng",
-    icon: SunriseIcon,
-    color: "#F59E0B",
-  },
-  {
-    value: "lunch",
-    label: "Trưa",
-    icon: SunIcon,
-    color: "#EA580C",
-  },
-  {
-    value: "dinner",
-    label: "Tối",
-    icon: MoonIcon,
-    color: "#818CF8",
-  },
-  {
-    value: "snack",
-    label: "Phụ",
-    icon: CoffeeIcon,
-    color: "#10B981",
-  },
-] as const satisfies readonly {
-  value: MealType;
-  label: string;
-  icon: typeof SunriseIcon;
-  color: string;
-}[];
 
 const styles = StyleSheet.create({
   option: {
@@ -145,7 +107,7 @@ export default function MealTypeSelect({
       <View
         accessibilityRole="radiogroup"
         className="flex-row items-center justify-between rounded-[24px] border border-zinc-200 bg-zinc-100 p-1.5">
-        {mealOptions.map((option) => {
+        {Object.entries(MEAL_TYPE_OPTIONS).map(([_, option]) => {
           const isSelected = mealType === option.value;
 
           return (
@@ -164,11 +126,7 @@ export default function MealTypeSelect({
                 isSelected && styles.selectedOption,
                 disabled && styles.disabledOption,
               ]}>
-              <Icon
-                as={option.icon}
-                color={option.color}
-                size={21}
-              />
+              <Icon as={option.icon} color={option.color} size={21} />
               <Text
                 style={[
                   styles.optionLabel,

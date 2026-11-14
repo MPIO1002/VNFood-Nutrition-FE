@@ -3,8 +3,10 @@ import VerticalWavyDashedLine from "@/components/VerticalWavyDashedLine";
 import { MonthView } from "@/features/diary/components/MonthView";
 import { useDiary } from "@/features/diary/hooks/useDiary";
 import { dateUtils } from "@/lib/utils";
+import { YearMonthDay } from "@/types/date";
 import { LegendList } from "@legendapp/list/react-native";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import { useBottomTabBarHeight } from "expo-router/build/layouts/TabsClient.js";
 import {
   FlameIcon,
@@ -13,6 +15,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { Text, View } from "react-native";
+import { MealDetailScreenProps } from "../meal_detail";
 
 export default function DiaryScreen() {
   const tabBarHeight = useBottomTabBarHeight();
@@ -32,6 +35,13 @@ export default function DiaryScreen() {
   } = useDiary();
 
   const isEnd = isListReady && !hasNextPage && !isFetching && isDataReady;
+
+  const onDayHasDataPress = (date: YearMonthDay) => {
+    router.push({
+      pathname: "/meal_detail",
+      params: { date: date } satisfies MealDetailScreenProps,
+    });
+  };
 
   return (
     <View className="bg-surface w-full h-full">
@@ -136,7 +146,7 @@ export default function DiaryScreen() {
               </View>
             )}
             renderItem={({ item }) => (
-              <MonthView month={item.key} data={item.data} />
+              <MonthView props={item} onDayHasDataPress={onDayHasDataPress} />
             )}
           />
         </View>
