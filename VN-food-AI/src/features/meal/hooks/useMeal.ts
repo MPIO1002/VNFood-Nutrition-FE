@@ -1,6 +1,7 @@
 import { MealCreateRequest, MealResponse } from "@/api/generated/model";
 import { APIMutatorOptions } from "@/api/types/api";
 import { diaryQueryKeys } from "@/features/diary";
+import { dateUtils } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { mealQueryKeys, useCreateMealMutation } from "./meal.queries";
@@ -19,7 +20,7 @@ export const useMeal = () => {
         {
           onSuccess: (res) => {
             queryClient.invalidateQueries({
-              queryKey: mealQueryKeys.daily(),
+              queryKey: mealQueryKeys.daily(dateUtils.now()),
             });
             queryClient.invalidateQueries({
               queryKey: diaryQueryKeys.months(),

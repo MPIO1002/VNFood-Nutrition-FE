@@ -7,10 +7,10 @@ import {
   AnalyzeRequestSchema,
 } from "@/features/analyzer/validation/analyzeSchema";
 import { useMeal } from "@/features/meal/hooks/useMeal";
+import { MealType } from "@/features/meal/type/meal";
 import type { CameraType, CameraView } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { RefObject, useCallback, useState } from "react";
-import { MealType } from "../../components/result/MealTypeSelect";
 import { useAnalyzer } from "../../hooks/useAnalyzer";
 
 export type ScanFormState = {
@@ -240,6 +240,7 @@ export function useScanForm(
       const data: MealCreateRequest = {
         dish_id: result?.dish_id,
         meal_type: mealType,
+        total_calories: result?.nutrition?.calories,
         quantity: 1,
         consumed_at: new Date().toISOString(),
         image_url: result?.imageUrl,

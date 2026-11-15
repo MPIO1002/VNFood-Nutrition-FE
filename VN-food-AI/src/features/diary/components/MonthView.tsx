@@ -73,7 +73,7 @@ export function MonthView({ props, onDayHasDataPress }: MonthViewProps) {
         <Badge className="bg-[#333333]">
           <Icon as={CircleIcon} size={10} fill={"#FFC928"} color={"#FFC928"} />
           <Text className="font-montserrat-medium text-sm text-white">
-            {`${data?.total_kcal ?? 0} kcal/ngày`}
+            {`${data?.total_kcal ?? 0} kcal`}
           </Text>
         </Badge>
       </View>
