@@ -3,6 +3,7 @@ import {
   useMonthlyDiaryApiV1DiaryMonthlyGet,
 } from "@/api/generated";
 import { MonthlyDiaryApiV1DiaryMonthlyGetParams } from "@/api/generated/model";
+import { QUERY_OPTIONS } from "@/constants/queries";
 import { dateUtils } from "@/lib/utils";
 import { YearMonthDay } from "@/types/date";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -24,6 +25,7 @@ export const useDiaryByMonthQuery = (
     query: {
       queryKey: diaryQueryKeys.monthRange(data),
       retry: 1,
+      staleTime: QUERY_OPTIONS.DEFAULT_STALE_TIME,
     },
   });
 };
@@ -95,5 +97,6 @@ export const useDiaryByMonthInfiniteQuery = ({
         userRegisterDate,
       ),
     enabled: enabled,
+    staleTime: QUERY_OPTIONS.DEFAULT_STALE_TIME,
   });
 };

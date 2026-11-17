@@ -5,6 +5,7 @@ import {
   useUpdateProfileApiV1ProfilePatch,
   useUploadImageEndpointApiV1UploadImagePost,
 } from "@/api/generated";
+import { QUERY_OPTIONS } from "@/constants/queries";
 import { ProfileResponseSchema } from "../validation/profileSchema";
 
 export const profileQueryKeys = {
@@ -17,6 +18,7 @@ export const useProfileQuery = () => {
     query: {
       retry: 1,
       queryKey: profileQueryKeys.current(),
+      staleTime: QUERY_OPTIONS.DEFAULT_STALE_TIME,
       select: (response) => {
         const parsed = ProfileResponseSchema.safeParse(response);
         if (!parsed.success) {
