@@ -142,6 +142,7 @@ export default function ScanScreen() {
             onUpdateName={scan.updateName}
             onUpdateWeight={scan.updateWeight}
             onAdjustWeight={scan.adjustWeight}
+            onUpdateMacros={scan.updateMacrosValue}
             onRemoveComponent={scan.removeComponent}
             onAddComponent={scan.addComponent}
             onMealTypeChange={scan.setMealType}

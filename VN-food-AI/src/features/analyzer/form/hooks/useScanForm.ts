@@ -1,7 +1,10 @@
 import { MealCreateRequest, MealResponse } from "@/api/generated/model";
 import { APIMutatorOptions } from "@/api/types/api";
 import { CONTAINER_KEYS, type ContainerKey } from "@/constants/containers";
-import type { AnalyzeResult } from "@/features/analyzer/mapping/analyzeMapper";
+import type {
+  AnalyzeResult,
+  Macros,
+} from "@/features/analyzer/mapping/analyzeMapper";
 import {
   AnalyzeRequestInput,
   AnalyzeRequestSchema,
@@ -37,6 +40,7 @@ export type ScanFormHandlers = {
   updateName: (idx: number, name: string) => void;
   updateWeight: (idx: number, weight: number) => void;
   adjustWeight: (idx: number, delta: number) => void;
+  updateMacrosValue: (id: number, name: Macros, value: number) => void;
   removeComponent: (idx: number) => void;
   addComponent: () => void;
   setMealType: (type: MealType) => void;
@@ -225,6 +229,33 @@ export function useScanForm(
     [result, updateWeight],
   );
 
+  const updateMacrosValue = useCallback(
+    (id: number, name: Macros, value: number) => {
+      setResult((previous) => {
+        if (!previous?.nutrition) return previous;
+        const components = [...previous.nutrition.components];
+        const component = components[id];
+        if (!component || !component.isCustom) return previous;
+        components[id] = {
+          ...component,
+          [name]: value,
+        };
+        return {
+          ...previous,
+          nutrition: {
+            ...previous.nutrition,
+            components,
+            calories: components.reduce((sum, item) => sum + item.calories, 0),
+            protein: components.reduce((sum, item) => sum + item.protein, 0),
+            fat: components.reduce((sum, item) => sum + item.fat, 0),
+            carbs: components.reduce((sum, item) => sum + item.carbs, 0),
+          },
+        };
+      });
+    },
+    [result],
+  );
+
   const removeComponent = useCallback((idx: number) => {
     setResult((previous) => {
       if (!previous?.nutrition) return previous;
@@ -303,6 +334,7 @@ export function useScanForm(
     updateName,
     updateWeight,
     adjustWeight,
+    updateMacrosValue,
     removeComponent,
     addComponent,
     onSaveMeal,

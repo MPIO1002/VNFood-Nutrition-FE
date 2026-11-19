@@ -1,5 +1,6 @@
 import type { AnalyzeResponse } from "@/features/analyzer/validation/analyzeSchema";
 
+export type Macros = "calories" | "protein" | "carbs" | "fat";
 export interface FoodComponent {
   name: string;
   weight: number;
@@ -12,6 +13,7 @@ export interface FoodComponent {
   originalProtein: number;
   originalFat: number;
   originalCarbs: number;
+  isCustom?: boolean;
 }
 
 export interface FoodNutrition {

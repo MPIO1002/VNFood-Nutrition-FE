@@ -1,5 +1,8 @@
+import { Macros } from "@/features/analyzer/mapping/analyzeMapper";
+import { MAX_INGREDIENT_FOR_MEAL } from "@/features/ingredients/constant/ingredient";
 import { MealType } from "@/features/meal/type/meal";
 import { View } from "react-native";
+import Animated, { Easing, LinearTransition } from "react-native-reanimated";
 import MealTypeSelect from "./MealTypeSelect";
 import { NutritionComponentList } from "./NutritionComponentList";
 import { NutritionSummary } from "./NutritionSummary";
@@ -11,6 +14,7 @@ export interface NutritionResultsProps {
   onUpdateName: (idx: number, newName: string) => void;
   onUpdateWeight: (idx: number, newWeight: number) => void;
   onAdjustWeight: (idx: number, delta: number) => void;
+  onUpdateMacros?: (id: number, name: Macros, value: number) => void;
   onRemoveComponent: (idx: number) => void;
   onAddComponent: () => void;
   onMealTypeChange?: (type: MealType) => void;
@@ -25,6 +29,7 @@ export function NutritionResults({
   onUpdateName,
   onUpdateWeight,
   onAdjustWeight,
+  onUpdateMacros,
   onRemoveComponent,
   onAddComponent,
   onMealTypeChange,
@@ -41,10 +46,22 @@ export function NutritionResults({
         onUpdateName={onUpdateName}
         onUpdateWeight={onUpdateWeight}
         onAdjustWeight={onAdjustWeight}
+        onUpdateMacros={onUpdateMacros}
+        disabledAddComponent={
+          nutrition.components.length > MAX_INGREDIENT_FOR_MEAL
+        }
         onRemove={onRemoveComponent}
         onAdd={onAddComponent}
       />
-      <SaveMealButton disabled={disabled} state={saveState} onPress={onSave} />
+      <Animated.View
+        layout={LinearTransition.easing(Easing.out(Easing.ease)).duration(250)}
+        className="gap-3">
+        <SaveMealButton
+          disabled={disabled}
+          state={saveState}
+          onPress={onSave}
+        />
+      </Animated.View>
     </View>
   );
 }

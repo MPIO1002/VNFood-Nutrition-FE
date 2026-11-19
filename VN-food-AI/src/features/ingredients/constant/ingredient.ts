@@ -1,0 +1,1 @@
+export const MAX_INGREDIENT_FOR_MEAL = 25;
