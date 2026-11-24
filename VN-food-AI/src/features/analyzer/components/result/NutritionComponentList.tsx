@@ -17,21 +17,17 @@ import Animated, {
 
 export interface NutritionComponentListProps {
   nutrition: import("@/features/analyzer/mapping/analyzeMapper").FoodNutrition;
-  onUpdateName: (idx: number, newName: string) => void;
   onUpdateWeight: (idx: number, newWeight: number) => void;
-  onAdjustWeight: (idx: number, delta: number) => void;
   onUpdateMacros?: (id: number, name: Macros, value: number) => void;
   onRemove: (idx: number) => void;
-  onAdd: () => void;
+  onAdd: (component: FoodComponent) => void;
   disabled?: boolean;
   disabledAddComponent?: boolean;
 }
 
 export function NutritionComponentList({
   nutrition,
-  onUpdateName,
   onUpdateWeight,
-  onAdjustWeight,
   onUpdateMacros,
   onRemove,
   onAdd,
@@ -79,6 +75,7 @@ export function NutritionComponentList({
                   id={idx}
                   data={comp}
                   disabled={disabled}
+                  disabledRemove={nutrition.components.length <= 1}
                   disabledMacrosInput={!comp.isCustom}
                   onUpdateWeight={onUpdateWeight}
                   onUpdateMacros={onUpdateMacros}
@@ -122,7 +119,11 @@ export function NutritionComponentList({
             exiting={FadeOutUp.easing(Easing.out(Easing.ease)).duration(350)}>
             <IngredientForm
               excludeIngredientIds={ingredientIds}
-              listSearchPosition="top"
+              listSearchPosition="bottom"
+              onAddIngredient={(c) => {
+                onAdd(c);
+                setIsExpandAddForm(false);
+              }}
               onCancel={() => setIsExpandAddForm(false)}
             />
           </Animated.View>

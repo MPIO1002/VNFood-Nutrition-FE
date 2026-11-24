@@ -3,6 +3,7 @@ import { APIMutatorOptions } from "@/api/types/api";
 import { CONTAINER_KEYS, type ContainerKey } from "@/constants/containers";
 import type {
   AnalyzeResult,
+  FoodComponent,
   Macros,
 } from "@/features/analyzer/mapping/analyzeMapper";
 import {
@@ -37,12 +38,10 @@ export type ScanFormHandlers = {
   >;
   toggleFacing: () => void;
   cameraFacing: CameraType;
-  updateName: (idx: number, name: string) => void;
   updateWeight: (idx: number, weight: number) => void;
-  adjustWeight: (idx: number, delta: number) => void;
   updateMacrosValue: (id: number, name: Macros, value: number) => void;
   removeComponent: (idx: number) => void;
-  addComponent: () => void;
+  addComponent: (component: FoodComponent) => void;
   setMealType: (type: MealType) => void;
   onSaveMeal: (
     options?: APIMutatorOptions<MealResponse, MealCreateRequest>,
@@ -181,16 +180,6 @@ export function useScanForm(
     );
   }, []);
 
-  const updateName = useCallback((idx: number, name: string) => {
-    setResult((previous) => {
-      if (!previous?.nutrition) return previous;
-      const components = [...previous.nutrition.components];
-      if (!components[idx]) return previous;
-      components[idx] = { ...components[idx], name };
-      return { ...previous, nutrition: { ...previous.nutrition, components } };
-    });
-  }, []);
-
   const updateWeight = useCallback((idx: number, weight: number) => {
     setResult((previous) => {
       if (!previous?.nutrition) return previous;
@@ -220,14 +209,6 @@ export function useScanForm(
       };
     });
   }, []);
-
-  const adjustWeight = useCallback(
-    (idx: number, delta: number) => {
-      const component = result?.nutrition?.components[idx];
-      if (component) updateWeight(idx, Math.max(0, component.weight + delta));
-    },
-    [result, updateWeight],
-  );
 
   const updateMacrosValue = useCallback(
     (id: number, name: Macros, value: number) => {
@@ -262,7 +243,35 @@ export function useScanForm(
       const components = previous.nutrition.components.filter(
         (_, index) => index !== idx,
       );
-      return { ...previous, nutrition: { ...previous.nutrition, components } };
+      return {
+        ...previous,
+        nutrition: {
+          ...previous.nutrition,
+          components,
+          calories: components.reduce((sum, item) => sum + item.calories, 0),
+          protein: components.reduce((sum, item) => sum + item.protein, 0),
+          fat: components.reduce((sum, item) => sum + item.fat, 0),
+          carbs: components.reduce((sum, item) => sum + item.carbs, 0),
+        },
+      };
+    });
+  }, []);
+
+  const addComponent = useCallback((component: FoodComponent) => {
+    setResult((previous) => {
+      if (!previous?.nutrition) return previous;
+      const components = [...previous.nutrition.components, component];
+      return {
+        ...previous,
+        nutrition: {
+          ...previous.nutrition,
+          components: components,
+          calories: components.reduce((sum, item) => sum + item.calories, 0),
+          protein: components.reduce((sum, item) => sum + item.protein, 0),
+          fat: components.reduce((sum, item) => sum + item.fat, 0),
+          carbs: components.reduce((sum, item) => sum + item.carbs, 0),
+        },
+      };
     });
   }, []);
 
@@ -281,33 +290,6 @@ export function useScanForm(
     },
     [handleCreateMeal],
   );
-
-  const addComponent = useCallback(() => {
-    setResult((previous) => {
-      if (!previous?.nutrition) return previous;
-
-      const component = {
-        name: "Nguyên liệu mới",
-        weight: 100,
-        calories: 100,
-        protein: 0,
-        fat: 0,
-        carbs: 0,
-        originalWeight: 100,
-        originalCalories: 100,
-        originalProtein: 0,
-        originalFat: 0,
-        originalCarbs: 0,
-      };
-      return {
-        ...previous,
-        nutrition: {
-          ...previous.nutrition,
-          components: [...previous.nutrition.components, component],
-        },
-      };
-    });
-  }, []);
 
   return {
     activeImageUri,
@@ -331,9 +313,7 @@ export function useScanForm(
     setContainer,
     submit,
     toggleFacing,
-    updateName,
     updateWeight,
-    adjustWeight,
     updateMacrosValue,
     removeComponent,
     addComponent,

@@ -25,6 +25,7 @@ export interface IngredientItemBoxProps {
   data: FoodComponent;
   disabled?: boolean;
   disabledMacrosInput?: boolean;
+  disabledRemove?: boolean;
   onUpdateWeight?: (id: number, value: number) => void;
   onUpdateMacros?: (id: number, name: Macros, value: number) => void;
   onRemovePressed?: (id: number) => void;
@@ -35,6 +36,7 @@ export default function IngredientItemBox({
   data,
   disabled,
   disabledMacrosInput,
+  disabledRemove,
   onUpdateWeight,
   onUpdateMacros,
   onRemovePressed,
@@ -155,13 +157,16 @@ export default function IngredientItemBox({
             </PressScale>
           </View>
           <TouchableOpacity
-            disabled={disabled}
+            disabled={disabled || disabledRemove}
             onPress={() => {
               Keyboard.dismiss();
               onRemovePressed?.(id);
             }}
-            className="ml-2 w-9 h-9 bg-red-50 rounded-full items-center justify-center">
-            <Trash2Icon size={16} color="#ef4444" />
+            className={`ml-2 w-9 h-9 rounded-full items-center justify-center ${disabled || disabledRemove ? "bg-gray-100" : "bg-red-50"}`}>
+            <Trash2Icon
+              size={16}
+              color={disabled || disabledRemove ? "#6b7280" : "#ef4444"}
+            />
           </TouchableOpacity>
         </View>
         {isExpanded && (

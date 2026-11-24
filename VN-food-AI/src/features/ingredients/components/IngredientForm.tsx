@@ -1,6 +1,6 @@
 import { IngredientItem } from "@/api/generated/model";
 import { PressScale } from "@/components/PressScale";
-import { FoodComponent, Macros } from "@/features/analyzer";
+import { FoodComponent } from "@/features/analyzer";
 import {
   GroceriesIcon,
   MinusIcon,
@@ -26,32 +26,66 @@ export default function IngredientForm({
   onAddIngredient,
   onCancel,
 }: IngredientFormProps) {
-  const [name, setName] = useState("");
-  const [macrosValues, setMacrosValues] = useState<Record<Macros, number>>({
+  const [selectedItem, setSelectedItem] = useState<FoodComponent>({
+    name: "",
+    weight: 0,
     calories: 0,
+    protein: 0,
     carbs: 0,
     fat: 0,
-    protein: 0,
+    originalWeight: 0,
+    originalCalories: 0,
+    originalProtein: 0,
+    originalCarbs: 0,
+    originalFat: 0,
+    isCustom: true,
+    ingredient_id: undefined,
   });
-  const [isCustom, setIsCustom] = useState(true);
   const WEIGHT_CHOICE_BOXES = [50, 100, 150, 200];
-  const [weight, setWeight] = useState(0);
-  const [weightInput, setWeightInput] = useState(`${weight}`);
+  const [weightInput, setWeightInput] = useState(`${selectedItem.weight}`);
 
   const handleQueryChange = (q: string) => {
-    setName(q);
-    if (!isCustom) setIsCustom(true);
+    setSelectedItem((prev) => {
+      const weight = prev.weight;
+      const calories = prev.calories;
+      const protein = prev.protein;
+      const carbs = prev.carbs;
+      const fat = prev.fat;
+
+      return {
+        name: q,
+        weight: weight,
+        calories: calories,
+        protein: protein,
+        carbs: carbs,
+        fat: fat,
+        originalWeight: weight,
+        originalCalories: calories,
+        originalProtein: protein,
+        originalCarbs: carbs,
+        originalFat: fat,
+        isCustom: true,
+        ingredient_id: undefined,
+      };
+    });
   };
 
   const handleSelect = (i: IngredientItem) => {
-    setIsCustom(false);
-    setName(i.name);
-    setMacrosValues({
+    setSelectedItem((prev) => ({
+      name: i.name,
+      weight: prev.weight,
       calories: i.calories_per_100g,
       protein: i.protein_g,
       carbs: i.carb_g,
       fat: i.fat_g,
-    });
+      originalWeight: prev.weight,
+      originalCalories: i.calories_per_100g,
+      originalProtein: i.protein_g,
+      originalCarbs: i.carb_g,
+      originalFat: i.fat_g,
+      isCustom: false,
+      ingredient_id: i.id,
+    }));
   };
 
   const handleAdjustWeight = (offset: number) => {
@@ -60,7 +94,11 @@ export default function IngredientForm({
 
     const value = currentWeight + offset;
     setWeightInput(`${value}`);
-    setWeight(value);
+    setSelectedItem((prev) => ({
+      ...prev,
+      weight: value,
+      originalWeight: value,
+    }));
   };
 
   const handleUpdateWeight = (input: string) => {
@@ -75,31 +113,26 @@ export default function IngredientForm({
 
     const value = WEIGHT_OPTIONS.getWeight(cleaned);
     setWeightInput(cleaned);
-    setWeight(value);
+    setSelectedItem((prev) => ({
+      ...prev,
+      weight: value,
+      originalWeight: value,
+    }));
   };
 
   const handleWeightInputBlur = () => {
     const v = WEIGHT_OPTIONS.getWeight(weightInput);
     setWeightInput(`${v}`);
+    setSelectedItem((prev) => ({
+      ...prev,
+      weight: v,
+      originalWeight: v,
+    }));
   };
 
   const handleAdd = () => {
-    const ingredient: FoodComponent = {
-      name: name,
-      weight: weight,
-      calories: macrosValues.calories,
-      protein: macrosValues.protein,
-      carbs: macrosValues.carbs,
-      fat: macrosValues.fat,
-      originalWeight: weight,
-      originalCalories: macrosValues.calories,
-      originalProtein: macrosValues.protein,
-      originalCarbs: macrosValues.carbs,
-      originalFat: macrosValues.fat,
-      isCustom: isCustom,
-    };
-
-    onAddIngredient?.(ingredient);
+    if (!selectedItem.name) return;
+    onAddIngredient?.(selectedItem);
   };
 
   return (
@@ -116,7 +149,6 @@ export default function IngredientForm({
         </View>
       </View>
       <IngredientPicker
-        initialQuery={name}
         onQueryChange={handleQueryChange}
         onSelect={(i) => handleSelect(i)}
         excludeIngredientIds={excludeIngredientIds}
@@ -190,56 +222,63 @@ export default function IngredientForm({
           <MarcrosBox
             name="calories"
             title="Cal"
-            disabled={!isCustom}
-            value={macrosValues.calories}
+            disabled={!selectedItem.isCustom}
+            value={selectedItem.calories}
             onValueChanged={(v) =>
-              setMacrosValues((prev) => ({
+              setSelectedItem((prev) => ({
                 ...prev,
                 calories: v,
+                originalCalories: v,
               }))
             }
           />
           <MarcrosBox
             name="protein"
             title="Pro"
-            disabled={!isCustom}
-            value={macrosValues.protein}
+            disabled={!selectedItem.isCustom}
+            value={selectedItem.protein}
             onValueChanged={(v) =>
-              setMacrosValues((prev) => ({
+              setSelectedItem((prev) => ({
                 ...prev,
                 protein: v,
+                originalProtein: v,
               }))
             }
           />
           <MarcrosBox
             name="carbs"
             title="Carb"
-            disabled={!isCustom}
-            value={macrosValues.carbs}
+            disabled={!selectedItem.isCustom}
+            value={selectedItem.carbs}
             onValueChanged={(v) =>
-              setMacrosValues((prev) => ({
+              setSelectedItem((prev) => ({
                 ...prev,
                 carbs: v,
+                originalCarbs: v,
               }))
             }
           />
           <MarcrosBox
             name="fat"
             title="Fat"
-            disabled={!isCustom}
-            value={macrosValues.fat}
+            disabled={!selectedItem.isCustom}
+            value={selectedItem.fat}
             onValueChanged={(v) =>
-              setMacrosValues((prev) => ({
+              setSelectedItem((prev) => ({
                 ...prev,
                 fat: v,
+                originalFat: v,
               }))
             }
           />
         </View>
       </View>
-      <PressScale className="mt-5" onPress={handleAdd}>
+      <PressScale
+        className="mt-5"
+        onPress={handleAdd}
+        disabled={!selectedItem.name}>
         <View
-          className={`h-14 flex-row items-center justify-center gap-2 px-4 rounded-2xl bg-charcoal-pure`}>
+          className={`h-14 flex-row items-center justify-center gap-2 px-4 rounded-2xl bg-charcoal-pure ${!selectedItem.name && "opacity-60"}`}>
           <PlusCircleIcon size={20} color="white" />
           <Text className="font-montserrat-semibold text-sm text-white">
             Thêm vào danh sách
@@ -248,7 +287,7 @@ export default function IngredientForm({
       </PressScale>
       <PressScale className="mt-5" onPress={() => onCancel?.()}>
         <View
-          className={`h-14 flex-row items-center justify-center gap-2 px-4 rounded-2xl bg-white`}>
+          className={`h-14 flex-row items-center justify-center gap-2 px-4 rounded-2xl bg-zinc-50 border border-zinc-200`}>
           <Text className="font-montserrat-semibold text-sm text-charcoal-pure">
             Hủy
           </Text>

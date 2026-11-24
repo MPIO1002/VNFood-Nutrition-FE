@@ -155,9 +155,7 @@ export default function ScanScreen() {
             <NutritionResults
               nutrition={scan.result.nutrition}
               totals={scan.totals}
-              onUpdateName={scan.updateName}
               onUpdateWeight={scan.updateWeight}
-              onAdjustWeight={scan.adjustWeight}
               onUpdateMacros={scan.updateMacrosValue}
               onRemoveComponent={scan.removeComponent}
               onAddComponent={scan.addComponent}
