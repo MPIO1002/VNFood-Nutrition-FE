@@ -17,6 +17,7 @@ import { Appearance, LogBox, useColorScheme } from "react-native";
 import LoadingScreen from "@/components/LoadingScreen";
 import { AuthProvider, useAuthContext } from "@/features/auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // REMINDER: Kill this if u want log show on u app
 LogBox.ignoreAllLogs();
@@ -75,15 +76,17 @@ export default function RootLayout() {
 
   const queryClient = new QueryClient();
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-          <StatusBar style="auto"></StatusBar>
-          <AppScreens />
-          <PortalHost />
-        </ThemeProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+            <StatusBar style="auto"></StatusBar>
+            <AppScreens />
+            <PortalHost />
+          </ThemeProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }

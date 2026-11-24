@@ -1,11 +1,12 @@
 import {
-    useMonthlyProgressApiV1ProgressMonthlyGet,
-    useWeeklyProgressApiV1ProgressWeeklyGet,
+  useMonthlyProgressApiV1ProgressMonthlyGet,
+  useWeeklyProgressApiV1ProgressWeeklyGet,
 } from "@/api/generated";
 import type {
-    MonthlyProgressApiV1ProgressMonthlyGetParams,
-    WeeklyProgressApiV1ProgressWeeklyGetParams,
+  MonthlyProgressApiV1ProgressMonthlyGetParams,
+  WeeklyProgressApiV1ProgressWeeklyGetParams,
 } from "@/api/generated/model";
+import { QUERY_OPTIONS } from "@/constants/queries";
 
 export const analyticsQueryKeys = {
   all: ["analytics"] as const,
@@ -24,6 +25,7 @@ export const useWeeklyProgressQuery = (
       queryKey: analyticsQueryKeys.weeklyProgress(params),
       enabled,
       retry: 1,
+      staleTime: QUERY_OPTIONS.DEFAULT_STALE_TIME,
     },
   });
 
@@ -36,6 +38,6 @@ export const useMonthlyProgressQuery = (
       queryKey: analyticsQueryKeys.monthlyProgress(params),
       enabled,
       retry: 1,
+      staleTime: QUERY_OPTIONS.DEFAULT_STALE_TIME,
     },
   });
-

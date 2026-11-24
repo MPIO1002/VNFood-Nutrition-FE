@@ -13,7 +13,15 @@ import { CameraView } from "expo-camera";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronDownIcon } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  View,
+} from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ScanScreen() {
@@ -70,88 +78,96 @@ export default function ScanScreen() {
         </View>
       </SafeAreaView>
 
-      <ScrollView
+      <KeyboardAvoidingView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 120 }}
-        showsVerticalScrollIndicator={false}>
-        <View className="relative">
-          <ScanCameraStage
-            activeImageUri={scan.activeImageUri}
-            resultImageUri={scan.result?.visualBase64 || null}
-            detected={scan.result?.detected || []}
-            imageSize={scan.result?.imageSize || null}
-            isAnalyzing={scan.isAnalyzing}
-            foodName={scan.result?.nutrition?.name || null}
-            confidence={scan.result?.nutrition?.confidence || null}
-            cameraFacing={scan.cameraFacing}
-            cameraRef={cameraRef}
-          />
-          {scan.isTakingPicture && (
-            <View className="absolute inset-0 items-center justify-center pt-2 px-5">
-              <View className="bg-black/60 rounded-[35px] w-full h-full items-center justify-center gap-3">
-                <ActivityIndicator size="large" color="#fff" />
-                <Text className="text-white font-montserrat">
-                  Đang xử lý...
-                </Text>
+        behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <ScrollView
+          className="flex-1"
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentContainerStyle={{ paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}>
+          <View className="relative">
+            <ScanCameraStage
+              activeImageUri={scan.activeImageUri}
+              resultImageUri={scan.result?.visualBase64 || null}
+              detected={scan.result?.detected || []}
+              imageSize={scan.result?.imageSize || null}
+              isAnalyzing={scan.isAnalyzing}
+              foodName={scan.result?.nutrition?.name || null}
+              confidence={scan.result?.nutrition?.confidence || null}
+              cameraFacing={scan.cameraFacing}
+              cameraRef={cameraRef}
+            />
+            {scan.isTakingPicture && (
+              <View className="absolute inset-0 items-center justify-center pt-2 px-5">
+                <View className="bg-black/60 rounded-[35px] w-full h-full items-center justify-center gap-3">
+                  <ActivityIndicator size="large" color="#fff" />
+                  <Text className="text-white font-montserrat">
+                    Đang xử lý...
+                  </Text>
+                </View>
               </View>
+            )}
+          </View>
+
+          {!scan.activeImageUri && (
+            <ContainerSelector
+              selectedContainer={
+                CONTAINERS.find(
+                  (container) => container.key === scan.selectedContainer,
+                ) || CONTAINERS[0]
+              }
+              onSelectContainer={(container) =>
+                scan.setContainer(container.key as ContainerKey)
+              }
+            />
+          )}
+
+          <ScanControls
+            hasImage={Boolean(scan.activeImageUri)}
+            onPickImage={scan.pickImage}
+            onShutter={scan.activeImageUri ? scan.retake : scan.takePicture}
+            onToggleFacing={scan.toggleFacing}
+            disabled={
+              scan.isTakingPicture ||
+              saveState === "saving" ||
+              saveState === "saved"
+            }
+          />
+
+          {scan.warnings.map((warning) => (
+            <Text
+              key={warning}
+              className="px-4 mb-3 text-center text-amber-700">
+              {warning}
+            </Text>
+          ))}
+
+          {scan.isAnalyzing && (
+            <View className="items-center py-4">
+              <ActivityIndicator color="#18181B" />
             </View>
           )}
-        </View>
 
-        {!scan.activeImageUri && (
-          <ContainerSelector
-            selectedContainer={
-              CONTAINERS.find(
-                (container) => container.key === scan.selectedContainer,
-              ) || CONTAINERS[0]
-            }
-            onSelectContainer={(container) =>
-              scan.setContainer(container.key as ContainerKey)
-            }
-          />
-        )}
-
-        <ScanControls
-          hasImage={Boolean(scan.activeImageUri)}
-          onPickImage={scan.pickImage}
-          onShutter={scan.activeImageUri ? scan.retake : scan.takePicture}
-          onToggleFacing={scan.toggleFacing}
-          disabled={
-            scan.isTakingPicture ||
-            saveState === "saving" ||
-            saveState === "saved"
-          }
-        />
-
-        {scan.warnings.map((warning) => (
-          <Text key={warning} className="px-4 mb-3 text-center text-amber-700">
-            {warning}
-          </Text>
-        ))}
-
-        {scan.isAnalyzing && (
-          <View className="items-center py-4">
-            <ActivityIndicator color="#18181B" />
-          </View>
-        )}
-
-        {scan.result?.nutrition && !scan.isAnalyzing && (
-          <NutritionResults
-            nutrition={scan.result.nutrition}
-            totals={scan.totals}
-            onUpdateName={scan.updateName}
-            onUpdateWeight={scan.updateWeight}
-            onAdjustWeight={scan.adjustWeight}
-            onRemoveComponent={scan.removeComponent}
-            onAddComponent={scan.addComponent}
-            onMealTypeChange={scan.setMealType}
-            onSave={handleSave}
-            saveState={saveState}
-            disabled={saveState === "saving" || saveState === "saved"}
-          />
-        )}
-      </ScrollView>
-      <MealSaveCompleteScreen show={saveState === "saved"} />
+          {scan.result?.nutrition && !scan.isAnalyzing && (
+            <NutritionResults
+              nutrition={scan.result.nutrition}
+              totals={scan.totals}
+              onUpdateWeight={scan.updateWeight}
+              onUpdateMacros={scan.updateMacrosValue}
+              onRemoveComponent={scan.removeComponent}
+              onAddComponent={scan.addComponent}
+              onMealTypeChange={scan.setMealType}
+              onSave={handleSave}
+              saveState={saveState}
+              disabled={saveState === "saving" || saveState === "saved"}
+            />
+          )}
+        </ScrollView>
+        <MealSaveCompleteScreen show={saveState === "saved"} />
+      </KeyboardAvoidingView>
     </View>
   );
 }

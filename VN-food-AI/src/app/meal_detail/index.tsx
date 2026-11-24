@@ -99,7 +99,7 @@ export default function MealDetailScreen() {
               />
             </View>
             <View className={`w-full px-3 ${!isReady && "hidden"}`}>
-              <View className="w-full bg-white rounded-2xl p-4 shadow shadow-slate-800 gap-1">
+              <View className="w-full bg-white rounded-2xl p-4 shadow-xs shadow-gray-200 gap-1">
                 <Text className="font-montserrat-semibold text-gray-500 text-sm">
                   MÓN ĂN GHI NHẬN
                 </Text>

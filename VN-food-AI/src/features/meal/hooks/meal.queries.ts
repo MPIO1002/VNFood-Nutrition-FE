@@ -3,6 +3,7 @@ import {
   useGetDailyMealsApiV1MealsDailyGet,
 } from "@/api/generated";
 import { GetDailyMealsApiV1MealsDailyGetParams } from "@/api/generated/model";
+import { QUERY_OPTIONS } from "@/constants/queries";
 import { dateUtils } from "@/lib/utils";
 import { YearMonthDay } from "@/types/date";
 export const mealQueryKeys = {
@@ -25,6 +26,7 @@ export const useDailyMealsQuery = (date?: YearMonthDay) => {
     query: {
       queryKey: mealQueryKeys.daily(date ?? dateUtils.now()),
       retry: 1,
+      staleTime: QUERY_OPTIONS.DEFAULT_STALE_TIME,
     },
   });
 };

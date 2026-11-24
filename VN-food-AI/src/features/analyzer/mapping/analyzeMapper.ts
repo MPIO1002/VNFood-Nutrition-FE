@@ -1,5 +1,6 @@
 import type { AnalyzeResponse } from "@/features/analyzer/validation/analyzeSchema";
 
+export type Macros = "calories" | "protein" | "carbs" | "fat";
 export interface FoodComponent {
   name: string;
   weight: number;
@@ -12,6 +13,8 @@ export interface FoodComponent {
   originalProtein: number;
   originalFat: number;
   originalCarbs: number;
+  isCustom?: boolean;
+  ingredient_id?: number;
 }
 
 export interface FoodNutrition {
@@ -82,6 +85,7 @@ export function mapAnalyzeResponse(res: AnalyzeResponse): AnalyzeResult {
 
     const components = estimatedComponents.map((c) => ({
       name: c.name,
+      ingredient_id: c.ingredient_id,
       weight: Math.round(c.estimated_g || 0),
       calories: Math.round(c.calories_kcal || 0),
       protein: Math.round(c.protein_g || 0),

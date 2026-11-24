@@ -136,7 +136,7 @@ export const useDiary = () => {
   );
 
   const onLoadOlderMonths = useCallback(
-    async ({
+    ({
       onError,
     }: {
       onError?: (e: Error | null) => void;

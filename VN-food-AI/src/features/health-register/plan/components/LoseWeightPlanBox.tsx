@@ -30,7 +30,7 @@ export function LoseWeightPlanBox({
 
   const getWeight = (text: string) => {
     const v = Number(text);
-    if (v < minValue || !text) return minValue;
+    if (!text || v < minValue) return minValue;
     else if (v > maxValue) return maxValue;
 
     return v;
@@ -50,10 +50,14 @@ export function LoseWeightPlanBox({
   }, [onValueChange]);
 
   const handleChange = (text: string) => {
+    if (text === "") {
+      setTextValue("");
+      return;
+    }
     const cleaned = text
       .replace(",", ".")
       .replace(/[^0-9.]/g, "")
-      .replace(/^(\d*\.?\d*).*$/, "$1");
+      .replace(/^(\d*\.?\d?).*$/, "$1");
 
     setTextValue(cleaned);
     onValueChange(getWeight(cleaned));
@@ -99,7 +103,7 @@ export function LoseWeightPlanBox({
             onBlur={handleBlur}
             editable={props.activated}
             keyboardType="decimal-pad"
-            maxLength={4}
+            maxLength={5}
             style={{
               paddingVertical: 0,
               paddingTop: 0,
