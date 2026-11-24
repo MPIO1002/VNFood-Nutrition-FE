@@ -150,8 +150,6 @@ The default OpenAPI source is configured in `orval.config.ts` at:
 http://localhost:8000/openapi.json
 ```
 
-For endpoint and payload details, see [API_DOCUMENTATION_FE.md](API_DOCUMENTATION_FE.md).
-
 ## Development Commands
 
 ```bash
