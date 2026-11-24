@@ -19,7 +19,7 @@ import { useAnalyzer } from "../../hooks/useAnalyzer";
 
 export type ScanFormState = {
   activeImageUri: string | null;
-  selectedContainer: ContainerKey;
+  selectedContainer: ContainerKey | null;
   result: AnalyzeResult | null;
   totals: { kcal: number; protein: number; carbs: number; fat: number };
   isTakingPicture: boolean;
@@ -32,7 +32,7 @@ export type ScanFormHandlers = {
   pickImage: () => Promise<void>;
   takePicture: () => Promise<void>;
   retake: () => void;
-  setContainer: (container: string) => void;
+  setContainer: (container: ContainerKey | null) => void;
   submit: () => Promise<
     import("@/features/analyzer/mapping/analyzeMapper").AnalyzeResult | null
   >;
@@ -57,7 +57,7 @@ export function useScanForm(
   );
   const [mealType, setMealType] = useState<MealType>("breakfast");
   const [selectedContainer, setSelectedContainer] =
-    useState<ContainerKey>("chen");
+    useState<ContainerKey | null>(null);
   const [cameraType, setCameraType] = useState<ImagePicker.CameraType>(
     ImagePicker.CameraType.back,
   );
@@ -130,13 +130,16 @@ export function useScanForm(
     setWarnings([]);
     setResult(null);
     setMealType("breakfast");
+    setSelectedContainer(null);
     // Reset form state
     reset();
   }, [reset]);
 
-  const setContainer = useCallback((container: string) => {
-    if (CONTAINER_KEYS.includes(container as ContainerKey)) {
-      setSelectedContainer(container as ContainerKey);
+  const setContainer = useCallback((container: ContainerKey | null) => {
+    if (container === null) {
+      setSelectedContainer(null);
+    } else if (CONTAINER_KEYS.includes(container)) {
+      setSelectedContainer(container);
     }
   }, []);
 

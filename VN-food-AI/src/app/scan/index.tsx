@@ -1,5 +1,4 @@
 import { PressScale } from "@/components/PressScale";
-import type { ContainerKey } from "@/constants/containers";
 import { CONTAINERS } from "@/constants/containers";
 import {
   ContainerSelector,
@@ -117,10 +116,10 @@ export default function ScanScreen() {
               selectedContainer={
                 CONTAINERS.find(
                   (container) => container.key === scan.selectedContainer,
-                ) || CONTAINERS[0]
+                ) || null
               }
               onSelectContainer={(container) =>
-                scan.setContainer(container.key as ContainerKey)
+                scan.setContainer(container?.key ?? null)
               }
             />
           )}

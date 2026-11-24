@@ -7,7 +7,7 @@ export const ResponseFormatSchema = z.enum(["full", "nutrition"]);
 
 export const AnalyzeRequestSchema = z.object({
   imageUri: z.string().trim().nonempty("Vui lòng chọn hoặc chụp ảnh món ăn"),
-  containerType: ContainerTypeSchema.optional(),
+  containerType: ContainerTypeSchema.nullish(),
   responseFormat: ResponseFormatSchema.default("full"),
 });
 export type AnalyzeRequestInput = z.infer<typeof AnalyzeRequestSchema>;
