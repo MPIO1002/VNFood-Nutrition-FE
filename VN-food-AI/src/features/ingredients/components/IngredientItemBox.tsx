@@ -48,7 +48,7 @@ export default function IngredientItemBox({
     const currentWeight = Number(weightInput);
     if (isNaN(currentWeight)) return;
 
-    const value = currentWeight + offset;
+    const value = WEIGHT_OPTIONS.getWeight(`${currentWeight + offset}`);
     setWeightInput(`${value}`);
     onUpdateWeight?.(id, value);
   };
@@ -58,7 +58,7 @@ export default function IngredientItemBox({
       debounce((v: number) => {
         onUpdateWeight?.(id, v);
       }, 300),
-    [data, id, onUpdateWeight],
+    [id, onUpdateWeight],
   );
 
   useEffect(() => {

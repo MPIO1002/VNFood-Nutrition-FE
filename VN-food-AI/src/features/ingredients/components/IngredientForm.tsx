@@ -20,6 +20,49 @@ export interface IngredientFormProps {
   onCancel?: () => void;
 }
 
+const roundMacro = (value: number) =>
+  Math.round((value + Number.EPSILON) * 10) / 10;
+
+const scaleMacrosToWeight = (
+  item: FoodComponent,
+  weight: number,
+): FoodComponent => {
+  if (item.isCustom) {
+    if (item.originalWeight <= 0) {
+      return { ...item, weight };
+    }
+
+    const ratio = weight / item.originalWeight;
+    return {
+      ...item,
+      weight,
+      calories: roundMacro(item.originalCalories * ratio),
+      protein: roundMacro(item.originalProtein * ratio),
+      carbs: roundMacro(item.originalCarbs * ratio),
+      fat: roundMacro(item.originalFat * ratio),
+      originalWeight: weight,
+      originalCalories: roundMacro(item.originalCalories * ratio),
+      originalProtein: roundMacro(item.originalProtein * ratio),
+      originalCarbs: roundMacro(item.originalCarbs * ratio),
+      originalFat: roundMacro(item.originalFat * ratio),
+    };
+  }
+
+  if (item.originalWeight <= 0) {
+    return { ...item, weight };
+  }
+
+  const ratio = weight / item.originalWeight;
+  return {
+    ...item,
+    weight,
+    calories: roundMacro(item.originalCalories * ratio),
+    protein: roundMacro(item.originalProtein * ratio),
+    carbs: roundMacro(item.originalCarbs * ratio),
+    fat: roundMacro(item.originalFat * ratio),
+  };
+};
+
 export default function IngredientForm({
   excludeIngredientIds,
   listSearchPosition,
@@ -28,7 +71,7 @@ export default function IngredientForm({
 }: IngredientFormProps) {
   const [selectedItem, setSelectedItem] = useState<FoodComponent>({
     name: "",
-    weight: 0,
+    weight: 100,
     calories: 0,
     protein: 0,
     carbs: 0,
@@ -47,23 +90,19 @@ export default function IngredientForm({
   const handleQueryChange = (q: string) => {
     setSelectedItem((prev) => {
       const weight = prev.weight;
-      const calories = prev.calories;
-      const protein = prev.protein;
-      const carbs = prev.carbs;
-      const fat = prev.fat;
 
       return {
         name: q,
         weight: weight,
-        calories: calories,
-        protein: protein,
-        carbs: carbs,
-        fat: fat,
-        originalWeight: weight,
-        originalCalories: calories,
-        originalProtein: protein,
-        originalCarbs: carbs,
-        originalFat: fat,
+        calories: prev.calories,
+        protein: prev.protein,
+        carbs: prev.carbs,
+        fat: prev.fat,
+        originalWeight: prev.isCustom ? prev.originalWeight : weight,
+        originalCalories: prev.calories,
+        originalProtein: prev.protein,
+        originalCarbs: prev.carbs,
+        originalFat: prev.fat,
         isCustom: true,
         ingredient_id: undefined,
       };
@@ -71,34 +110,35 @@ export default function IngredientForm({
   };
 
   const handleSelect = (i: IngredientItem) => {
-    setSelectedItem((prev) => ({
-      name: i.name,
-      weight: prev.weight,
-      calories: i.calories_per_100g,
-      protein: i.protein_g,
-      carbs: i.carb_g,
-      fat: i.fat_g,
-      originalWeight: prev.weight,
-      originalCalories: i.calories_per_100g,
-      originalProtein: i.protein_g,
-      originalCarbs: i.carb_g,
-      originalFat: i.fat_g,
-      isCustom: false,
-      ingredient_id: i.id,
-    }));
+    setSelectedItem((prev) =>
+      scaleMacrosToWeight(
+        {
+          name: i.name,
+          weight: prev.weight,
+          calories: i.calories_per_100g,
+          protein: i.protein_g,
+          carbs: i.carb_g,
+          fat: i.fat_g,
+          originalWeight: 100,
+          originalCalories: i.calories_per_100g,
+          originalProtein: i.protein_g,
+          originalCarbs: i.carb_g,
+          originalFat: i.fat_g,
+          isCustom: false,
+          ingredient_id: i.id,
+        },
+        prev.weight,
+      ),
+    );
   };
 
   const handleAdjustWeight = (offset: number) => {
     const currentWeight = Number(weightInput);
     if (isNaN(currentWeight)) return;
 
-    const value = currentWeight + offset;
+    const value = WEIGHT_OPTIONS.getWeight(`${currentWeight + offset}`);
     setWeightInput(`${value}`);
-    setSelectedItem((prev) => ({
-      ...prev,
-      weight: value,
-      originalWeight: value,
-    }));
+    setSelectedItem((prev) => scaleMacrosToWeight(prev, value));
   };
 
   const handleUpdateWeight = (input: string) => {
@@ -113,21 +153,13 @@ export default function IngredientForm({
 
     const value = WEIGHT_OPTIONS.getWeight(cleaned);
     setWeightInput(cleaned);
-    setSelectedItem((prev) => ({
-      ...prev,
-      weight: value,
-      originalWeight: value,
-    }));
+    setSelectedItem((prev) => scaleMacrosToWeight(prev, value));
   };
 
   const handleWeightInputBlur = () => {
     const v = WEIGHT_OPTIONS.getWeight(weightInput);
     setWeightInput(`${v}`);
-    setSelectedItem((prev) => ({
-      ...prev,
-      weight: v,
-      originalWeight: v,
-    }));
+    setSelectedItem((prev) => scaleMacrosToWeight(prev, v));
   };
 
   const handleAdd = () => {
@@ -210,7 +242,7 @@ export default function IngredientForm({
         {WEIGHT_CHOICE_BOXES.map((v) => (
           <Pressable
             key={`weight-${v}`}
-            className="px-3 py-2 border border-gray-300 bg-gray-100 shadow shadow-gray-500 rounded-2xl flex-1 justify-center items-center active:opacity-50"
+            className="px-3 py-2 border border-gray-200 bg-gray-100 rounded-2xl flex-1 justify-center items-center active:opacity-50"
             onPress={() => handleUpdateWeight(`${v}`)}>
             <Text className="font-montserrat-semibold">{v}g</Text>
           </Pressable>
