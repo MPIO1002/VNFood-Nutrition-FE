@@ -1,15 +1,14 @@
-import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
-import { Package } from "lucide-react-native";
 import {
   CONTAINERS,
   CONTAINER_KEYS,
   type ContainerConfig,
 } from "@/constants/containers";
+import { Ban, Package } from "lucide-react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export interface ContainerSelectorProps {
-  selectedContainer: ContainerConfig;
-  onSelectContainer: (c: ContainerConfig) => void;
+  selectedContainer: ContainerConfig | null;
+  onSelectContainer: (c: ContainerConfig | null) => void;
 }
 
 export function ContainerSelector({ selectedContainer, onSelectContainer }: ContainerSelectorProps) {
@@ -29,10 +28,27 @@ export function ContainerSelector({ selectedContainer, onSelectContainer }: Cont
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.containerRow}
       >
+        <TouchableOpacity
+          onPress={() => onSelectContainer(null)}
+          activeOpacity={0.75}
+          style={[styles.chip, selectedContainer === null && styles.chipActive]}
+        >
+          <Ban
+            size={24}
+            color={selectedContainer === null ? "#FFFFFF" : "#52525B"}
+            strokeWidth={1.5}
+          />
+          <Text style={[styles.chipLabel, selectedContainer === null && styles.chipLabelActive]}>
+            Không có
+          </Text>
+          <Text style={[styles.chipSubtitle, selectedContainer === null && styles.chipSubtitleActive]}>
+            Cầm tay
+          </Text>
+        </TouchableOpacity>
         {CONTAINER_KEYS.map((c) => {
           const container = CONTAINERS.find((x) => x.key === c);
           if (!container) return null;
-          const active = c === selectedContainer.key;
+          const active = c === selectedContainer?.key;
           const IconComponent = container.icon;
           return (
             <TouchableOpacity
