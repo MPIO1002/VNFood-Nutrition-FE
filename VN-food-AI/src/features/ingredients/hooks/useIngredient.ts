@@ -3,8 +3,18 @@ import debounce from "lodash.debounce";
 import { useMemo, useState } from "react";
 import { useIngredientsInfiniteQuery } from "./ingredient.queries";
 
-export const useIngredient = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+export interface UseIngredientOptions {
+  excludeIds?: number[];
+  initialQuery?: string;
+  enabledIngredientInfiniteQuery?: boolean;
+}
+
+export const useIngredient = ({
+  excludeIds,
+  initialQuery = "",
+  enabledIngredientInfiniteQuery,
+}: UseIngredientOptions) => {
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const searchQueryDebounce = useMemo(
     () =>
       debounce((query: string) => {
@@ -17,6 +27,7 @@ export const useIngredient = () => {
     q: searchQuery,
     limit: 20,
     offset: 0,
+    exclude_ids: excludeIds,
   } satisfies SearchIngredientsApiV1IngredientsSearchGetParams;
 
   const {
@@ -26,7 +37,10 @@ export const useIngredient = () => {
     isFetching,
     error,
     isFetchingNextPage,
-  } = useIngredientsInfiniteQuery(searchQueryParams);
+  } = useIngredientsInfiniteQuery(
+    searchQueryParams,
+    enabledIngredientInfiniteQuery,
+  );
 
   const ingredients = useMemo(() => {
     if (!data) return [];

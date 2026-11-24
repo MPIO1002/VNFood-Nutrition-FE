@@ -20,7 +20,11 @@ if (!baseURL) {
   );
 }
 
-export const AXIOS_INSTANCE = Axios.create({ baseURL, timeout: 30000 });
+export const AXIOS_INSTANCE = Axios.create({
+  baseURL,
+  paramsSerializer: { indexes: null },
+  timeout: 30000,
+});
 
 let onUnauthorized: (() => void) | undefined;
 export const setUnauthorizedHandler = (fn: () => void) => {

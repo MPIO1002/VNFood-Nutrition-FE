@@ -3,10 +3,17 @@ import {
   FoodComponent,
   Macros,
 } from "@/features/analyzer/mapping/analyzeMapper";
+import IngredientForm from "@/features/ingredients/components/IngredientForm";
 import IngredientItemBox from "@/features/ingredients/components/IngredientItemBox";
 import { Plus } from "lucide-react-native";
+import { useMemo, useState } from "react";
 import { Text, View } from "react-native";
-import Animated, { Easing, LinearTransition } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeInUp,
+  FadeOutUp,
+  LinearTransition,
+} from "react-native-reanimated";
 
 export interface NutritionComponentListProps {
   nutrition: import("@/features/analyzer/mapping/analyzeMapper").FoodNutrition;
@@ -31,11 +38,19 @@ export function NutritionComponentList({
   disabled = false,
   disabledAddComponent = false,
 }: NutritionComponentListProps) {
+  const ingredientIds = useMemo(() => {
+    return nutrition.components.flatMap((comp) =>
+      comp.ingredient_id ? [comp.ingredient_id] : [],
+    );
+  }, [nutrition]);
+
+  const [isExpandAddForm, setIsExpandAddForm] = useState(false);
+
   return (
     <View className="px-4 mt-2">
       {/* Components Breakdown */}
       {nutrition.components && (
-        <View className="mb-6">
+        <View className="mb-6 gap-3">
           <View className="mb-4">
             <View className="flex-row items-baseline justify-between">
               <Text className="font-montserrat-bold text-lg text-charcoal-pure">
@@ -74,23 +89,44 @@ export function NutritionComponentList({
           </View>
         </View>
       )}
-
-      {/* Bottom Actions */}
       <Animated.View
         layout={LinearTransition.easing(Easing.out(Easing.ease)).duration(250)}
         className="gap-3">
-        <PressScale
-          disabled={disabled || disabledAddComponent}
-          onPress={onAdd}
-          style={{ marginBottom: 4 }}>
-          <View
-            className={`h-14 flex-row items-center justify-center gap-2 px-4 rounded-2xl bg-zinc-50 border border-zinc-200 ${(disabled || disabledAddComponent) && "opacity-60"}`}>
-            <Plus size={20} color="#18181B" />
-            <Text className="font-montserrat-semibold text-sm text-charcoal-pure">
-              Thêm thành phần
-            </Text>
-          </View>
-        </PressScale>
+        {!isExpandAddForm ? (
+          <Animated.View
+            key={"add-button"}
+            entering={FadeInUp.easing(Easing.out(Easing.ease))
+              .duration(250)
+              .delay(300)}
+            exiting={FadeOutUp.easing(Easing.out(Easing.ease)).duration(250)}>
+            <PressScale
+              disabled={disabled || disabledAddComponent}
+              onPress={() => setIsExpandAddForm(true)}
+              style={{ marginBottom: 4 }}>
+              <View
+                className={`h-14 flex-row items-center justify-center gap-2 px-4 rounded-2xl bg-zinc-50 border border-zinc-200 ${(disabled || disabledAddComponent) && "opacity-60"}`}>
+                <Plus size={20} color="#18181B" />
+                <Text className="font-montserrat-semibold text-sm text-charcoal-pure">
+                  Thêm thành phần
+                </Text>
+              </View>
+            </PressScale>
+          </Animated.View>
+        ) : (
+          <Animated.View
+            key={"add-form"}
+            className="gap-3"
+            entering={FadeInUp.easing(Easing.out(Easing.ease))
+              .duration(250)
+              .delay(250)}
+            exiting={FadeOutUp.easing(Easing.out(Easing.ease)).duration(350)}>
+            <IngredientForm
+              excludeIngredientIds={ingredientIds}
+              listSearchPosition="top"
+              onCancel={() => setIsExpandAddForm(false)}
+            />
+          </Animated.View>
+        )}
       </Animated.View>
     </View>
   );

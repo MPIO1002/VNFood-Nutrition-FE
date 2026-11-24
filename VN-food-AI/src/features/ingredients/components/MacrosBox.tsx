@@ -2,6 +2,7 @@ import { Macros } from "@/features/analyzer";
 import debounce from "lodash.debounce";
 import { useEffect, useMemo, useState } from "react";
 import { Text, TextInput, View } from "react-native";
+import { MACROS_OPTIONS } from "../constant/ingredient";
 
 export interface NutritionBoxProps {
   name: Macros;
@@ -19,19 +20,6 @@ export default function MarcrosBox({
   onValueChanged,
 }: NutritionBoxProps) {
   const [textValue, setTextValue] = useState(`${value}`);
-  const MACROS_OPTIONS = {
-    min: 0,
-    max: name === "calories" ? 1000 : 100,
-    step: 10,
-    getMacrosValue: (text: string) => {
-      const v = Number(text);
-      if (v < MACROS_OPTIONS.min || !text) return MACROS_OPTIONS.min;
-      else if (v > MACROS_OPTIONS.max) return MACROS_OPTIONS.max;
-
-      return v;
-    },
-  } as const;
-
   const handleValueChange = useMemo(
     () =>
       debounce((v: number) => {
@@ -39,6 +27,10 @@ export default function MarcrosBox({
       }, 300),
     [onValueChanged],
   );
+
+  useEffect(() => {
+    setTextValue(`${value}`);
+  }, [value]);
 
   useEffect(() => {
     return () => handleValueChange.cancel();
@@ -55,13 +47,13 @@ export default function MarcrosBox({
       .replace(/[^0-9.]/g, "")
       .replace(/^(\d*\.?\d?).*$/, "$1");
 
-    const value = MACROS_OPTIONS.getMacrosValue(cleaned);
+    const value = MACROS_OPTIONS.getMacrosValue(cleaned, name);
     setTextValue(cleaned);
     handleValueChange(value);
   };
 
   const handleInputBlur = () => {
-    const v = MACROS_OPTIONS.getMacrosValue(textValue);
+    const v = MACROS_OPTIONS.getMacrosValue(textValue, name);
     setTextValue(`${v}`);
     handleValueChange(v);
   };

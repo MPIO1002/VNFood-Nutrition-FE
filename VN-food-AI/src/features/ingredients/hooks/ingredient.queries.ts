@@ -14,6 +14,7 @@ export const ingredientQueryKeys = {
 
 export const useIngredientsInfiniteQuery = (
   params: SearchIngredientsApiV1IngredientsSearchGetParams,
+  enabled?: boolean,
 ) => {
   const DEFAULT_OFFSET = 0;
   const DEFAULT_LIMIT = 20;
@@ -33,7 +34,7 @@ export const useIngredientsInfiniteQuery = (
         offset: nextOffset,
       };
     },
-    enabled: params.q.trim().length > 0,
+    enabled: params.q.trim().length > 0 && enabled,
     staleTime: QUERY_OPTIONS.DEFAULT_STALE_TIME,
   });
 };

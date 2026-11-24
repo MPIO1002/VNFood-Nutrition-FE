@@ -42,6 +42,7 @@ export const AnalyzeResponseSchema = z.object({
             estimated_components: z
               .array(
                 z.object({
+                  ingredient_id: z.coerce.number(),
                   name: z.string(),
                   estimated_g: z.coerce.number().nullish(),
                   calories_kcal: z.coerce.number().nullish(),

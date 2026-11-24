@@ -4,6 +4,7 @@ import debounce from "lodash.debounce";
 import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Keyboard,
   Pressable,
   Text,
   TextInput,
@@ -16,6 +17,7 @@ import Animated, {
   FadeOutDown,
   LinearTransition,
 } from "react-native-reanimated";
+import { WEIGHT_OPTIONS } from "../constant/ingredient";
 import MarcrosBox from "./MacrosBox";
 
 export interface IngredientItemBoxProps {
@@ -23,7 +25,6 @@ export interface IngredientItemBoxProps {
   data: FoodComponent;
   disabled?: boolean;
   disabledMacrosInput?: boolean;
-  onPress?: () => void;
   onUpdateWeight?: (id: number, value: number) => void;
   onUpdateMacros?: (id: number, name: Macros, value: number) => void;
   onRemovePressed?: (id: number) => void;
@@ -34,24 +35,10 @@ export default function IngredientItemBox({
   data,
   disabled,
   disabledMacrosInput,
-  onPress,
   onUpdateWeight,
   onUpdateMacros,
   onRemovePressed,
 }: IngredientItemBoxProps) {
-  const WEIGHT_OPTIONS = {
-    min: 1,
-    max: 1000,
-    step: 10,
-    getWeight: (text: string) => {
-      const v = Number(text);
-      if (!text || v < WEIGHT_OPTIONS.min) return WEIGHT_OPTIONS.min;
-      else if (v > WEIGHT_OPTIONS.max) return WEIGHT_OPTIONS.max;
-
-      return v;
-    },
-  } as const;
-
   const [weightInput, setWeightInput] = useState(`${data.weight ?? 0}`);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -98,7 +85,12 @@ export default function IngredientItemBox({
   };
 
   return (
-    <Pressable className="z-10" onPress={() => setIsExpanded((prev) => !prev)}>
+    <Pressable
+      className="z-0"
+      onPress={() => {
+        Keyboard.dismiss();
+        setIsExpanded((prev) => !prev);
+      }}>
       <Animated.View
         layout={LinearTransition.easing(Easing.out(Easing.ease)).duration(250)}
         className="bg-white border border-zinc-200 rounded-2xl gap-3 p-3">
@@ -164,7 +156,10 @@ export default function IngredientItemBox({
           </View>
           <TouchableOpacity
             disabled={disabled}
-            onPress={() => onRemovePressed?.(id)}
+            onPress={() => {
+              Keyboard.dismiss();
+              onRemovePressed?.(id);
+            }}
             className="ml-2 w-9 h-9 bg-red-50 rounded-full items-center justify-center">
             <Trash2Icon size={16} color="#ef4444" />
           </TouchableOpacity>
