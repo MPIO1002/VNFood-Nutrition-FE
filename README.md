@@ -32,18 +32,18 @@ A mobile calorie and nutrition tracking application for Vietnamese food. Users c
 
 <p align="center">
   <img width="48%" alt="caloviet-homescreen" src="https://github.com/user-attachments/assets/ee465cef-99cf-4d6b-a744-7928f9bc1a8d" />
-  <img width="48%" alt="caloviet-analytics-screen" src="https://github.com/user-attachments/assets/d7058dfd-a54a-4898-a5d2-04ad8c5a12d3" />
-
 </p>
-
+<p align="center">
+  <img width="48%" alt="caloviet-analytics-screen" src="https://github.com/user-attachments/assets/d7058dfd-a54a-4898-a5d2-04ad8c5a12d3" />
+</p>
 <p align="center">
   <img width="48%" alt="caloviet-diaryscreen" src="https://github.com/user-attachments/assets/59e28729-d8a6-4ec6-96de-ae83fe396105" />
+</p>
+<p align="center">
   <img width="48%" alt="caloviet-profilescreen" src="https://github.com/user-attachments/assets/79f15127-c3c3-4f3b-84c7-1d6146ab17a9" />
 </p>
-
 <p align="center">
   <img width="48%" alt="caloviet-scanscreen" src="https://github.com/user-attachments/assets/28fe53ac-80ca-4da7-8261-08df834b71b3" />
-
 </p>
 
 
