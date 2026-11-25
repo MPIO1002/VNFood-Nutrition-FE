@@ -2,6 +2,8 @@
 
 A mobile calorie and nutrition tracking application for Vietnamese food. Users can take or select a food photo, analyze its nutrition with AI, adjust the results, save meals, and track progress by day or week.
 
+<img width="4000" height="2667" alt="3e8a7f9ebcc" src="https://github.com/user-attachments/assets/bcaacdaf-21e4-4d43-bbc5-d1eddbe5a116" />
+
 ## Key Features
 
 - Register, log in, and maintain user sessions
